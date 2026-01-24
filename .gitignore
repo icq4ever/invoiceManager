@@ -23,5 +23,8 @@ Thumbs.db
 # Build
 dist/
 
+# Temp files
+app/temp/
+
 # Sample files (reference only)
 sample/
