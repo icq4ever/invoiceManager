@@ -18,6 +18,7 @@ Invoice Manager is a professional invoice generation and management system desig
 - ✅ Dark mode support
 - ✅ Docker deployment ready
 - ✅ SQLite database (no external dependencies)
+- ✅ Backup & Restore (database and uploads)
 
 ## Screenshots
 
@@ -56,6 +57,7 @@ invoiceManager/
 │   │   │   └── i18n.js           # Internationalization middleware
 │   │   ├── routes/
 │   │   │   ├── auth.js           # Login/logout routes
+│   │   │   ├── backup.js         # Backup & restore routes
 │   │   │   ├── companies.js      # Company management (CRUD)
 │   │   │   ├── clients.js        # Client management (CRUD)
 │   │   │   ├── invoices.js       # Invoice management (CRUD)
@@ -284,6 +286,17 @@ Access the application and log in with admin credentials.
 - Set templates as default (auto-included in new invoices)
 - Examples: payment terms, warranty info, company policies
 
+### 7. Backup & Restore
+- Navigate to **Dashboard**
+- Scroll down to **Backup** section
+- Download options:
+  - **Database**: Downloads `invoice.db` file
+  - **Uploads**: Downloads all uploaded files as ZIP
+  - **Full Backup**: Downloads both database and uploads as ZIP
+- **Restore** section below allows uploading backup files
+- Confirmation required before restore (overwrites existing data)
+- Automatic page refresh after database restore
+
 ## Features
 
 ### Multi-Company Support
@@ -318,6 +331,14 @@ Access the application and log in with admin credentials.
 - Toggle between light and dark themes
 - Preference saved in browser cookies
 - Consistent styling throughout
+
+### Backup & Restore
+- **Database Backup**: Download SQLite database file directly
+- **Uploads Backup**: Download all uploaded files (logos, stamps) as ZIP
+- **Full Backup**: Download complete backup (database + uploads) as ZIP
+- **Restore**: Upload backup files to restore data
+- All operations available from Dashboard
+- Automatic safety backup before restore
 
 ## Docker Deployment
 
