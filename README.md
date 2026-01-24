@@ -226,7 +226,7 @@ To change the admin password, you need to generate a bcrypt hash:
 
 3. **Update `.env` file**
    ```env
-   ADMIN_PASSWORD_HASH=<paste-the-generated-hash-here>
+   ADMIN_PASSWORD_HASH='<paste-the-generated-hash-here>'
    ```
 
 4. **Restart the application**

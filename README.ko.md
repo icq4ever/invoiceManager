@@ -226,7 +226,7 @@ invoiceManager/
 
 3. **`.env` 파일 수정**
    ```env
-   ADMIN_PASSWORD_HASH=<생성된-해시-붙여넣기>
+   ADMIN_PASSWORD_HASH='<생성된-해시-붙여넣기>'
    ```
 
 4. **애플리케이션 재시작**
