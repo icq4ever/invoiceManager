@@ -117,7 +117,7 @@
     "invoice_prefix_help": "Prefix for invoice numbers (e.g., INV-2026-0001)",
     "logo": "Logo",
     "stamp": "Signature/Stamp",
-    "stamp_mark": "Signature",
+    "stamp_mark": "(sign)",
     "is_default": "Set as default company",
     "no_companies": "No companies registered",
     "korean": "Korean",
