@@ -110,6 +110,32 @@
         document.getElementById('moonIcon').classList.remove('hidden');
       }
     }
+
+    // Tab switching function
+    function switchTab(event, tabName) {
+      event.preventDefault();
+
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+      });
+
+      // Remove active styling from all buttons
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-blue-600');
+        btn.classList.add('border-transparent', 'text-gray-600');
+      });
+
+      // Show selected tab
+      const selectedTab = document.getElementById(tabName + '-tab');
+      if (selectedTab) {
+        selectedTab.style.display = 'block';
+      }
+
+      // Add active styling to clicked button
+      event.target.classList.remove('border-transparent', 'text-gray-600');
+      event.target.classList.add('border-blue-600', 'text-blue-600');
+    }
   </script>
   <% } %>
 

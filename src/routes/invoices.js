@@ -170,7 +170,9 @@ router.get('/:id', (req, res) => {
     SELECT i.*, c.name as client_name, c.business_number as client_business_number, c.address as client_address,
            co.name as company_name, co.business_number as company_business_number, co.representative,
            co.address as company_address, co.phone as company_phone, co.email as company_email,
-           co.logo_path, co.stamp_path
+           co.logo_path, co.stamp_path,
+           co.name_en as company_name_en, co.representative_en, co.address_en as company_address_en,
+           co.phone_en as company_phone_en, co.email_en as company_email_en
     FROM invoices i
     LEFT JOIN clients c ON i.client_id = c.id
     LEFT JOIN companies co ON i.company_id = co.id
@@ -180,6 +182,13 @@ router.get('/:id', (req, res) => {
   if (!invoice) {
     return res.redirect('/invoices');
   }
+
+  // Fallback to Korean if English not available
+  if (!invoice.company_name_en) invoice.company_name_en = invoice.company_name;
+  if (!invoice.representative_en) invoice.representative_en = invoice.representative;
+  if (!invoice.company_address_en) invoice.company_address_en = invoice.company_address;
+  if (!invoice.company_phone_en) invoice.company_phone_en = invoice.company_phone;
+  if (!invoice.company_email_en) invoice.company_email_en = invoice.company_email;
 
   const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY sort_order ASC').all(req.params.id);
 

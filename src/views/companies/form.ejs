@@ -12,7 +12,21 @@
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
   <form method="POST" action="<%= company && company.id ? '/companies/' + company.id : '/companies' %>" enctype="multipart/form-data">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Tabs -->
+    <div class="border-b border-gray-300 dark:border-gray-600 mb-6">
+      <div class="flex space-x-8">
+        <button type="button" class="tab-button py-2 px-1 border-b-2 border-blue-600 text-blue-600 font-medium" data-tab="korean" onclick="switchTab(event, 'korean')">
+          <%= t('company.korean') %>
+        </button>
+        <button type="button" class="tab-button py-2 px-1 border-b-2 border-transparent text-gray-600 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-gray-300" data-tab="english" onclick="switchTab(event, 'english')">
+          <%= t('company.english') %>
+        </button>
+      </div>
+    </div>
+
+    <!-- Korean Tab -->
+    <div id="korean-tab" class="tab-content">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.name') %> *</label>
         <input type="text" name="name" required value="<%= company?.name || '' %>"
@@ -70,13 +84,52 @@
         <input type="file" name="stamp" accept="image/*"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
-      <div class="md:col-span-2">
-        <label class="flex items-center">
-          <input type="checkbox" name="is_default" value="1" <%= company?.is_default ? 'checked' : '' %>
-            class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
-          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"><%= t('company.is_default') %></span>
-        </label>
       </div>
+    </div>
+
+    <!-- English Tab -->
+    <div id="english-tab" class="tab-content" style="display: none;">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.name_en') %></label>
+          <input type="text" name="name_en" value="<%= company?.name_en || '' %>"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.representative_en') %></label>
+          <input type="text" name="representative_en" value="<%= company?.representative_en || '' %>"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.phone_en') %></label>
+          <input type="text" name="phone_en" value="<%= company?.phone_en || '' %>"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.email_en') %></label>
+          <input type="email" name="email_en" value="<%= company?.email_en || '' %>"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.address_en') %></label>
+          <input type="text" name="address_en" value="<%= company?.address_en || '' %>"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.bank_info_en') %></label>
+          <input type="text" name="bank_info_en" value="<%= company?.bank_info_en || '' %>" placeholder="<%= t('company.bank_placeholder') %>"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+      </div>
+    </div>
+
+    <!-- Common Settings -->
+    <div class="md:col-span-2 mt-6">
+      <label class="flex items-center">
+        <input type="checkbox" name="is_default" value="1" <%= company?.is_default ? 'checked' : '' %>
+          class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
+        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"><%= t('company.is_default') %></span>
+      </label>
     </div>
 
     <div class="mt-6 flex justify-end space-x-3">

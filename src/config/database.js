@@ -41,6 +41,38 @@ function initDatabase() {
     // Column already exists
   }
 
+  // Add multilingual company info columns (migration)
+  try {
+    db.exec(`ALTER TABLE companies ADD COLUMN name_en TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE companies ADD COLUMN representative_en TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE companies ADD COLUMN address_en TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE companies ADD COLUMN phone_en TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE companies ADD COLUMN email_en TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE companies ADD COLUMN bank_info_en TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+
   // Clients table
   db.exec(`
     CREATE TABLE IF NOT EXISTS clients (
