@@ -180,10 +180,10 @@
             <table class="w-full" style="border-collapse: collapse;">
               <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.name') %></td>
-                <td class="py-0.5 pl-3" style="width: 35%;"><%= invoice.company_name || '-' %></td>
+                <td class="py-0.5 pl-3" style="width: 35%;"><%= lang === 'en' ? (invoice.company_name_en || invoice.company_name || '-') : (invoice.company_name || '-') %></td>
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2" style="width: 5%;"><%= t('company.representative') %></td>
                 <td class="py-0.5 text-right whitespace-nowrap" style="width: 45%;">
-                  <%= invoice.representative || '-' %>
+                  <%= lang === 'en' ? (invoice.representative_en || invoice.representative || '-') : (invoice.representative || '-') %>
                   <% if (invoice.stamp_path) { %>
                   <img src="<%= invoice.stamp_path %>" alt="서명" class="inline-block h-6 ml-1">
                   <% } else { %>
@@ -197,16 +197,16 @@
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.address') %></td>
-                <td class="py-0.5 pl-3" colspan="3"><%= invoice.company_address || '-' %></td>
+                <td class="py-0.5 pl-3" colspan="3"><%= lang === 'en' ? (invoice.company_address_en || invoice.company_address || '-') : (invoice.company_address || '-') %></td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.phone') %></td>
-                <td class="py-0.5 pl-3" style="width: 35%;"><%= invoice.company_phone || '-' %></td>
+                <td class="py-0.5 pl-3" style="width: 35%;"><%= lang === 'en' ? (invoice.company_phone_en || invoice.company_phone || '-') : (invoice.company_phone || '-') %></td>
                 <td colspan="2"></td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.email') %></td>
-                <td class="py-0.5 pl-3" style="width: 35%;"><%= invoice.company_email || '-' %></td>
+                <td class="py-0.5 pl-3" style="width: 35%;"><%= lang === 'en' ? (invoice.company_email_en || invoice.company_email || '-') : (invoice.company_email || '-') %></td>
                 <td colspan="2"></td>
               </tr>
             </table>
