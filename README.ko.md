@@ -34,36 +34,41 @@ Invoice Manager는 여러 회사, 클라이언트, 견적서 템플릿을 관리
 invoiceManager/
 ├── Dockerfile                    # 컨테이너 설정
 ├── docker-compose.yml            # Docker Compose 설정
-├── package.json                  # Node.js 의존성
 ├── .env.example                  # 환경변수 템플릿
-├── src/
-│   ├── app.js                    # Express 애플리케이션 진입점
-│   ├── config/
-│   │   └── database.js           # SQLite 설정 및 마이그레이션
-│   ├── middleware/
-│   │   ├── auth.js               # 인증 미들웨어
-│   │   └── i18n.js               # 다국어 미들웨어
-│   ├── routes/
-│   │   ├── auth.js               # 로그인/로그아웃
-│   │   ├── companies.js          # 회사 관리 (생성/읽기/수정/삭제)
-│   │   ├── clients.js            # 거래처 관리 (CRUD)
-│   │   ├── invoices.js           # 견적서 관리 (CRUD)
-│   │   └── templates.js          # 기타 문구 템플릿 관리
-│   ├── views/                    # EJS 템플릿
-│   │   ├── layout.ejs            # 마스터 레이아웃
-│   │   ├── login.ejs
-│   │   ├── dashboard.ejs
-│   │   ├── companies/
-│   │   ├── clients/
-│   │   ├── invoices/
-│   │   └── templates/
-│   ├── locales/                  # 다국어 번역 파일
-│   │   ├── ko.json
-│   │   └── en.json
-│   └── public/                   # 정적 자산
-├── uploads/                      # 회사 로고/서명 (Docker 볼륨)
+├── README.md                      # 문서 (영문)
+├── README.ko.md                   # 문서 (한국어)
+├── app/                           # 애플리케이션 소스코드
+│   ├── package.json              # Node.js 의존성
+│   ├── src/
+│   │   ├── app.js                # Express 애플리케이션 진입점
+│   │   ├── config/
+│   │   │   └── database.js       # SQLite 설정 및 마이그레이션
+│   │   ├── middleware/
+│   │   │   ├── auth.js           # 인증 미들웨어
+│   │   │   └── i18n.js           # 다국어 미들웨어
+│   │   ├── routes/
+│   │   │   ├── auth.js           # 로그인/로그아웃
+│   │   │   ├── companies.js      # 회사 관리 (CRUD)
+│   │   │   ├── clients.js        # 거래처 관리 (CRUD)
+│   │   │   ├── invoices.js       # 견적서 관리 (CRUD)
+│   │   │   └── templates.js      # 기타 문구 템플릿 관리
+│   │   ├── views/                # EJS 템플릿
+│   │   │   ├── layout.ejs        # 마스터 레이아웃
+│   │   │   ├── login.ejs
+│   │   │   ├── dashboard.ejs
+│   │   │   ├── companies/
+│   │   │   ├── clients/
+│   │   │   ├── invoices/
+│   │   │   └── templates/
+│   │   ├── locales/              # 다국어 번역 파일
+│   │   │   ├── ko.json
+│   │   │   └── en.json
+│   │   ├── public/               # 정적 자산
+│   │   └── utils/                # 유틸리티 함수
+│   └── scripts/                  # 빌드 스크립트
 ├── data/                         # SQLite 데이터베이스 (Docker 볼륨)
-└── sample/                       # 샘플 파일
+├── uploads/                      # 회사 로고/서명 (Docker 볼륨)
+└── .gitignore                    # Git 무시 규칙
 ```
 
 ## 데이터베이스 스키마

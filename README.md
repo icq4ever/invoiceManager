@@ -34,36 +34,41 @@ Invoice Manager is a professional invoice generation and management system desig
 invoiceManager/
 ├── Dockerfile                    # Container configuration
 ├── docker-compose.yml            # Docker Compose setup
-├── package.json                  # Node.js dependencies
 ├── .env.example                  # Environment variables template
-├── src/
-│   ├── app.js                    # Express application entry point
-│   ├── config/
-│   │   └── database.js           # SQLite configuration & migrations
-│   ├── middleware/
-│   │   ├── auth.js               # Authentication middleware
-│   │   └── i18n.js               # Internationalization middleware
-│   ├── routes/
-│   │   ├── auth.js               # Login/logout routes
-│   │   ├── companies.js          # Company management (CRUD)
-│   │   ├── clients.js            # Client management (CRUD)
-│   │   ├── invoices.js           # Invoice management (CRUD)
-│   │   └── templates.js          # Note template management
-│   ├── views/                    # EJS templates
-│   │   ├── layout.ejs            # Master layout
-│   │   ├── login.ejs
-│   │   ├── dashboard.ejs
-│   │   ├── companies/
-│   │   ├── clients/
-│   │   ├── invoices/
-│   │   └── templates/
-│   ├── locales/                  # i18n translation files
-│   │   ├── ko.json
-│   │   └── en.json
-│   └── public/                   # Static assets
-├── uploads/                      # Company logos/stamps (Docker volume)
+├── README.md                      # Documentation (English)
+├── README.ko.md                   # Documentation (Korean)
+├── app/                           # Application source code
+│   ├── package.json              # Node.js dependencies
+│   ├── src/
+│   │   ├── app.js                # Express application entry point
+│   │   ├── config/
+│   │   │   └── database.js       # SQLite configuration & migrations
+│   │   ├── middleware/
+│   │   │   ├── auth.js           # Authentication middleware
+│   │   │   └── i18n.js           # Internationalization middleware
+│   │   ├── routes/
+│   │   │   ├── auth.js           # Login/logout routes
+│   │   │   ├── companies.js      # Company management (CRUD)
+│   │   │   ├── clients.js        # Client management (CRUD)
+│   │   │   ├── invoices.js       # Invoice management (CRUD)
+│   │   │   └── templates.js      # Note template management
+│   │   ├── views/                # EJS templates
+│   │   │   ├── layout.ejs        # Master layout
+│   │   │   ├── login.ejs
+│   │   │   ├── dashboard.ejs
+│   │   │   ├── companies/
+│   │   │   ├── clients/
+│   │   │   ├── invoices/
+│   │   │   └── templates/
+│   │   ├── locales/              # i18n translation files
+│   │   │   ├── ko.json
+│   │   │   └── en.json
+│   │   ├── public/               # Static assets
+│   │   └── utils/                # Utility functions
+│   └── scripts/                  # Build scripts
 ├── data/                         # SQLite database (Docker volume)
-└── sample/                       # Sample files
+├── uploads/                      # Company logos/stamps (Docker volume)
+└── .gitignore                    # Git ignore rules
 ```
 
 ## Database Schema

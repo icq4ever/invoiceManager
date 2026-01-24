@@ -9,7 +9,7 @@ services:
     expose:
       - "3000"
     volumes:
-      - .:/app
+      - ./app:/app
       - /app/node_modules
       - invoice-data:/app/data
       - invoice-uploads:/app/uploads
