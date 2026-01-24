@@ -22,3 +22,6 @@ Thumbs.db
 
 # Build
 dist/
+
+# Sample files (reference only)
+sample/
