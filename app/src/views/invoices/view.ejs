@@ -157,7 +157,7 @@
           <!-- Left: Project & Client -->
           <div class="flex-1">
             <% if (invoice.project_name) { %>
-            <h2 class="project-title text-2xl font-light mb-3" style="word-break: keep-all; overflow-wrap: break-word; line-height: 1.2;"><%= invoice.project_name %></h2>
+            <h2 class="project-title text-2xl font-light mb-3" style="word-break: keep-all; overflow-wrap: break-word; line-height: 1.2; white-space: pre-wrap;"><%= (invoice.project_name || '').replace(/\\n/g, '\n') %></h2>
             <% } %>
             <table class="w-full" style="border-collapse: collapse;">
               <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
@@ -211,7 +211,7 @@
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.address') %></td>
-                <td class="py-0.5 pl-3" colspan="3"><%= lang === 'en' ? (invoice.company_address_en || invoice.company_address || '-') : (invoice.company_address || '-') %></td>
+                <td class="py-0.5 pl-3" colspan="3" style="white-space: pre-wrap;"><%= lang === 'en' ? ((invoice.company_address_en || invoice.company_address || '-').replace(/\\n/g, '\n')) : ((invoice.company_address || '-').replace(/\\n/g, '\n')) %></td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.phone') %></td>
@@ -287,11 +287,14 @@
         <% if (notes.length > 0) { %>
         <div class="mt-16 border-t border-gray-300 dark:border-gray-600 pt-3 notes-section">
           <h3 class="font-bold mb-1"><%= t('invoice.notes') %></h3>
-          <ol class="text-gray-600 dark:text-gray-400 space-y-0.5" style="font-size: 10px;">
+          <div class="text-gray-600 dark:text-gray-400 space-y-0.5" style="font-size: 10px; list-style: none;">
             <% notes.forEach((note, i) => { %>
-            <li><%= i + 1 %>. <%= note %></li>
+            <div style="display: flex; white-space: pre-wrap; margin-bottom: 2px;">
+              <span style="flex-shrink: 0; margin-right: 4px;"><%= i + 1 %>.</span>
+              <span style="white-space: pre-wrap;"><%= (note || '').replace(/\\n/g, '\n') %></span>
+            </div>
             <% }); %>
-          </ol>
+          </div>
         </div>
         <% } %>
       </div>
