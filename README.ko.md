@@ -63,7 +63,8 @@ docker-compose up --build -d
 Invoice Manager가 도움이 되었다면 개발을 지원해주세요:
 
 - [GitHub Sponsors](https://github.com/sponsors/icq4ever)
-- 카카오페이: <img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="100">
+- 카카오페이: <br/>
+<img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="300">
 
 ## 라이선스
 

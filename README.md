@@ -63,7 +63,8 @@ docker-compose up --build -d
 If you find Invoice Manager useful, consider supporting its development:
 
 - [GitHub Sponsors](https://github.com/sponsors/icq4ever)
-- Kakao Pay: <img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="100">
+- Kakao Pay: <br/>
+<img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="300">
 
 ## License
 
