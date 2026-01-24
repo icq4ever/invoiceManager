@@ -113,7 +113,7 @@
     "bank_info_en": "Bank Info (English)",
     "bank_placeholder": "Bank Account Number Name",
     "invoice_prefix": "Invoice Prefix",
-    "invoice_prefix_help": "Prefix for invoice numbers (e.g., S42-2026-0001)",
+    "invoice_prefix_help": "Prefix for invoice numbers (e.g., INV-2026-0001)",
     "logo": "Logo",
     "stamp": "Signature/Stamp",
     "is_default": "Set as default company",
