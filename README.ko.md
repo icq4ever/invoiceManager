@@ -433,6 +433,20 @@ docker-compose restart invoice-manager
 - Safari 14 이상
 - 모바일 브라우저 (iOS Safari, Chrome Mobile)
 
+## 후원
+
+Invoice Manager가 도움이 되었다면 개발을 지원해주세요:
+
+### GitHub Sponsors
+- [GitHub Sponsors](https://github.com/sponsors/icq4ever)
+
+### 한국
+카카오페이로 후원:
+
+![Kakao Pay](assets/kakaoDonation.jpg)
+
+여러분의 후원이 이 프로젝트를 계속 유지하고 개선하는 데 큰 힘이 됩니다!
+
 ## 라이선스
 
 이 프로젝트는 **GNU Affero General Public License v3 (AGPL v3)** 라이선스를 따릅니다.
