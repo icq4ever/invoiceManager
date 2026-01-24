@@ -4,21 +4,17 @@ A self-hosted web application for generating and managing multi-company invoices
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
-## Overview
+## Features
 
-Invoice Manager is a professional invoice generation and management system designed for businesses that need to issue invoices in multiple currencies and languages. It supports managing multiple companies, clients, and invoice templates with easy PDF export functionality.
-
-**Key Features:**
-- ✅ Multi-company invoice generation
-- ✅ Bilingual support (Korean/English)
-- ✅ Client management
-- ✅ Dynamic invoice items with automatic calculations
-- ✅ Reusable note templates
-- ✅ PDF export and printing
-- ✅ Dark mode support
-- ✅ Docker deployment ready
-- ✅ SQLite database (no external dependencies)
-- ✅ Backup & Restore (database and uploads)
+- Multi-company invoice generation
+- Bilingual support (Korean/English)
+- Client management
+- Dynamic invoice items with automatic calculations
+- Reusable note templates
+- PDF export and printing
+- Dark mode support
+- Backup & Restore
+- Docker deployment ready
 
 ## Screenshots
 
@@ -28,489 +24,70 @@ Invoice Manager is a professional invoice generation and management system desig
 ### PDF Output
 ![PDF Output](assets/output.png)
 
-## Technology Stack
+## Quick Start
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/invoice-manager.git
+cd invoice-manager
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Run with Docker
+docker-compose up --build -d
+
+# Access at http://localhost:3000
+```
+
+## Tech Stack
 
 - **Backend**: Node.js + Express.js
-- **Database**: SQLite (file-based, persistent via Docker volumes)
-- **Frontend**: EJS templating + Tailwind CSS
-- **Styling**: Tailwind CSS with dark mode support
-- **Authentication**: Express-session + bcrypt
-- **Deployment**: Docker & Docker Compose
-
-## Project Structure
-
-```
-invoiceManager/
-├── Dockerfile                    # Container configuration
-├── docker-compose.yml            # Docker Compose setup
-├── .env.example                  # Environment variables template
-├── README.md                      # Documentation (English)
-├── README.ko.md                   # Documentation (Korean)
-├── app/                           # Application source code
-│   ├── package.json              # Node.js dependencies
-│   ├── src/
-│   │   ├── app.js                # Express application entry point
-│   │   ├── config/
-│   │   │   └── database.js       # SQLite configuration & migrations
-│   │   ├── middleware/
-│   │   │   ├── auth.js           # Authentication middleware
-│   │   │   └── i18n.js           # Internationalization middleware
-│   │   ├── routes/
-│   │   │   ├── auth.js           # Login/logout routes
-│   │   │   ├── backup.js         # Backup & restore routes
-│   │   │   ├── companies.js      # Company management (CRUD)
-│   │   │   ├── clients.js        # Client management (CRUD)
-│   │   │   ├── invoices.js       # Invoice management (CRUD)
-│   │   │   └── templates.js      # Note template management
-│   │   ├── views/                # EJS templates
-│   │   │   ├── layout.ejs        # Master layout
-│   │   │   ├── login.ejs
-│   │   │   ├── dashboard.ejs
-│   │   │   ├── companies/
-│   │   │   ├── clients/
-│   │   │   ├── invoices/
-│   │   │   └── templates/
-│   │   ├── locales/              # i18n translation files
-│   │   │   ├── ko.json
-│   │   │   └── en.json
-│   │   ├── public/               # Static assets
-│   │   └── utils/                # Utility functions
-│   └── scripts/                  # Build scripts
-├── data/                         # SQLite database (Docker volume)
-├── uploads/                      # Company logos/stamps (Docker volume)
-└── .gitignore                    # Git ignore rules
-```
-
-## Database Schema
-
-### Companies Table
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER PK | Unique identifier |
-| name | TEXT | Company name (Korean) |
-| name_en | TEXT | Company name (English) |
-| representative | TEXT | Representative name (Korean) |
-| representative_en | TEXT | Representative name (English) |
-| business_number | TEXT | Tax ID |
-| address | TEXT | Address (Korean) |
-| address_en | TEXT | Address (English) |
-| phone | TEXT | Phone number (Korean) |
-| phone_en | TEXT | Phone number (English) |
-| email | TEXT | Email (Korean) |
-| email_en | TEXT | Email (English) |
-| bank_info | TEXT | Bank account info (Korean) |
-| bank_info_en | TEXT | Bank account info (English) |
-| logo_path | TEXT | Logo image path |
-| stamp_path | TEXT | Signature/stamp image path |
-| invoice_prefix | TEXT | Invoice number prefix (e.g., INV, S42) |
-| is_default | BOOLEAN | Default company flag |
-| created_at | DATETIME | Creation timestamp |
-
-### Clients Table
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER PK | Unique identifier |
-| name | TEXT | Client/company name |
-| business_number | TEXT | Tax ID |
-| contact_person | TEXT | Contact person name |
-| phone | TEXT | Phone number |
-| email | TEXT | Email address |
-| address | TEXT | Address |
-| created_at | DATETIME | Creation timestamp |
-
-### Invoices Table
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER PK | Unique identifier |
-| invoice_number | TEXT | Invoice number (e.g., INV-2026-0001) |
-| company_id | INTEGER FK | Issuing company |
-| client_id | INTEGER FK | Client/recipient |
-| project_name | TEXT | Project name |
-| issue_date | DATE | Invoice issue date |
-| validity_period | TEXT | Validity period (e.g., "1 month from issue date") |
-| subtotal | REAL | Subtotal (supply amount) |
-| tax_rate | REAL | Tax rate (%) |
-| tax_amount | REAL | Tax amount |
-| total_amount | REAL | Total amount |
-| notes | TEXT | Additional notes (JSON array) |
-| status | TEXT | Invoice status (draft) |
-| currency | TEXT | Currency (KRW, USD, EUR, JPY, GBP, CNY) |
-| pdf_path | TEXT | Generated PDF path |
-| created_at | DATETIME | Creation timestamp |
-| updated_at | DATETIME | Update timestamp |
-
-### Invoice Items Table
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER PK | Unique identifier |
-| invoice_id | INTEGER FK | Parent invoice |
-| title | TEXT | Item title |
-| details | TEXT | Item details (multiline) |
-| quantity | REAL | Quantity |
-| unit_price | REAL | Unit price |
-| amount | REAL | Total amount (qty × unit_price) |
-| sort_order | INTEGER | Display order |
-
-### Note Templates Table
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER PK | Unique identifier |
-| title | TEXT | Template name |
-| content | TEXT | Template content |
-| is_default | BOOLEAN | Include in new invoices by default |
-| sort_order | INTEGER | Display order |
-| created_at | DATETIME | Creation timestamp |
-
-## Installation & Setup
-
-### Prerequisites
-- Docker & Docker Compose installed
-- Port 3000 available (or configure in docker-compose.yml)
-
-### Quick Start
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/invoice-manager.git
-   cd invoice-manager
-   ```
-
-2. **Create environment file**
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` with your settings:
-   ```env
-   NODE_ENV=production
-   PORT=3000
-   SESSION_SECRET=your-secret-key-here
-   ADMIN_USERNAME=admin
-   ADMIN_PASSWORD_HASH=bcrypt-hashed-password
-   ```
-
-3. **Start with Docker Compose**
-   ```bash
-   docker-compose up --build -d
-   ```
-
-4. **Access the application**
-   - Open browser: `http://localhost:3000`
-   - Login with credentials from `.env`
-
-### Manual Setup (without Docker)
-
-1. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Create environment file**
-   ```bash
-   cp .env.example .env
-   ```
-
-3. **Start the application**
-   ```bash
-   npm start
-   ```
-
-   Application runs on `http://localhost:3000`
-
-### Change Admin Password
-
-To change the admin password, you need to generate a bcrypt hash:
-
-1. **Generate password hash using the script**
-   ```bash
-   npm run hash-password
-   ```
-
-   Or with Docker:
-   ```bash
-   docker exec -it invoice-manager npm run hash-password
-   ```
-
-2. **Enter your new password** when prompted
-   - The script will output a bcrypt hash
-
-3. **Update `.env` file**
-   ```env
-   ADMIN_PASSWORD_HASH='<paste-the-generated-hash-here>'
-   ```
-
-4. **Restart the application**
-   ```bash
-   docker-compose restart invoice-manager
-   ```
-
-   Or without Docker:
-   ```bash
-   npm start
-   ```
-
-The new password will be active immediately after restart.
-
-## Usage
-
-### 1. Login
-Access the application and log in with admin credentials.
-
-### 2. Company Management
-- Navigate to **Companies** section
-- Add company information in both Korean and English using tabs
-- Upload company logo and signature/stamp images
-- Set one company as default
-
-### 3. Client Management
-- Navigate to **Clients** section
-- Add client/customer information
-- View, edit, or delete clients
-
-### 4. Create Invoice
-- Click **New Invoice**
-- Select company and client
-- Add line items with details, quantity, and unit price
-- System automatically calculates totals and taxes
-- Select note templates or add custom notes
-- Save as draft
-
-### 5. View & Export
-- Click on invoice to view details
-- Switch between Korean/English language
-- Print or export as PDF
-- Duplicate invoices for quick creation
-
-### 6. Templates
-- Manage reusable note templates
-- Set templates as default (auto-included in new invoices)
-- Examples: payment terms, warranty info, company policies
-
-### 7. Backup & Restore
-- Navigate to **Dashboard**
-- Scroll down to **Backup** section
-- Download options:
-  - **Database**: Downloads `invoice.db` file
-  - **Uploads**: Downloads all uploaded files as ZIP
-  - **Full Backup**: Downloads both database and uploads as ZIP
-- **Restore** section below allows uploading backup files
-- Confirmation required before restore (overwrites existing data)
-- Automatic page refresh after database restore
-
-## Features
-
-### Multi-Company Support
-- Register multiple companies/branches
-- Each has separate logo, stamp, and invoice prefix
-- Set one as default for quick selection
-
-### Bilingual Interface
-- Full support for Korean and English
-- Switch languages at any time
-- Company information stored in both languages
-- Invoice displays in selected language
-
-### Dynamic Invoice Items
-- Add/remove line items on the fly
-- Multi-line item details support
-- Automatic calculation of amounts
-- Support for multiple currencies (KRW, USD, EUR, JPY, GBP, CNY)
-
-### Professional Templates
-- Pre-defined note templates (payment terms, policies, etc.)
-- Create custom templates
-- Set templates to auto-include in new invoices
-
-### PDF Export
-- Print-friendly invoice layout
-- Includes company logo and signature
-- Professional formatting with Korean font support
-- Download as PDF directly from browser
-
-### Dark Mode
-- Toggle between light and dark themes
-- Preference saved in browser cookies
-- Consistent styling throughout
-
-### Backup & Restore
-- **Database Backup**: Download SQLite database file directly
-- **Uploads Backup**: Download all uploaded files (logos, stamps) as ZIP
-- **Full Backup**: Download complete backup (database + uploads) as ZIP
-- **Restore**: Upload backup files to restore data
-- All operations available from Dashboard
-- Automatic safety backup before restore
-
-## Docker Deployment
-
-### Docker Compose Configuration
-
-```yaml
-services:
-  invoice:
-    build: .
-    container_name: invoice-manager
-    restart: unless-stopped
-    expose:
-      - "3000"
-    volumes:
-      - invoice-data:/app/data          # SQLite database
-      - invoice-uploads:/app/uploads    # Company images
-    env_file:
-      - .env
-    environment:
-      - TZ=Asia/Seoul
-      - NODE_ENV=production
-    networks:
-      - shared
-
-volumes:
-  invoice-data:
-  invoice-uploads:
-
-networks:
-  shared:
-    external: true
-```
-
-### Nginx Reverse Proxy Setup
-
-Add to nginx.conf:
-
-```nginx
-upstream docker-invoice {
-    server invoice-manager:3000;
-}
-
-server {
-    listen 80;
-    server_name invoice.example.com;
-    server_tokens off;
-
-    location / {
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_pass http://docker-invoice;
-    }
-}
-```
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| NODE_ENV | Environment (development/production) | production |
-| PORT | Server port | 3000 |
-| SESSION_SECRET | Session encryption key | fallback-secret-key |
-| ADMIN_USERNAME | Login username | admin |
-| ADMIN_PASSWORD_HASH | bcrypt hashed password | (required) |
-| HTTPS | Enable HTTPS in production | false |
-| TZ | Timezone | Asia/Seoul |
-
-## Security
-
-- **Authentication**: Express-session with httpOnly cookies
-- **Password Storage**: bcrypt hashing
-- **Input Validation**: Server-side validation for all inputs
-- **File Upload**: Restricted to image files (jpeg, jpg, png, gif, webp)
-- **Database**: SQLite with parameterized queries (SQL injection prevention)
-
-## Troubleshooting
-
-### Application won't start
-```bash
-# Check logs
-docker-compose logs -f invoice-manager
-
-# Rebuild container
-docker-compose down
-docker-compose up --build -d
-```
-
-### Database locked error
-```bash
-# Restart the application
-docker-compose restart invoice-manager
-```
-
-### Uploads not visible
-- Verify Docker volume is mounted: `docker volume ls`
-- Check file permissions in uploads directory
-- Ensure uploads directory exists: `docker-compose exec invoice-manager ls -la /app/uploads`
-
-## Performance Tips
-
-1. **Database Optimization**: Regular SQLite maintenance
-2. **Image Optimization**: Compress logo/stamp images before upload
-3. **Browser Cache**: Clear cache if styles don't update
-4. **Timezone**: Set TZ variable to match your location
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-- Mobile browsers (iOS Safari, Chrome Mobile)
+- **Database**: SQLite
+- **Frontend**: EJS + Tailwind CSS
+- **Deployment**: Docker
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Installation](docs/installation.md) | Setup guide & environment variables |
+| [Usage](docs/usage.md) | How to use the application |
+| [Docker](docs/docker.md) | Docker deployment & Nginx setup |
+| [Database](docs/database.md) | Database schema reference |
+| [Troubleshooting](docs/troubleshooting.md) | Common issues & solutions |
 
 ## Support
 
 If you find Invoice Manager useful, consider supporting its development:
 
-### GitHub Sponsors
 - [GitHub Sponsors](https://github.com/sponsors/icq4ever)
-
-### Korea
-Scan to donate via Kakao Pay:
-
-<img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="200">
-
-Your support helps keep this project maintained and updated!
+- Kakao Pay: <img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="100">
 
 ## License
 
-This project is licensed under the **GNU Affero General Public License v3 (AGPL v3)**.
+**GNU Affero General Public License v3 (AGPL v3)**
 
-See [LICENSE](LICENSE) file for details.
+- You can use and modify freely
+- Modifications must be shared under AGPL v3
+- Web service usage requires source code disclosure
 
-**What this means:**
-- ✅ You can use and modify Invoice Manager freely
-- ✅ You can self-host it on your own infrastructure
-- ✅ Modifications must be shared under the same AGPL v3 license
-- ✅ If you use this software as a web service, you must provide access to the source code
-- ❌ You cannot use this code to create a closed-source commercial service
-
-## Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Commit changes with clear messages
-4. Submit a pull request
-
-## Support
-
-For issues and questions:
-1. Check existing issues on GitHub
-2. Create a new issue with detailed information
-3. Include error logs and screenshots
+See [LICENSE](LICENSE) for details.
 
 ## Roadmap
 
 - [ ] Invoice status management (sent, accepted, rejected)
-- [ ] Automatic PDF generation on save
 - [ ] Email invoice delivery
 - [ ] Payment tracking
-- [ ] Advanced reporting and analytics
-- [ ] API for third-party integration
-- [ ] Multi-user support with role-based access
+- [ ] Multi-user support
 
-## Credits
+## Contributing
 
-Built with ❤️ using Node.js, Express, and Tailwind CSS
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: January 2026
+**Version**: 1.0.0 | Built with Node.js, Express, and Tailwind CSS
