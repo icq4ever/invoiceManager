@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "Invoice Manager",
-    "name": "Invoice"
+    "title": "InvoiceManager",
+    "name": "InvoiceManager"
   },
   "nav": {
     "dashboard": "Dashboard",
