@@ -115,6 +115,10 @@
         <div class="flex items-center space-x-2">
           <button onclick="window.print()" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700"><%= t('invoice.print') %> / PDF</button>
           <a href="/invoices/<%= invoice.id %>/edit" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"><%= t('common.edit') %></a>
+          <label class="flex items-center space-x-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 cursor-pointer">
+            <input type="checkbox" id="showStampCheckbox" checked onchange="toggleStamp()" class="rounded">
+            <span class="text-sm text-gray-700 dark:text-gray-300">사인 보기</span>
+          </label>
           <div class="relative" id="langDropdown">
             <button type="button" class="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="toggleLangMenu()">
               <span class="text-sm font-medium"><%= lang.toUpperCase() %></span>
@@ -189,7 +193,7 @@
           <div class="supplier-box" style="width: auto; min-width: 40%; max-width: 50%; flex-shrink: 0; position: relative;">
             <div class="font-bold text-gray-600 dark:text-gray-400 pb-1 " style="font-size: 13px; font-weight: 800;"><%= t('invoice.supplier') %></div>
             <% if (invoice.stamp_path) { %>
-            <img src="<%= invoice.stamp_path %>" alt="Signature" style="position: absolute; right: 0; top: 8px; height: 50px; width: auto; object-fit: contain; z-index: 10;">
+            <img id="stampImage" src="<%= invoice.stamp_path %>" alt="Signature" style="position: absolute; right: 0; top: 8px; height: 50px; width: auto; object-fit: contain; z-index: 10;">
             <% } %>
             <table class="w-full" style="border-collapse: collapse;">
               <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
@@ -320,6 +324,26 @@
         document.getElementById('moonIcon').classList.remove('hidden');
       }
     }
+    function toggleStamp() {
+      const stampImage = document.getElementById('stampImage');
+      const checkbox = document.getElementById('showStampCheckbox');
+      if (stampImage) {
+        stampImage.style.display = checkbox.checked ? 'inline-block' : 'none';
+        localStorage.setItem('showStamp', checkbox.checked);
+      }
+    }
+    // Initialize stamp visibility from localStorage
+    window.addEventListener('DOMContentLoaded', function() {
+      const checkbox = document.getElementById('showStampCheckbox');
+      const showStamp = localStorage.getItem('showStamp');
+      if (checkbox && showStamp === 'false') {
+        checkbox.checked = false;
+        const stampImage = document.getElementById('stampImage');
+        if (stampImage) {
+          stampImage.style.display = 'none';
+        }
+      }
+    });
   </script>
 </body>
 </html>
