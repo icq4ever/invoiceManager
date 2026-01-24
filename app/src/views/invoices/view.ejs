@@ -178,22 +178,21 @@
           </div>
 
           <!-- Right: Supplier/Company -->
-          <div class="supplier-box" style="width: auto; min-width: 40%; max-width: 50%; flex-shrink: 0;">
+          <div class="supplier-box" style="width: auto; min-width: 40%; max-width: 50%; flex-shrink: 0; position: relative;">
             <div class="font-bold text-gray-600 dark:text-gray-400 pb-1 " style="font-size: 13px; font-weight: 800;"><%= t('invoice.supplier') %></div>
+            <% if (invoice.stamp_path) { %>
+            <img src="<%= invoice.stamp_path %>" alt="Signature" style="position: absolute; right: 0; top: 20px; height: 50px; width: auto; object-fit: contain; z-index: 10;">
+            <% } %>
             <table class="w-full" style="border-collapse: collapse;">
               <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.name') %></td>
                 <td class="py-0.5 pl-3" style="width: 35%;"><%= lang === 'en' ? (invoice.company_name_en || invoice.company_name || '-') : (invoice.company_name || '-') %></td>
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2" style="width: 5%;"><%= t('company.representative') %></td>
                 <td class="py-0.5 text-right" style="width: 45%; vertical-align: middle;">
-                  <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-                    <span><%= lang === 'en' ? (invoice.representative_en || invoice.representative || '-') : (invoice.representative || '-') %></span>
-                    <% if (invoice.stamp_path) { %>
-                    <img src="<%= invoice.stamp_path %>" alt="Signature" style="height: 40px; width: auto; object-fit: contain;">
-                    <% } else { %>
-                    <span style="font-size: 12px; color: #999;">(인)</span>
-                    <% } %>
-                  </div>
+                  <span><%= lang === 'en' ? (invoice.representative_en || invoice.representative || '-') : (invoice.representative || '-') %></span>
+                  <% if (!invoice.stamp_path) { %>
+                  <span style="font-size: 12px; color: #999; margin-left: 8px;">(인)</span>
+                  <% } %>
                 </td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
