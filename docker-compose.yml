@@ -11,8 +11,8 @@ services:
     volumes:
       - ./app:/app
       - /app/node_modules
-      - invoice-data:/app/data
-      - invoice-uploads:/app/uploads
+      - ./data:/app/data
+      - ./uploads:/app/uploads
     env_file:
       - .env
     environment:
@@ -20,10 +20,6 @@ services:
       - NODE_ENV=development
     networks:
       - shared
-
-volumes:
-  invoice-data:
-  invoice-uploads:
 
 networks:
   shared:
