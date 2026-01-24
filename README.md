@@ -207,6 +207,40 @@ invoiceManager/
 
    Application runs on `http://localhost:3000`
 
+### Change Admin Password
+
+To change the admin password, you need to generate a bcrypt hash:
+
+1. **Generate password hash using the script**
+   ```bash
+   npm run hash-password
+   ```
+
+   Or with Docker:
+   ```bash
+   docker exec -it invoice-manager npm run hash-password
+   ```
+
+2. **Enter your new password** when prompted
+   - The script will output a bcrypt hash
+
+3. **Update `.env` file**
+   ```env
+   ADMIN_PASSWORD_HASH=<paste-the-generated-hash-here>
+   ```
+
+4. **Restart the application**
+   ```bash
+   docker-compose restart invoice-manager
+   ```
+
+   Or without Docker:
+   ```bash
+   npm start
+   ```
+
+The new password will be active immediately after restart.
+
 ## Usage
 
 ### 1. Login

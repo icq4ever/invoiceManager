@@ -207,6 +207,40 @@ invoiceManager/
 
    애플리케이션이 `http://localhost:3000`에서 실행됩니다.
 
+### 관리자 비밀번호 변경
+
+관리자 비밀번호를 변경하려면 bcrypt 해시를 생성해야 합니다:
+
+1. **스크립트를 사용해 비밀번호 해시 생성**
+   ```bash
+   npm run hash-password
+   ```
+
+   또는 Docker에서:
+   ```bash
+   docker exec -it invoice-manager npm run hash-password
+   ```
+
+2. **새로운 비밀번호 입력**
+   - 스크립트가 bcrypt 해시를 출력합니다
+
+3. **`.env` 파일 수정**
+   ```env
+   ADMIN_PASSWORD_HASH=<생성된-해시-붙여넣기>
+   ```
+
+4. **애플리케이션 재시작**
+   ```bash
+   docker-compose restart invoice-manager
+   ```
+
+   또는 일반 실행:
+   ```bash
+   npm start
+   ```
+
+재시작 후 새로운 비밀번호가 즉시 활성화됩니다.
+
 ## 사용 방법
 
 ### 1. 로그인
