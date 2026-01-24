@@ -140,9 +140,12 @@
   <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 invoice-wrapper">
       <div class="invoice-content text-gray-900 dark:text-white">
-        <!-- Header -->
-        <div class="pb-4">
+        <!-- Header with Logo -->
+        <div class="pb-4 flex justify-between items-start">
           <h1 class="text-2xl font-bold"><%= t('invoice.title') %></h1>
+          <% if (invoice.logo_path) { %>
+          <img src="<%= invoice.logo_path %>" alt="Company Logo" class="h-16 max-w-xs object-contain">
+          <% } %>
         </div>
 
         <!-- Top section: Project/Client + Supplier -->
