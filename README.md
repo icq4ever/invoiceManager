@@ -19,6 +19,14 @@ Invoice Manager is a professional invoice generation and management system desig
 - ✅ Docker deployment ready
 - ✅ SQLite database (no external dependencies)
 
+## Screenshots
+
+### Invoice List & Preview
+![Invoice Preview](assets/preview.png)
+
+### PDF Output
+![PDF Output](assets/output.png)
+
 ## Technology Stack
 
 - **Backend**: Node.js + Express.js

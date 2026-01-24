@@ -19,6 +19,14 @@ Invoice Manager는 여러 회사, 클라이언트, 견적서 템플릿을 관리
 - ✅ Docker 배포 지원
 - ✅ SQLite 데이터베이스 (외부 의존성 없음)
 
+## 스크린샷
+
+### 견적서 목록 & 미리보기
+![견적서 미리보기](assets/preview.png)
+
+### PDF 출력
+![PDF 출력](assets/output.png)
+
 ## 기술 스택
 
 - **백엔드**: Node.js + Express.js
