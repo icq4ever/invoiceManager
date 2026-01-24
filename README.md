@@ -443,7 +443,7 @@ If you find Invoice Manager useful, consider supporting its development:
 ### Korea
 Scan to donate via Kakao Pay:
 
-![Kakao Pay](assets/kakaoDonation.jpg)
+<img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="200">
 
 Your support helps keep this project maintained and updated!
 

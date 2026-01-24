@@ -443,7 +443,7 @@ Invoice Manager가 도움이 되었다면 개발을 지원해주세요:
 ### 한국
 카카오페이로 후원:
 
-![Kakao Pay](assets/kakaoDonation.jpg)
+<img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="200">
 
 여러분의 후원이 이 프로젝트를 계속 유지하고 개선하는 데 큰 힘이 됩니다!
 
