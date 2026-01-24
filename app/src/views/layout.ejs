@@ -148,6 +148,18 @@
   <% } %>
 
   <script>
+    // i18n messages for JavaScript
+    var i18n = {
+      backup: {
+        downloadStarted: '<%= typeof t === "function" ? t("backup.success_database").replace(/'/g, "\\'") : "Download started" %>'
+      },
+      restore: {
+        selectFile: '<%= typeof t === "function" ? t("restore.error_no_file").replace(/'/g, "\\'") : "Please select a file first" %>',
+        confirm: '<%= typeof t === "function" ? t("restore.confirm").replace(/'/g, "\\'") : "Are you sure you want to restore?" %>',
+        failed: '<%= typeof t === "function" ? t("restore.error_failed").replace(/'/g, "\\'") : "Restore failed" %>'
+      }
+    };
+
     // Backup download function (global)
     function downloadBackup(type) {
       var btn = document.getElementById('btn-backup-' + type);
@@ -172,10 +184,81 @@
         if (btnLoading) btnLoading.classList.add('hidden');
         btn.disabled = false;
         if (statusEl) {
-          statusEl.innerHTML = '<span class="text-green-600 dark:text-green-400">✓ Download started</span>';
+          statusEl.innerHTML = '<span class="text-green-600 dark:text-green-400">✓ ' + i18n.backup.downloadStarted + '</span>';
           setTimeout(function() { statusEl.innerHTML = ''; }, 3000);
         }
       }, 1500);
+    }
+
+    // Restore backup function (global)
+    function restoreBackup(event, type) {
+      event.preventDefault();
+
+      var fileInput = document.getElementById('file-restore-' + type);
+      var btn = document.getElementById('btn-restore-' + type);
+      var statusEl = document.getElementById('restore-status');
+
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        if (statusEl) {
+          statusEl.innerHTML = '<span class="text-red-600 dark:text-red-400">' + i18n.restore.selectFile + '</span>';
+        }
+        return;
+      }
+
+      // Confirm restore
+      if (!confirm(i18n.restore.confirm)) {
+        return;
+      }
+
+      var btnText = btn.querySelector('.btn-text');
+      var btnLoading = btn.querySelector('.btn-loading');
+
+      // Show loading state
+      if (btnText) btnText.classList.add('hidden');
+      if (btnLoading) btnLoading.classList.remove('hidden');
+      btn.disabled = true;
+      if (statusEl) statusEl.innerHTML = '';
+
+      // Create FormData and send
+      var formData = new FormData();
+      formData.append('backup', fileInput.files[0]);
+
+      fetch('/backup/restore/' + type, {
+        method: 'POST',
+        body: formData
+      })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        if (btnText) btnText.classList.remove('hidden');
+        if (btnLoading) btnLoading.classList.add('hidden');
+        btn.disabled = false;
+        fileInput.value = '';
+
+        if (data.success) {
+          if (statusEl) {
+            statusEl.innerHTML = '<span class="text-green-600 dark:text-green-400">✓ ' + data.message + '</span>';
+          }
+          // Reload page after database restore
+          if (type === 'database' || type === 'full') {
+            setTimeout(function() { window.location.reload(); }, 2000);
+          }
+        } else {
+          if (statusEl) {
+            statusEl.innerHTML = '<span class="text-red-600 dark:text-red-400">✗ ' + (data.error || i18n.restore.failed) + '</span>';
+          }
+        }
+      })
+      .catch(function(err) {
+        console.error('Restore error:', err);
+        if (btnText) btnText.classList.remove('hidden');
+        if (btnLoading) btnLoading.classList.add('hidden');
+        btn.disabled = false;
+        if (statusEl) {
+          statusEl.innerHTML = '<span class="text-red-600 dark:text-red-400">✗ ' + i18n.restore.failed + '</span>';
+        }
+      });
     }
   </script>
 </body>

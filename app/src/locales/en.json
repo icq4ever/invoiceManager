@@ -167,5 +167,23 @@
     "success_full": "Full backup completed successfully.",
     "error_failed": "Backup failed. Please try again.",
     "error_locked": "Database is currently in use. Please try again in a moment."
+  },
+  "restore": {
+    "title": "Restore",
+    "description": "Restore your database and uploaded files from a backup.",
+    "restore_database": "Restore Database",
+    "restore_uploads": "Restore Uploads",
+    "restore_full": "Restore Full Backup",
+    "select_file": "Select file...",
+    "success_database": "Database restored successfully. Please refresh the page.",
+    "success_uploads": "Uploads restored successfully.",
+    "success_full": "Full backup restored successfully. Please refresh the page.",
+    "error_failed": "Restore failed. Please try again.",
+    "error_no_file": "Please select a backup file.",
+    "error_invalid_db": "Invalid database file. Please select a .db file.",
+    "error_invalid_zip": "Invalid archive file. Please select a .zip file.",
+    "error_invalid_full": "Invalid full backup. The archive must contain invoice.db file.",
+    "confirm": "Are you sure you want to restore? This will replace current data.",
+    "warning": "Warning: Restoring will overwrite existing data!"
   }
 }

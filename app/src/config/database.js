@@ -12,6 +12,18 @@ function getDatabase() {
   return db;
 }
 
+function closeDatabase() {
+  if (db) {
+    db.close();
+    db = null;
+  }
+}
+
+function reinitDatabase() {
+  closeDatabase();
+  return getDatabase();
+}
+
 function initDatabase() {
   const db = getDatabase();
 
@@ -161,4 +173,4 @@ function initDatabase() {
   console.log('Database initialized successfully');
 }
 
-module.exports = { getDatabase, initDatabase };
+module.exports = { getDatabase, initDatabase, closeDatabase, reinitDatabase };
