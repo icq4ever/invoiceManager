@@ -57,19 +57,15 @@
             <% } %>
           </td>
           <td class="px-6 py-4 text-right">
-            <div class="flex justify-end gap-4 flex-wrap max-w-xs ml-auto">
-              <div>
-                <a href="/invoices/<%= inv.id %>" class="text-green-600 dark:text-green-400 hover:underline text-sm"><%= t('invoice.print') %></a>
-                <a href="/invoices/<%= inv.id %>/edit" class="text-blue-600 dark:text-blue-400 hover:underline text-sm ml-3"><%= t('common.edit') %></a>
-              </div>
-              <div>
-                <form method="POST" action="/invoices/<%= inv.id %>/duplicate" class="inline">
-                  <button type="submit" class="text-purple-600 dark:text-purple-400 hover:underline text-sm"><%= t('invoice.duplicate') %></button>
-                </form>
-                <form method="POST" action="/invoices/<%= inv.id %>/delete" class="inline ml-3" onsubmit="return confirm('<%= t('common.confirm_delete') %>')">
-                  <button type="submit" class="text-red-600 dark:text-red-400 hover:underline text-sm"><%= t('common.delete') %></button>
-                </form>
-              </div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 w-fit justify-end ml-auto">
+              <a href="/invoices/<%= inv.id %>" class="text-green-600 dark:text-green-400 hover:underline text-sm"><%= t('invoice.print') %></a>
+              <a href="/invoices/<%= inv.id %>/edit" class="text-blue-600 dark:text-blue-400 hover:underline text-sm"><%= t('common.edit') %></a>
+              <form method="POST" action="/invoices/<%= inv.id %>/duplicate">
+                <button type="submit" class="text-purple-600 dark:text-purple-400 hover:underline text-sm"><%= t('invoice.duplicate') %></button>
+              </form>
+              <form method="POST" action="/invoices/<%= inv.id %>/delete" onsubmit="return confirm('<%= t('common.confirm_delete') %>')">
+                <button type="submit" class="text-red-600 dark:text-red-400 hover:underline text-sm"><%= t('common.delete') %></button>
+              </form>
             </div>
           </td>
         </tr>
