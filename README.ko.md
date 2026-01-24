@@ -435,7 +435,16 @@ docker-compose restart invoice-manager
 
 ## 라이선스
 
-MIT 라이선스 - LICENSE 파일 참고
+이 프로젝트는 **GNU Affero General Public License v3 (AGPL v3)** 라이선스를 따릅니다.
+
+자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.
+
+**이것이 의미하는 바:**
+- ✅ Invoice Manager를 자유롭게 사용하고 수정할 수 있습니다
+- ✅ 자신의 인프라에서 자유롭게 호스팅할 수 있습니다
+- ✅ 수정 사항은 같은 AGPL v3 라이선스로 공유해야 합니다
+- ✅ 이 소프트웨어를 웹 서비스로 사용하면 소스 코드를 공개해야 합니다
+- ❌ 이 코드를 사용해 폐쇄형 상업 서비스를 만들 수 없습니다
 
 ## 기여
 
