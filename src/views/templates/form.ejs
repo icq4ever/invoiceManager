@@ -1,0 +1,47 @@
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+    <%= template && template.id ? t('template.edit') : t('template.new') %>
+  </h1>
+</div>
+
+<% if (error) { %>
+<div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
+  <%= error %>
+</div>
+<% } %>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+  <form method="POST" action="<%= template && template.id ? '/templates/' + template.id : '/templates' %>">
+    <div class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('template.name') %> *</label>
+        <input type="text" name="title" required value="<%= template?.title || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('template.content') %> *</label>
+        <textarea name="content" required rows="4" placeholder="<%= t('template.content_placeholder') %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"><%= template?.content || '' %></textarea>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('template.sort_order') %></label>
+          <input type="number" name="sort_order" value="<%= template?.sort_order || 0 %>" min="0"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex items-center">
+          <label class="flex items-center">
+            <input type="checkbox" name="is_default" value="1" <%= template?.is_default ? 'checked' : '' %>
+              class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"><%= t('template.is_default') %></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end space-x-3">
+      <a href="/templates" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"><%= t('common.save') %></button>
+    </div>
+  </form>
+</div>

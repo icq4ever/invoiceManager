@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" class="<%= theme === 'dark' ? 'dark' : '' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= t('invoice.title') %> <%= invoice.invoice_number %> - <%= t('app.title') %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+    .invoice-content { font-size: 11px; line-height: 1.4; }
+    .invoice-content table { border-collapse: collapse; }
+    .invoice-content td, .invoice-content th { vertical-align: top; }
+    @media print {
+      .no-print { display: none !important; }
+      html, body {
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        font-size: 11px;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      main {
+        max-width: none !important;
+        padding: 10mm 0 0 0 !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+      }
+      .invoice-wrapper {
+        padding: 0 8mm !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+      }
+      .invoice-content {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      * {
+        color: black !important;
+        background: transparent !important;
+      }
+      .text-blue-600 { color: #2563eb !important; }
+      .project-title { font-size: 24px !important; font-weight: 300 !important; overflow-wrap: break-word !important; word-break: keep-all !important; line-height: 1.2 !important; }
+      tr { border-bottom: 1px solid #000 !important; }
+      .border-b { border-bottom: 1px solid #000 !important; }
+      .top-section {
+        display: flex !important;
+        gap: 12rem !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 0 !important;
+        align-items: flex-end !important;
+      }
+      .top-section > div:first-child {
+        flex: 1 !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+      }
+      .supplier-box {
+        page-break-inside: avoid;
+        flex: 0 0 auto !important;
+        width: 45% !important;
+        min-width: auto !important;
+        max-width: none !important;
+      }
+      .summary-section {
+        width: 100% !important;
+        margin: 0 !important;
+      }
+      .summary-section table {
+        width: 100% !important;
+      }
+      .summary-section table tr:last-child td {
+        font-size: inherit !important;
+      }
+      @page {
+        size: A4;
+        margin: 5mm;
+      }
+    }
+  </style>
+  <%
+    const currencySymbols = { 'KRW': '₩', 'USD': '$', 'EUR': '€', 'JPY': '¥', 'GBP': '£', 'CNY': '¥' };
+    const currency = invoice.currency || 'KRW';
+    const currencySymbol = currencySymbols[currency] || '₩';
+    function formatAmount(amount) {
+      if (currency === 'KRW' || currency === 'JPY') {
+        return currencySymbol + new Intl.NumberFormat('ko-KR').format(Math.round(amount));
+      }
+      return currencySymbol + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+    }
+  %>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+  <nav class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center space-x-8">
+          <a href="/dashboard" class="text-xl font-bold text-gray-900 dark:text-white"><%= t('app.name') %></a>
+          <div class="hidden md:flex space-x-4">
+            <a href="/invoices" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">← <%= t('invoice.list') %></a>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="window.print()" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700"><%= t('invoice.print') %> / PDF</button>
+          <a href="/invoices/<%= invoice.id %>/edit" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"><%= t('common.edit') %></a>
+          <div class="relative" id="langDropdown">
+            <button type="button" class="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="toggleLangMenu()">
+              <span class="text-sm font-medium"><%= lang.toUpperCase() %></span>
+            </button>
+            <div id="langMenu" class="hidden absolute right-0 mt-2 w-24 bg-white dark:bg-gray-800 rounded-md shadow-lg border dark:border-gray-700 z-50">
+              <a href="?lang=ko" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">한국어</a>
+              <a href="?lang=en" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">English</a>
+            </div>
+          </div>
+          <button type="button" class="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="toggleTheme()">
+            <svg id="sunIcon" class="h-5 w-5 <%= theme === 'dark' ? 'hidden' : '' %>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg id="moonIcon" class="h-5 w-5 <%= theme === 'dark' ? '' : 'hidden' %>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 invoice-wrapper">
+      <div class="invoice-content text-gray-900 dark:text-white">
+        <!-- Header -->
+        <div class="pb-4">
+          <h1 class="text-2xl font-bold"><%= t('invoice.title') %></h1>
+        </div>
+
+        <!-- Top section: Project/Client + Supplier -->
+        <div class="flex gap-48 mb-4 items-end top-section">
+          <!-- Left: Project & Client -->
+          <div class="flex-1">
+            <% if (invoice.project_name) { %>
+            <h2 class="project-title text-2xl font-light mb-3" style="word-break: keep-all; overflow-wrap: break-word; line-height: 1.2;"><%= invoice.project_name %></h2>
+            <% } %>
+            <table class="w-full" style="border-collapse: collapse;">
+              <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('invoice.recipient') %></td>
+                <td class="py-0.5 pl-3"><%= invoice.client_name || '-' %></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #d1d5db;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('invoice.date') %></td>
+                <td class="py-0.5 pl-3">
+                  <%
+                    const issueDate = invoice.issue_date ? new Date(invoice.issue_date) : null;
+                    const formattedDate = issueDate ? `${issueDate.getFullYear()}년 ${issueDate.getMonth() + 1}월 ${issueDate.getDate()}일` : '-';
+                  %>
+                  <%= formattedDate %>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #d1d5db;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('invoice.validity') %></td>
+                <td class="py-0.5 pl-3"><%= invoice.validity_period || '-' %></td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Right: Supplier/Company -->
+          <div class="supplier-box" style="width: auto; min-width: 40%; max-width: 50%; flex-shrink: 0;">
+            <div class="font-bold text-gray-600 dark:text-gray-400 pb-1 " style="font-size: 13px; font-weight: 800;"><%= t('invoice.supplier') %></div>
+            <table class="w-full" style="border-collapse: collapse;">
+              <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.name') %></td>
+                <td class="py-0.5 pl-3" style="width: 35%;"><%= invoice.company_name || '-' %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2" style="width: 5%;"><%= t('company.representative') %></td>
+                <td class="py-0.5 text-right whitespace-nowrap" style="width: 45%;">
+                  <%= invoice.representative || '-' %>
+                  <% if (invoice.stamp_path) { %>
+                  <img src="<%= invoice.stamp_path %>" alt="서명" class="inline-block h-6 ml-1">
+                  <% } else { %>
+                  (인)
+                  <% } %>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #d1d5db;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.business_number') %></td>
+                <td class="py-0.5 pl-3" colspan="3"><%= invoice.company_business_number || '-' %></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #d1d5db;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.address') %></td>
+                <td class="py-0.5 pl-3" colspan="3"><%= invoice.company_address || '-' %></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #d1d5db;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.phone') %></td>
+                <td class="py-0.5 pl-3" style="width: 35%;"><%= invoice.company_phone || '-' %></td>
+                <td colspan="2"></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #d1d5db;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.email') %></td>
+                <td class="py-0.5 pl-3" style="width: 35%;"><%= invoice.company_email || '-' %></td>
+                <td colspan="2"></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Total amount -->
+        <div class="mt-8 mb-2 flex justify-between items-end border-gray-300 dark:border-gray-600 pb-2">
+          <span class="text-xl font-bold"><%= t('invoice.total_amount') %></span>
+          <span class="text-2xl font-bold text-blue-600 dark:text-blue-400"><%= formatAmount(invoice.total_amount) %></span>
+        </div>
+
+        <!-- Items table -->
+        <table class="w-full mb-4">
+          <thead>
+            <tr class="border-t-2 border-b border-gray-800 dark:border-gray-300">
+              <th class="py-1.5 text-left font-bold" style="width: 25%;"><%= t('invoice.item_title') %></th>
+              <th class="py-1.5 text-left font-bold"><%= t('invoice.item_details') %></th>
+              <th class="py-1.5 text-center font-bold" style="width: 8%;"><%= t('invoice.quantity') %></th>
+              <th class="py-1.5 text-right font-bold" style="width: 10%;"><%= t('invoice.unit_price') %></th>
+              <th class="py-1.5 text-right font-bold" style="width: 18%;"><%= t('invoice.supply_amount') %> (<%= t('invoice.tax_excluded') %>)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% items.forEach(item => { %>
+            <tr class="border-b border-gray-200 dark:border-gray-600">
+              <td class="py-1.5 font-medium"><%= item.title %></td>
+              <td class="py-1.5 whitespace-pre-line text-gray-600 dark:text-gray-400"><%= item.details %></td>
+              <td class="py-1.5 text-center"><%= item.quantity %></td>
+              <td class="py-1.5 text-right"><%= formatAmount(item.unit_price) %></td>
+              <td class="py-1.5 text-right"><%= formatAmount(item.amount) %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+
+        <!-- Summary -->
+        <div class="flex mx-auto justify-end mb-4 summary-section">
+          <table style="width: 100%;">
+            <tr class="border-b border-dashed border-gray-300 dark:border-gray-600">
+              <td class="py-1 text-gray-600 dark:text-gray-400"><%= t('invoice.subtotal') %></td>
+              <td class="py-1 text-right font-medium"><%= formatAmount(invoice.subtotal) %></td>
+            </tr>
+            <tr class="border-b border-dashed border-gray-300 dark:border-gray-600">
+              <td class="py-1 text-gray-600 dark:text-gray-400"><%= t('invoice.tax') %> (<%= invoice.tax_rate %>%)</td>
+              <td class="py-1 text-right font-medium"><%= formatAmount(invoice.tax_amount) %></td>
+            </tr>
+            <tr class="border-t border-gray-800 dark:border-gray-300">
+              <td class="py-1 font-bold text-sm"><%= t('invoice.total') %></td>
+              <td class="py-1 text-right font-bold text-sm"><%= formatAmount(invoice.total_amount) %></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Notes -->
+        <%
+          let notes = [];
+          try {
+            notes = JSON.parse(invoice.notes || '[]');
+          } catch(e) {
+            notes = invoice.notes ? [invoice.notes] : [];
+          }
+        %>
+        <% if (notes.length > 0) { %>
+        <div class="mt-16 border-t border-gray-300 dark:border-gray-600 pt-3 notes-section">
+          <h3 class="font-bold mb-1"><%= t('invoice.notes') %></h3>
+          <ol class="text-gray-600 dark:text-gray-400 space-y-0.5" style="font-size: 10px;">
+            <% notes.forEach((note, i) => { %>
+            <li><%= i + 1 %>. <%= note %></li>
+            <% }); %>
+          </ol>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function toggleLangMenu() {
+      document.getElementById('langMenu').classList.toggle('hidden');
+    }
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('langDropdown');
+      const menu = document.getElementById('langMenu');
+      if (!dropdown.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.contains('dark');
+      if (isDark) {
+        html.classList.remove('dark');
+        document.cookie = 'theme=light;path=/;max-age=31536000';
+        document.getElementById('sunIcon').classList.remove('hidden');
+        document.getElementById('moonIcon').classList.add('hidden');
+      } else {
+        html.classList.add('dark');
+        document.cookie = 'theme=dark;path=/;max-age=31536000';
+        document.getElementById('sunIcon').classList.add('hidden');
+        document.getElementById('moonIcon').classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

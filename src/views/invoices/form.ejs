@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" class="<%= theme === 'dark' ? 'dark' : '' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= invoice.id ? t('invoice.edit') : t('invoice.new') %> - <%= t('app.title') %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+    body { font-family: 'Noto Sans KR', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+  <nav class="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center space-x-8">
+          <a href="/dashboard" class="text-xl font-bold text-gray-900 dark:text-white"><%= t('app.name') %></a>
+          <div class="hidden md:flex space-x-4">
+            <a href="/dashboard" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.dashboard') %></a>
+            <a href="/invoices" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.invoices') %></a>
+            <a href="/companies" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.companies') %></a>
+            <a href="/clients" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.clients') %></a>
+            <a href="/templates" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.templates') %></a>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <!-- Language switcher -->
+          <div class="relative" id="langDropdown">
+            <button type="button" class="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="toggleLangMenu()">
+              <span class="text-sm font-medium"><%= lang.toUpperCase() %></span>
+            </button>
+            <div id="langMenu" class="hidden absolute right-0 mt-2 w-24 bg-white dark:bg-gray-800 rounded-md shadow-lg border dark:border-gray-700 z-50">
+              <a href="?lang=ko" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">한국어</a>
+              <a href="?lang=en" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">English</a>
+            </div>
+          </div>
+          <!-- Theme toggle -->
+          <button type="button" class="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="toggleTheme()">
+            <svg id="sunIcon" class="h-5 w-5 <%= theme === 'dark' ? 'hidden' : '' %>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg id="moonIcon" class="h-5 w-5 <%= theme === 'dark' ? '' : 'hidden' %>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+          <a href="/logout" class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 ml-2"><%= t('nav.logout') %></a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= invoice.id ? t('invoice.edit') : t('invoice.new') %></h1>
+    </div>
+
+    <% if (error) { %>
+    <div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="<%= invoice.id ? '/invoices/' + invoice.id : '/invoices' %>" id="invoiceForm">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white"><%= t('invoice.title') %></h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.number') %></label>
+            <input type="text" name="invoice_number" value="<%= invoice.invoice_number %>" readonly
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.date') %> *</label>
+            <input type="date" name="issue_date" required value="<%= invoice.issue_date %>"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.validity') %></label>
+            <input type="text" name="validity_period" value="<%= invoice.validity_period || t('invoice.validity_default') %>"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.company') %></label>
+            <select name="company_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">-</option>
+              <% companies.forEach(c => { %>
+              <option value="<%= c.id %>" <%= invoice.company_id == c.id ? 'selected' : '' %>><%= c.name %><%= c.is_default ? ` (${t('common.default')})` : '' %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.recipient') %></label>
+            <select name="client_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">-</option>
+              <% clients.forEach(c => { %>
+              <option value="<%= c.id %>" <%= invoice.client_id == c.id ? 'selected' : '' %>><%= c.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.tax_rate') %> (%)</label>
+            <input type="number" name="tax_rate" value="<%= invoice.tax_rate || 10 %>" min="0" max="100" step="0.1"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.currency') %></label>
+            <select name="currency" id="currencySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="KRW" <%= (invoice.currency || 'KRW') === 'KRW' ? 'selected' : '' %>><%= t('invoice.currency_krw') %></option>
+              <option value="USD" <%= invoice.currency === 'USD' ? 'selected' : '' %>><%= t('invoice.currency_usd') %></option>
+              <option value="EUR" <%= invoice.currency === 'EUR' ? 'selected' : '' %>><%= t('invoice.currency_eur') %></option>
+              <option value="JPY" <%= invoice.currency === 'JPY' ? 'selected' : '' %>><%= t('invoice.currency_jpy') %></option>
+              <option value="GBP" <%= invoice.currency === 'GBP' ? 'selected' : '' %>><%= t('invoice.currency_gbp') %></option>
+              <option value="CNY" <%= invoice.currency === 'CNY' ? 'selected' : '' %>><%= t('invoice.currency_cny') %></option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.project_name') %></label>
+            <input type="text" name="project_name" value="<%= invoice.project_name || '' %>"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><%= t('invoice.items') %></h2>
+          <button type="button" id="addItem" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+            + <%= t('invoice.add_item') %>
+          </button>
+        </div>
+
+        <div id="itemsContainer">
+          <% if (items && items.length > 0) { %>
+            <% items.forEach((item, index) => { %>
+            <div class="item-row border dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-700">
+              <div class="flex justify-between items-start mb-3">
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= t('invoice.item_title') %> #<span class="item-number"><%= index + 1 %></span></span>
+                <button type="button" class="remove-item text-red-600 dark:text-red-400 hover:text-red-800 text-sm"><%= t('common.delete') %></button>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.item_title') %> *</label>
+                  <input type="text" name="item_titles" required value="<%= item.title %>"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.quantity') %></label>
+                  <input type="number" name="item_quantities" value="<%= item.quantity %>" min="0" step="0.01"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 item-quantity">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.unit_price') %></label>
+                  <input type="number" name="item_unit_prices" value="<%= item.unit_price %>" min="0" step="1"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 item-price">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.supply_amount') %></label>
+                  <div class="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-900 dark:text-white item-amount font-medium">
+                    ₩<%= new Intl.NumberFormat('ko-KR').format(item.amount) %>
+                  </div>
+                </div>
+                <div class="md:col-span-4">
+                  <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.item_details') %></label>
+                  <textarea name="item_details" rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"><%= item.details %></textarea>
+                </div>
+              </div>
+            </div>
+            <% }); %>
+          <% } %>
+        </div>
+
+        <div class="border-t dark:border-gray-600 pt-4 mt-4">
+          <div class="flex justify-end">
+            <div class="w-64 space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400"><%= t('invoice.subtotal') %></span>
+                <span id="subtotal" class="font-medium text-gray-900 dark:text-white">₩0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400"><%= t('invoice.tax') %> (<span id="taxRateDisplay">10</span>%)</span>
+                <span id="taxAmount" class="font-medium text-gray-900 dark:text-white">₩0</span>
+              </div>
+              <div class="flex justify-between text-lg border-t dark:border-gray-600 pt-2">
+                <span class="font-semibold text-gray-900 dark:text-white"><%= t('invoice.total') %></span>
+                <span id="totalAmount" class="font-bold text-blue-600 dark:text-blue-400">₩0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><%= t('invoice.notes_title') %></h2>
+          <button type="button" id="addNote" class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">
+            + <%= t('invoice.add_note') %>
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"><%= t('invoice.select_template') %></label>
+          <select id="templateSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value=""><%= t('invoice.select_template') %></option>
+            <% templates.forEach(tmpl => { %>
+            <option value="<%= tmpl.content %>"><%= tmpl.title %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div id="notesContainer">
+          <%
+            let notes = [];
+            try {
+              notes = JSON.parse(invoice.notes || '[]');
+            } catch(e) {
+              notes = invoice.notes ? [invoice.notes] : [];
+            }
+          %>
+          <% notes.forEach((note, index) => { %>
+          <div class="note-row flex items-start gap-2 mb-2">
+            <span class="text-gray-500 dark:text-gray-400 mt-2"><%= index + 1 %>.</span>
+            <input type="text" class="note-input flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<%= note %>">
+            <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-2">×</button>
+          </div>
+          <% }); %>
+        </div>
+
+        <input type="hidden" name="notes" id="notesInput" value="<%= invoice.notes %>">
+      </div>
+
+      <div class="flex justify-end space-x-3">
+        <a href="/invoices" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
+        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"><%= t('common.save') %></button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    function toggleLangMenu() {
+      document.getElementById('langMenu').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('langDropdown');
+      const menu = document.getElementById('langMenu');
+      if (!dropdown.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.contains('dark');
+      if (isDark) {
+        html.classList.remove('dark');
+        document.cookie = 'theme=light;path=/;max-age=31536000';
+        document.getElementById('sunIcon').classList.remove('hidden');
+        document.getElementById('moonIcon').classList.add('hidden');
+      } else {
+        html.classList.add('dark');
+        document.cookie = 'theme=dark;path=/;max-age=31536000';
+        document.getElementById('sunIcon').classList.add('hidden');
+        document.getElementById('moonIcon').classList.remove('hidden');
+      }
+    }
+
+    // Item template
+    const itemTemplate = `
+      <div class="item-row border dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-700">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= t('invoice.item_title') %> #<span class="item-number">1</span></span>
+          <button type="button" class="remove-item text-red-600 dark:text-red-400 hover:text-red-800 text-sm"><%= t('common.delete') %></button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.item_title') %> *</label>
+            <input type="text" name="item_titles" required
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.quantity') %></label>
+            <input type="number" name="item_quantities" value="1" min="0" step="0.01"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 item-quantity">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.unit_price') %></label>
+            <input type="number" name="item_unit_prices" value="0" min="0" step="1"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 item-price">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.supply_amount') %></label>
+            <div class="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-900 dark:text-white item-amount font-medium">₩0</div>
+          </div>
+          <div class="md:col-span-4">
+            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.item_details') %></label>
+            <textarea name="item_details" rows="3"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add item
+    document.getElementById('addItem').addEventListener('click', () => {
+      const container = document.getElementById('itemsContainer');
+      container.insertAdjacentHTML('beforeend', itemTemplate);
+      updateItemNumbers();
+      attachItemListeners();
+      calculateTotals();
+    });
+
+    // Remove item
+    function attachItemListeners() {
+      document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.onclick = function() {
+          this.closest('.item-row').remove();
+          updateItemNumbers();
+          calculateTotals();
+        };
+      });
+
+      document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
+        input.oninput = calculateTotals;
+      });
+    }
+
+    // Update item numbers
+    function updateItemNumbers() {
+      document.querySelectorAll('.item-number').forEach((el, i) => {
+        el.textContent = i + 1;
+      });
+    }
+
+    // Currency symbols
+    const currencySymbols = {
+      'KRW': '₩',
+      'USD': '$',
+      'EUR': '€',
+      'JPY': '¥',
+      'GBP': '£',
+      'CNY': '¥'
+    };
+
+    function getCurrencySymbol() {
+      const currency = document.getElementById('currencySelect').value || 'KRW';
+      return currencySymbols[currency] || '₩';
+    }
+
+    function formatCurrency(amount) {
+      const symbol = getCurrencySymbol();
+      const currency = document.getElementById('currencySelect').value || 'KRW';
+      if (currency === 'KRW' || currency === 'JPY') {
+        return symbol + Math.round(amount).toLocaleString('ko-KR');
+      }
+      return symbol + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Calculate totals
+    function calculateTotals() {
+      let subtotal = 0;
+      document.querySelectorAll('.item-row').forEach(row => {
+        const qty = parseFloat(row.querySelector('.item-quantity').value) || 0;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        const amount = qty * price;
+        subtotal += amount;
+        row.querySelector('.item-amount').textContent = formatCurrency(amount);
+      });
+
+      const taxRate = parseFloat(document.querySelector('[name="tax_rate"]').value) || 10;
+      const taxAmount = subtotal * taxRate / 100;
+      const total = subtotal + taxAmount;
+
+      document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+      document.getElementById('taxRateDisplay').textContent = taxRate;
+      document.getElementById('taxAmount').textContent = formatCurrency(taxAmount);
+      document.getElementById('totalAmount').textContent = formatCurrency(total);
+    }
+
+    // Notes
+    function updateNotesInput() {
+      const notes = [];
+      document.querySelectorAll('.note-input').forEach(input => {
+        if (input.value.trim()) notes.push(input.value.trim());
+      });
+      document.getElementById('notesInput').value = JSON.stringify(notes);
+      updateNoteNumbers();
+    }
+
+    function updateNoteNumbers() {
+      document.querySelectorAll('.note-row').forEach((row, i) => {
+        row.querySelector('span').textContent = (i + 1) + '.';
+      });
+    }
+
+    document.getElementById('addNote').addEventListener('click', () => {
+      const container = document.getElementById('notesContainer');
+      const num = container.querySelectorAll('.note-row').length + 1;
+      container.insertAdjacentHTML('beforeend', `
+        <div class="note-row flex items-start gap-2 mb-2">
+          <span class="text-gray-500 dark:text-gray-400 mt-2">${num}.</span>
+          <input type="text" class="note-input flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="">
+          <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-2">×</button>
+        </div>
+      `);
+      attachNoteListeners();
+    });
+
+    document.getElementById('templateSelect').addEventListener('change', function() {
+      if (this.value) {
+        const container = document.getElementById('notesContainer');
+        const num = container.querySelectorAll('.note-row').length + 1;
+        container.insertAdjacentHTML('beforeend', `
+          <div class="note-row flex items-start gap-2 mb-2">
+            <span class="text-gray-500 dark:text-gray-400 mt-2">${num}.</span>
+            <input type="text" class="note-input flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="${this.value}">
+            <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-2">×</button>
+          </div>
+        `);
+        attachNoteListeners();
+        this.value = '';
+      }
+    });
+
+    function attachNoteListeners() {
+      document.querySelectorAll('.remove-note').forEach(btn => {
+        btn.onclick = function() {
+          this.closest('.note-row').remove();
+          updateNoteNumbers();
+        };
+      });
+      document.querySelectorAll('.note-input').forEach(input => {
+        input.oninput = updateNotesInput;
+      });
+    }
+
+    // Tax rate change
+    document.querySelector('[name="tax_rate"]').addEventListener('input', calculateTotals);
+
+    // Currency change
+    document.getElementById('currencySelect').addEventListener('change', calculateTotals);
+
+    // Form submit
+    document.getElementById('invoiceForm').addEventListener('submit', function() {
+      updateNotesInput();
+    });
+
+    // Initialize
+    attachItemListeners();
+    attachNoteListeners();
+    calculateTotals();
+  </script>
+</body>
+</html>

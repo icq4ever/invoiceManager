@@ -1,0 +1,30 @@
+services:
+  invoice:
+    build: .
+    container_name: invoice-manager
+    restart: unless-stopped
+    command: npm run dev
+    ports:
+      - "3006:3000"
+    expose:
+      - "3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - invoice-data:/app/data
+      - invoice-uploads:/app/uploads
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Seoul
+      - NODE_ENV=development
+    networks:
+      - shared
+
+volumes:
+  invoice-data:
+  invoice-uploads:
+
+networks:
+  shared:
+    external: true

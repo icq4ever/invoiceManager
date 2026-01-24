@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" class="<%= theme === 'dark' ? 'dark' : '' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : t('app.title') %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+    body { font-family: 'Noto Sans KR', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+  <% if (user) { %>
+  <nav class="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <a href="/dashboard" class="text-xl font-bold text-gray-900 dark:text-white"><%= t('app.name') %></a>
+          <!-- Desktop menu -->
+          <div class="hidden md:flex ml-8 space-x-4">
+            <a href="/dashboard" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.dashboard') %></a>
+            <a href="/invoices" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.invoices') %></a>
+            <a href="/companies" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.companies') %></a>
+            <a href="/clients" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.clients') %></a>
+            <a href="/templates" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.templates') %></a>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <!-- Language switcher -->
+          <div class="relative" id="langDropdown">
+            <button type="button" class="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="toggleLangMenu()">
+              <span class="text-sm font-medium"><%= lang.toUpperCase() %></span>
+            </button>
+            <div id="langMenu" class="hidden absolute right-0 mt-2 w-24 bg-white dark:bg-gray-800 rounded-md shadow-lg border dark:border-gray-700 z-50">
+              <a href="?lang=ko" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 <%= lang === 'ko' ? 'bg-gray-100 dark:bg-gray-700' : '' %>">한국어</a>
+              <a href="?lang=en" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 <%= lang === 'en' ? 'bg-gray-100 dark:bg-gray-700' : '' %>">English</a>
+            </div>
+          </div>
+          <!-- Theme toggle -->
+          <button type="button" id="themeToggle" class="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="toggleTheme()">
+            <svg id="sunIcon" class="h-5 w-5 <%= theme === 'dark' ? 'hidden' : '' %>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg id="moonIcon" class="h-5 w-5 <%= theme === 'dark' ? '' : 'hidden' %>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+          <span class="hidden sm:inline text-sm text-gray-600 dark:text-gray-400 ml-2"><%= user.username %></span>
+          <a href="/logout" class="hidden md:inline text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 ml-2"><%= t('nav.logout') %></a>
+          <!-- Mobile menu button -->
+          <button type="button" id="mobileMenuBtn" class="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden border-t dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div class="px-4 py-3 space-y-1">
+        <a href="/dashboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.dashboard') %></a>
+        <a href="/invoices" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.invoices') %></a>
+        <a href="/companies" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.companies') %></a>
+        <a href="/clients" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.clients') %></a>
+        <a href="/templates" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.templates') %></a>
+        <div class="border-t dark:border-gray-700 pt-2 mt-2">
+          <a href="/logout" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.logout') %></a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <script>
+    document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
+    });
+
+    function toggleLangMenu() {
+      document.getElementById('langMenu').classList.toggle('hidden');
+    }
+
+    // Close lang menu when clicking outside
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('langDropdown');
+      const menu = document.getElementById('langMenu');
+      if (!dropdown.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.contains('dark');
+
+      if (isDark) {
+        html.classList.remove('dark');
+        document.cookie = 'theme=light;path=/;max-age=31536000';
+        document.getElementById('sunIcon').classList.remove('hidden');
+        document.getElementById('moonIcon').classList.add('hidden');
+      } else {
+        html.classList.add('dark');
+        document.cookie = 'theme=dark;path=/;max-age=31536000';
+        document.getElementById('sunIcon').classList.add('hidden');
+        document.getElementById('moonIcon').classList.remove('hidden');
+      }
+    }
+  </script>
+  <% } %>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <%- body %>
+  </main>
+
+  <% if (typeof scripts !== 'undefined') { %>
+    <%- scripts %>
+  <% } %>
+</body>
+</html>

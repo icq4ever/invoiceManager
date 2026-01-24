@@ -1,0 +1,87 @@
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+    <%= company && company.id ? t('company.edit') : t('company.new') %>
+  </h1>
+</div>
+
+<% if (error) { %>
+<div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
+  <%= error %>
+</div>
+<% } %>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+  <form method="POST" action="<%= company && company.id ? '/companies/' + company.id : '/companies' %>" enctype="multipart/form-data">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.name') %> *</label>
+        <input type="text" name="name" required value="<%= company?.name || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.representative') %></label>
+        <input type="text" name="representative" value="<%= company?.representative || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.business_number') %></label>
+        <input type="text" name="business_number" value="<%= company?.business_number || '' %>" placeholder="000-00-00000"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.phone') %></label>
+        <input type="text" name="phone" value="<%= company?.phone || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.email') %></label>
+        <input type="email" name="email" value="<%= company?.email || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.bank_info') %></label>
+        <input type="text" name="bank_info" value="<%= company?.bank_info || '' %>" placeholder="<%= t('company.bank_placeholder') %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.invoice_prefix') %></label>
+        <input type="text" name="invoice_prefix" value="<%= company?.invoice_prefix || 'INV' %>" placeholder="INV"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= t('company.invoice_prefix_help') %></p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.address') %></label>
+        <input type="text" name="address" value="<%= company?.address || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.logo') %></label>
+        <% if (company?.logo_path) { %>
+        <div class="mb-2"><img src="<%= company.logo_path %>" alt="Logo" class="h-16 object-contain"></div>
+        <% } %>
+        <input type="file" name="logo" accept="image/*"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('company.stamp') %></label>
+        <% if (company?.stamp_path) { %>
+        <div class="mb-2"><img src="<%= company.stamp_path %>" alt="Stamp" class="h-16 object-contain"></div>
+        <% } %>
+        <input type="file" name="stamp" accept="image/*"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div class="md:col-span-2">
+        <label class="flex items-center">
+          <input type="checkbox" name="is_default" value="1" <%= company?.is_default ? 'checked' : '' %>
+            class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"><%= t('company.is_default') %></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end space-x-3">
+      <a href="/companies" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"><%= t('common.save') %></button>
+    </div>
+  </form>
+</div>

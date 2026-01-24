@@ -1,0 +1,83 @@
+<%
+  const currencySymbols = { 'KRW': '₩', 'USD': '$', 'EUR': '€', 'JPY': '¥', 'GBP': '£', 'CNY': '¥' };
+  function formatInvoiceAmount(amount, currency) {
+    const curr = currency || 'KRW';
+    const symbol = currencySymbols[curr] || '₩';
+    if (curr === 'KRW' || curr === 'JPY') {
+      return symbol + new Intl.NumberFormat('ko-KR').format(Math.round(amount));
+    }
+    return symbol + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+  }
+%>
+<div class="mb-8">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= t('dashboard.title') %></h1>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_invoices') %></div>
+    <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.invoices %></div>
+    <a href="/invoices" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_companies') %></div>
+    <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.companies %></div>
+    <a href="/companies" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_clients') %></div>
+    <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.clients %></div>
+    <a href="/clients" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+  </div>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+  <div class="px-6 py-4 border-b dark:border-gray-700 flex justify-between items-center">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><%= t('dashboard.recent_invoices') %></h2>
+    <a href="/invoices/new" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
+      <%= t('dashboard.new_invoice') %>
+    </a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.number') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden sm:table-cell"><%= t('invoice.project') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell"><%= t('invoice.client') %></th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.amount') %></th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.status') %></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+        <% if (stats.recentInvoices.length === 0) { %>
+        <tr>
+          <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400"><%= t('invoice.no_invoices') %></td>
+        </tr>
+        <% } else { %>
+        <% stats.recentInvoices.forEach(inv => { %>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-6 py-4">
+            <a href="/invoices/<%= inv.id %>" class="text-blue-600 dark:text-blue-400 hover:underline"><%= inv.invoice_number %></a>
+          </td>
+          <td class="px-6 py-4 text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= inv.project_name || '-' %></td>
+          <td class="px-6 py-4 text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= inv.client_name || '-' %></td>
+          <td class="px-6 py-4 text-right text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></td>
+          <td class="px-6 py-4 text-center">
+            <% if (inv.status === 'draft') { %>
+            <span class="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300"><%= t('invoice.status_draft') %></span>
+            <% } else if (inv.status === 'sent') { %>
+            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300"><%= t('invoice.status_sent') %></span>
+            <% } else if (inv.status === 'accepted') { %>
+            <span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"><%= t('invoice.status_accepted') %></span>
+            <% } else { %>
+            <span class="px-2 py-1 text-xs rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"><%= t('invoice.status_rejected') %></span>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,33 @@
+{
+  "name": "invoice-manager",
+  "version": "1.0.0",
+  "description": "Korean-style invoice generator and management system",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "hash-password": "node scripts/hash-password.js"
+  },
+  "keywords": [
+    "invoice",
+    "estimate",
+    "quotation",
+    "korean",
+    "pdf"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.7.0",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.1",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

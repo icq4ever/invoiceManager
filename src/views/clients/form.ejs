@@ -1,0 +1,53 @@
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+    <%= client && client.id ? t('client.edit') : t('client.new') %>
+  </h1>
+</div>
+
+<% if (error) { %>
+<div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
+  <%= error %>
+</div>
+<% } %>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+  <form method="POST" action="<%= client && client.id ? '/clients/' + client.id : '/clients' %>">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('client.name') %> *</label>
+        <input type="text" name="name" required value="<%= client?.name || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('client.contact_person') %></label>
+        <input type="text" name="contact_person" value="<%= client?.contact_person || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('client.business_number') %></label>
+        <input type="text" name="business_number" value="<%= client?.business_number || '' %>" placeholder="000-00-00000"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('client.phone') %></label>
+        <input type="text" name="phone" value="<%= client?.phone || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('client.email') %></label>
+        <input type="email" name="email" value="<%= client?.email || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('client.address') %></label>
+        <input type="text" name="address" value="<%= client?.address || '' %>"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end space-x-3">
+      <a href="/clients" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"><%= t('common.save') %></button>
+    </div>
+  </form>
+</div>
