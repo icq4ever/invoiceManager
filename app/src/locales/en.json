@@ -155,5 +155,17 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "backup": {
+    "title": "Backup",
+    "description": "Download backups of your database and uploaded files.",
+    "download_database": "Download Database",
+    "download_uploads": "Download Uploads",
+    "download_full": "Download Full Backup",
+    "success_database": "Database backup completed successfully.",
+    "success_uploads": "Uploads backup completed successfully.",
+    "success_full": "Full backup completed successfully.",
+    "error_failed": "Backup failed. Please try again.",
+    "error_locked": "Database is currently in use. Please try again in a moment."
   }
 }

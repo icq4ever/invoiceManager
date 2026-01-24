@@ -146,5 +146,37 @@
   <% if (typeof scripts !== 'undefined') { %>
     <%- scripts %>
   <% } %>
+
+  <script>
+    // Backup download function (global)
+    function downloadBackup(type) {
+      var btn = document.getElementById('btn-backup-' + type);
+      if (!btn) return;
+
+      var btnText = btn.querySelector('.btn-text');
+      var btnLoading = btn.querySelector('.btn-loading');
+      var statusEl = document.getElementById('backup-status');
+
+      // Show loading state
+      if (btnText) btnText.classList.add('hidden');
+      if (btnLoading) btnLoading.classList.remove('hidden');
+      btn.disabled = true;
+      if (statusEl) statusEl.innerHTML = '';
+
+      // Trigger download
+      window.location.href = '/backup/download/' + type;
+
+      // Reset button after delay
+      setTimeout(function() {
+        if (btnText) btnText.classList.remove('hidden');
+        if (btnLoading) btnLoading.classList.add('hidden');
+        btn.disabled = false;
+        if (statusEl) {
+          statusEl.innerHTML = '<span class="text-green-600 dark:text-green-400">✓ Download started</span>';
+          setTimeout(function() { statusEl.innerHTML = ''; }, 3000);
+        }
+      }, 1500);
+    }
+  </script>
 </body>
 </html>

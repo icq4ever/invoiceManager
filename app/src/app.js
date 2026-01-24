@@ -8,6 +8,7 @@ const { i18nMiddleware } = require('./middleware/i18n');
 
 // Routes
 const authRoutes = require('./routes/auth');
+const backupRoutes = require('./routes/backup');
 const companyRoutes = require('./routes/companies');
 const clientRoutes = require('./routes/clients');
 const templateRoutes = require('./routes/templates');
@@ -59,6 +60,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/', authRoutes);
+app.use('/backup', backupRoutes);
 app.use('/companies', companyRoutes);
 app.use('/clients', clientRoutes);
 app.use('/templates', templateRoutes);

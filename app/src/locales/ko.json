@@ -155,5 +155,17 @@
     "light": "라이트",
     "dark": "다크",
     "system": "시스템"
+  },
+  "backup": {
+    "title": "백업",
+    "description": "데이터베이스와 업로드 파일을 백업할 수 있습니다.",
+    "download_database": "데이터베이스 다운로드",
+    "download_uploads": "업로드 파일 다운로드",
+    "download_full": "전체 백업 다운로드",
+    "success_database": "데이터베이스 백업이 완료되었습니다.",
+    "success_uploads": "업로드 파일 백업이 완료되었습니다.",
+    "success_full": "전체 백업이 완료되었습니다.",
+    "error_failed": "백업 중 오류가 발생했습니다. 다시 시도해주세요.",
+    "error_locked": "데이터베이스가 사용 중입니다. 잠시 후 다시 시도해주세요."
   }
 }
