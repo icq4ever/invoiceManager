@@ -318,7 +318,7 @@ router.post('/:id/duplicate', (req, res) => {
 
     const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY sort_order ASC').all(req.params.id);
 
-    const newInvoiceNumber = generateInvoiceNumber(db);
+    const newInvoiceNumber = generateInvoiceNumber(db, original.company_id);
 
     const result = db.prepare(`
       INSERT INTO invoices (invoice_number, company_id, client_id, project_name, issue_date, validity_period, subtotal, tax_rate, tax_amount, total_amount, notes, status, currency)
