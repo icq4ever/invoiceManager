@@ -2,7 +2,9 @@
 
 다국어 지원(한글/영문)하는 자체 호스팅 기반 견적서 생성 및 관리 웹 애플리케이션입니다.
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)](https://github.com/icq4ever/invoiceManager) | **언어**: [English](README.md) | [한국어](README.ko.md)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)](https://github.com/icq4ever/invoiceManager) 
+
+**언어**: [English](README.md) | [한국어](README.ko.md)
 
 ## 주요 기능
 
