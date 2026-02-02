@@ -65,10 +65,23 @@
 | id | INTEGER PK | Unique identifier |
 | invoice_id | INTEGER FK | Parent invoice |
 | title | TEXT | Item title |
-| details | TEXT | Item details (multiline) |
+| details | TEXT | Item details (multiline, for text mode) |
 | quantity | REAL | Quantity |
 | unit_price | REAL | Unit price |
 | amount | REAL | Total amount (qty × unit_price) |
+| sort_order | INTEGER | Display order |
+| detail_mode | TEXT | 'text' or 'itemized' |
+
+### Invoice Item Details Table (for itemized mode)
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER PK | Unique identifier |
+| item_id | INTEGER FK | Parent invoice item |
+| title | TEXT | Sub-item title |
+| description | TEXT | Sub-item description |
+| quantity | REAL | Quantity |
+| unit_price | REAL | Unit price |
+| amount | REAL | Amount (qty × unit_price) |
 | sort_order | INTEGER | Display order |
 
 ### Note Templates Table
@@ -144,7 +157,20 @@
 | id | INTEGER PK | 고유 ID |
 | invoice_id | INTEGER FK | 부모 견적서 |
 | title | TEXT | 항목명 |
-| details | TEXT | 세부 내역 (여러 줄 가능) |
+| details | TEXT | 세부 내역 (여러 줄 가능, text 모드용) |
+| quantity | REAL | 수량 |
+| unit_price | REAL | 단가 |
+| amount | REAL | 금액 (수량 × 단가) |
+| sort_order | INTEGER | 정렬 순서 |
+| detail_mode | TEXT | 'text' 또는 'itemized' |
+
+### Invoice Item Details (세부항목) 테이블 (itemized 모드용)
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER PK | 고유 ID |
+| item_id | INTEGER FK | 부모 견적 항목 |
+| title | TEXT | 세부항목 타이틀 |
+| description | TEXT | 세부항목 내역 |
 | quantity | REAL | 수량 |
 | unit_price | REAL | 단가 |
 | amount | REAL | 금액 (수량 × 단가) |
@@ -159,3 +185,20 @@
 | is_default | BOOLEAN | 기본 포함 여부 |
 | sort_order | INTEGER | 정렬 순서 |
 | created_at | DATETIME | 생성일 |
+
+### Schema Version (스키마 버전) 테이블
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER PK | 고유 ID |
+| version | TEXT | 스키마 버전 |
+| applied_at | DATETIME | 적용일 |
+| description | TEXT | 설명 |
+
+---
+
+## Schema Version History | 스키마 버전 히스토리
+
+| Version | Date | Description |
+|---------|------|-------------|
+| 1.1.0 | 2026-02 | Added itemized invoice details (detail_mode, invoice_item_details table) |
+| 1.0.0 | - | Initial schema |

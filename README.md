@@ -89,6 +89,19 @@ See [LICENSE](LICENSE) for details.
 2. Create a feature branch
 3. Submit a pull request
 
+## Changelog
+
+### v1.1.0
+- Added itemized invoice details mode (sub-items with individual pricing)
+- Added database schema version tracking
+- Improved invoice view table styling
+
+### v1.0.1
+- Bug fixes and improvements
+
+### v1.0.0
+- Initial release
+
 ---
 
-**Version**: 1.0.0 | Built with Node.js, Express, and Tailwind CSS
+**Version**: 1.1.0 | Built with Node.js, Express, and Tailwind CSS

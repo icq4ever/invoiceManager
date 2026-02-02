@@ -1,6 +1,8 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
+const SCHEMA_VERSION = '1.1.0';
+
 let db = null;
 
 function getDatabase() {
@@ -24,8 +26,37 @@ function reinitDatabase() {
   return getDatabase();
 }
 
+function getSchemaVersion(db) {
+  try {
+    const result = db.prepare('SELECT version FROM schema_version ORDER BY id DESC LIMIT 1').get();
+    return result ? result.version : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setSchemaVersion(db, version, description) {
+  db.prepare(`
+    INSERT INTO schema_version (version, description)
+    VALUES (?, ?)
+  `).run(version, description);
+  console.log(`Schema updated to version ${version}: ${description}`);
+}
+
 function initDatabase() {
   const db = getDatabase();
+
+  // Schema version table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS schema_version (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      version TEXT NOT NULL,
+      applied_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      description TEXT
+    )
+  `);
+
+  const currentVersion = getSchemaVersion(db);
 
   // Companies table
   db.exec(`
@@ -200,7 +231,15 @@ function initDatabase() {
     insertTemplate.run('비용 조정 안내', '최종 비용은 실제 작업 난이도에 따라 조정될 수 있습니다.', 0, 3);
   }
 
-  console.log('Database initialized successfully');
+  // Record schema version if not set or different
+  if (currentVersion !== SCHEMA_VERSION) {
+    const description = currentVersion
+      ? `Upgraded from ${currentVersion}`
+      : 'Initial schema with itemized invoice details support';
+    setSchemaVersion(db, SCHEMA_VERSION, description);
+  }
+
+  console.log(`Database initialized successfully (schema v${SCHEMA_VERSION})`);
 }
 
-module.exports = { getDatabase, initDatabase, closeDatabase, reinitDatabase };
+module.exports = { getDatabase, initDatabase, closeDatabase, reinitDatabase, getSchemaVersion, SCHEMA_VERSION };
