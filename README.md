@@ -108,6 +108,7 @@ See [LICENSE](LICENSE) for details.
 - Resizable table columns in invoice preview - drag column headers to adjust widths (saved per invoice)
 - Duplicate button in invoice preview page
 - Dynamic version badge in navigation header (from package.json)
+- Fixed PDF/browser preview style inconsistency (border colors and item group separators)
 
 ### v1.0.1
 - Fixed invoice prefix not being duplicated when copying invoices
