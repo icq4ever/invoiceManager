@@ -92,7 +92,14 @@
     "currency_eur": "Euro (€)",
     "currency_jpy": "Japanese Yen (¥)",
     "currency_gbp": "British Pound (£)",
-    "currency_cny": "Chinese Yuan (¥)"
+    "currency_cny": "Chinese Yuan (¥)",
+    "detail_mode_text": "Simple text",
+    "detail_mode_itemized": "Itemized details",
+    "sub_item": "Sub-item",
+    "add_sub_item": "Add sub-item",
+    "sub_title": "Title",
+    "sub_description": "Description",
+    "sub_total": "Item total"
   },
   "company": {
     "title": "Companies",

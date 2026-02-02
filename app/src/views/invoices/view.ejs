@@ -264,6 +264,29 @@
           </thead>
           <tbody>
             <% items.forEach(item => { %>
+            <% if (item.detail_mode === 'itemized' && item.subItems && item.subItems.length > 0) { %>
+            <!-- Itemized mode: show sub-items -->
+            <tr class="border-b border-gray-200 dark:border-gray-600">
+              <td class="py-1.5 font-medium align-top" rowspan="<%= item.subItems.length + 1 %>"><%= item.title %></td>
+              <td class="py-1"><% if (item.subItems[0].title) { %><span class="font-medium"><%= item.subItems[0].title %></span><span class="text-gray-600 dark:text-gray-400"> : <%= item.subItems[0].description %></span><% } else { %><span class="text-gray-600 dark:text-gray-400">- <%= item.subItems[0].description %></span><% } %></td>
+              <td class="py-1 text-center"><%= item.subItems[0].quantity %></td>
+              <td class="py-1 text-right"><%= formatAmount(item.subItems[0].unit_price) %></td>
+              <td class="py-1 text-right"><%= formatAmount(item.subItems[0].amount) %></td>
+            </tr>
+            <% for (let si = 1; si < item.subItems.length; si++) { %>
+            <tr class="border-b border-gray-100 dark:border-gray-700">
+              <td class="py-1"><% if (item.subItems[si].title) { %><span class="font-medium"><%= item.subItems[si].title %></span><span class="text-gray-600 dark:text-gray-400"> : <%= item.subItems[si].description %></span><% } else { %><span class="text-gray-600 dark:text-gray-400">- <%= item.subItems[si].description %></span><% } %></td>
+              <td class="py-1 text-center"><%= item.subItems[si].quantity %></td>
+              <td class="py-1 text-right"><%= formatAmount(item.subItems[si].unit_price) %></td>
+              <td class="py-1 text-right"><%= formatAmount(item.subItems[si].amount) %></td>
+            </tr>
+            <% } %>
+            <tr class="border-b border-gray-200 dark:border-gray-600">
+              <td class="py-1 text-right text-gray-500 dark:text-gray-400 text-xs" colspan="3"><%= t('invoice.sub_total') %></td>
+              <td class="py-1 text-right font-medium"><%= formatAmount(item.amount) %></td>
+            </tr>
+            <% } else { %>
+            <!-- Text mode: show details as before -->
             <tr class="border-b border-gray-200 dark:border-gray-600">
               <td class="py-1.5 font-medium"><%= item.title %></td>
               <td class="py-1.5 whitespace-pre-line text-gray-600 dark:text-gray-400"><%= item.details %></td>
@@ -271,6 +294,7 @@
               <td class="py-1.5 text-right"><%= formatAmount(item.unit_price) %></td>
               <td class="py-1.5 text-right"><%= formatAmount(item.amount) %></td>
             </tr>
+            <% } %>
             <% }); %>
           </tbody>
         </table>

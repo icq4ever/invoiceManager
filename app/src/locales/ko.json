@@ -92,7 +92,14 @@
     "currency_eur": "유로 (€)",
     "currency_jpy": "일본 엔 (¥)",
     "currency_gbp": "영국 파운드 (£)",
-    "currency_cny": "중국 위안 (¥)"
+    "currency_cny": "중국 위안 (¥)",
+    "detail_mode_text": "단순 텍스트",
+    "detail_mode_itemized": "세부항목별 입력",
+    "sub_item": "세부항목",
+    "add_sub_item": "세부항목 추가",
+    "sub_title": "타이틀",
+    "sub_description": "내역",
+    "sub_total": "항목 합계"
   },
   "company": {
     "title": "회사 정보",

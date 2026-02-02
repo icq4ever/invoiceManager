@@ -145,6 +145,36 @@ function initDatabase() {
     )
   `);
 
+  // Add detail_mode column if not exists (migration)
+  // 'text' = Option A (simple text details)
+  // 'itemized' = Option B (itemized sub-details with prices)
+  try {
+    db.exec(`ALTER TABLE invoice_items ADD COLUMN detail_mode TEXT DEFAULT 'text'`);
+  } catch (e) {
+    // Column already exists
+  }
+
+  // Invoice item details table (for itemized mode)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS invoice_item_details (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      item_id INTEGER NOT NULL,
+      description TEXT NOT NULL,
+      quantity REAL DEFAULT 1,
+      unit_price REAL DEFAULT 0,
+      amount REAL DEFAULT 0,
+      sort_order INTEGER DEFAULT 0,
+      FOREIGN KEY (item_id) REFERENCES invoice_items(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Add title column to invoice_item_details if not exists (migration)
+  try {
+    db.exec(`ALTER TABLE invoice_item_details ADD COLUMN title TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+
   // Note templates table
   db.exec(`
     CREATE TABLE IF NOT EXISTS note_templates (

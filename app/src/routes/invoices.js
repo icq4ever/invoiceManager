@@ -90,7 +90,7 @@ router.post('/', (req, res) => {
   const {
     invoice_number, company_id, client_id, project_name,
     issue_date, validity_period, tax_rate, notes, currency,
-    item_titles, item_details, item_quantities, item_unit_prices
+    item_titles, item_details, item_quantities, item_unit_prices, item_detail_modes
   } = req.body;
 
   try {
@@ -103,21 +103,59 @@ router.post('/', (req, res) => {
       const details = Array.isArray(item_details) ? item_details : [item_details];
       const quantities = Array.isArray(item_quantities) ? item_quantities : [item_quantities];
       const unitPrices = Array.isArray(item_unit_prices) ? item_unit_prices : [item_unit_prices];
+      const detailModes = Array.isArray(item_detail_modes) ? item_detail_modes : [item_detail_modes];
 
       for (let i = 0; i < titles.length; i++) {
         if (titles[i]) {
-          const qty = parseFloat(quantities[i]) || 1;
-          const price = parseFloat(unitPrices[i]) || 0;
-          const amount = qty * price;
+          const mode = detailModes[i] || 'text';
+          let amount = 0;
+          let subItems = [];
+
+          if (mode === 'itemized') {
+            // Get sub-items for this item
+            const subTitles = req.body[`sub_titles_${i}`] || [];
+            const subDescriptions = req.body[`sub_descriptions_${i}`] || [];
+            const subQuantities = req.body[`sub_quantities_${i}`] || [];
+            const subPrices = req.body[`sub_prices_${i}`] || [];
+
+            const titles_sub = Array.isArray(subTitles) ? subTitles : [subTitles];
+            const descs = Array.isArray(subDescriptions) ? subDescriptions : [subDescriptions];
+            const qtys = Array.isArray(subQuantities) ? subQuantities : [subQuantities];
+            const prices = Array.isArray(subPrices) ? subPrices : [subPrices];
+
+            for (let j = 0; j < descs.length; j++) {
+              if (descs[j] || titles_sub[j]) {
+                const subQty = parseFloat(qtys[j]) || 1;
+                const subPrice = parseFloat(prices[j]) || 0;
+                const subAmount = subQty * subPrice;
+                amount += subAmount;
+                subItems.push({
+                  title: titles_sub[j] || '',
+                  description: descs[j] || '',
+                  quantity: subQty,
+                  unit_price: subPrice,
+                  amount: subAmount,
+                  sort_order: j
+                });
+              }
+            }
+          } else {
+            const qty = parseFloat(quantities[i]) || 1;
+            const price = parseFloat(unitPrices[i]) || 0;
+            amount = qty * price;
+          }
+
           subtotal += amount;
 
           items.push({
             title: titles[i],
-            details: details[i] || '',
-            quantity: qty,
-            unit_price: price,
+            details: mode === 'text' ? (details[i] || '') : '',
+            quantity: mode === 'text' ? (parseFloat(quantities[i]) || 1) : 1,
+            unit_price: mode === 'text' ? (parseFloat(unitPrices[i]) || 0) : amount,
             amount,
-            sort_order: i
+            sort_order: i,
+            detail_mode: mode,
+            subItems
           });
         }
       }
@@ -136,12 +174,24 @@ router.post('/', (req, res) => {
 
     // Insert items
     const insertItem = db.prepare(`
-      INSERT INTO invoice_items (invoice_id, title, details, quantity, unit_price, amount, sort_order)
+      INSERT INTO invoice_items (invoice_id, title, details, quantity, unit_price, amount, sort_order, detail_mode)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const insertSubItem = db.prepare(`
+      INSERT INTO invoice_item_details (item_id, title, description, quantity, unit_price, amount, sort_order)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     for (const item of items) {
-      insertItem.run(invoiceId, item.title, item.details, item.quantity, item.unit_price, item.amount, item.sort_order);
+      const itemResult = insertItem.run(invoiceId, item.title, item.details, item.quantity, item.unit_price, item.amount, item.sort_order, item.detail_mode);
+
+      if (item.detail_mode === 'itemized' && item.subItems.length > 0) {
+        const itemId = itemResult.lastInsertRowid;
+        for (const sub of item.subItems) {
+          insertSubItem.run(itemId, sub.title || '', sub.description, sub.quantity, sub.unit_price, sub.amount, sub.sort_order);
+        }
+      }
     }
 
     res.redirect(`/invoices/${invoiceId}`);
@@ -192,6 +242,15 @@ router.get('/:id', (req, res) => {
 
   const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY sort_order ASC').all(req.params.id);
 
+  // Load sub-items for itemized items
+  for (const item of items) {
+    if (item.detail_mode === 'itemized') {
+      item.subItems = db.prepare('SELECT * FROM invoice_item_details WHERE item_id = ? ORDER BY sort_order ASC').all(item.id);
+    } else {
+      item.subItems = [];
+    }
+  }
+
   res.render('invoices/view', { invoice, items, layout: false });
 });
 
@@ -205,6 +264,16 @@ router.get('/:id/edit', (req, res) => {
   }
 
   const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY sort_order ASC').all(req.params.id);
+
+  // Load sub-items for itemized items
+  for (const item of items) {
+    if (item.detail_mode === 'itemized') {
+      item.subItems = db.prepare('SELECT * FROM invoice_item_details WHERE item_id = ? ORDER BY sort_order ASC').all(item.id);
+    } else {
+      item.subItems = [];
+    }
+  }
+
   const companies = db.prepare('SELECT * FROM companies ORDER BY is_default DESC, name ASC').all();
   const clients = db.prepare('SELECT * FROM clients ORDER BY name ASC').all();
   const templates = db.prepare('SELECT * FROM note_templates ORDER BY sort_order ASC').all();
@@ -227,7 +296,7 @@ router.post('/:id', (req, res) => {
   const {
     invoice_number, company_id, client_id, project_name,
     issue_date, validity_period, tax_rate, notes, currency,
-    item_titles, item_details, item_quantities, item_unit_prices
+    item_titles, item_details, item_quantities, item_unit_prices, item_detail_modes
   } = req.body;
 
   try {
@@ -240,21 +309,59 @@ router.post('/:id', (req, res) => {
       const details = Array.isArray(item_details) ? item_details : [item_details];
       const quantities = Array.isArray(item_quantities) ? item_quantities : [item_quantities];
       const unitPrices = Array.isArray(item_unit_prices) ? item_unit_prices : [item_unit_prices];
+      const detailModes = Array.isArray(item_detail_modes) ? item_detail_modes : [item_detail_modes];
 
       for (let i = 0; i < titles.length; i++) {
         if (titles[i]) {
-          const qty = parseFloat(quantities[i]) || 1;
-          const price = parseFloat(unitPrices[i]) || 0;
-          const amount = qty * price;
+          const mode = detailModes[i] || 'text';
+          let amount = 0;
+          let subItems = [];
+
+          if (mode === 'itemized') {
+            // Get sub-items for this item
+            const subTitles = req.body[`sub_titles_${i}`] || [];
+            const subDescriptions = req.body[`sub_descriptions_${i}`] || [];
+            const subQuantities = req.body[`sub_quantities_${i}`] || [];
+            const subPrices = req.body[`sub_prices_${i}`] || [];
+
+            const titles_sub = Array.isArray(subTitles) ? subTitles : [subTitles];
+            const descs = Array.isArray(subDescriptions) ? subDescriptions : [subDescriptions];
+            const qtys = Array.isArray(subQuantities) ? subQuantities : [subQuantities];
+            const prices = Array.isArray(subPrices) ? subPrices : [subPrices];
+
+            for (let j = 0; j < descs.length; j++) {
+              if (descs[j] || titles_sub[j]) {
+                const subQty = parseFloat(qtys[j]) || 1;
+                const subPrice = parseFloat(prices[j]) || 0;
+                const subAmount = subQty * subPrice;
+                amount += subAmount;
+                subItems.push({
+                  title: titles_sub[j] || '',
+                  description: descs[j] || '',
+                  quantity: subQty,
+                  unit_price: subPrice,
+                  amount: subAmount,
+                  sort_order: j
+                });
+              }
+            }
+          } else {
+            const qty = parseFloat(quantities[i]) || 1;
+            const price = parseFloat(unitPrices[i]) || 0;
+            amount = qty * price;
+          }
+
           subtotal += amount;
 
           items.push({
             title: titles[i],
-            details: details[i] || '',
-            quantity: qty,
-            unit_price: price,
+            details: mode === 'text' ? (details[i] || '') : '',
+            quantity: mode === 'text' ? (parseFloat(quantities[i]) || 1) : 1,
+            unit_price: mode === 'text' ? (parseFloat(unitPrices[i]) || 0) : amount,
             amount,
-            sort_order: i
+            sort_order: i,
+            detail_mode: mode,
+            subItems
           });
         }
       }
@@ -273,16 +380,28 @@ router.post('/:id', (req, res) => {
     `).run(invoice_number, company_id || null, client_id || null, project_name,
            issue_date, validity_period, subtotal, tax_rate, taxAmount, totalAmount, notes, currency || 'KRW', invoiceId);
 
-    // Delete old items and insert new ones
+    // Delete old items (cascade deletes sub-items)
     db.prepare('DELETE FROM invoice_items WHERE invoice_id = ?').run(invoiceId);
 
     const insertItem = db.prepare(`
-      INSERT INTO invoice_items (invoice_id, title, details, quantity, unit_price, amount, sort_order)
+      INSERT INTO invoice_items (invoice_id, title, details, quantity, unit_price, amount, sort_order, detail_mode)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const insertSubItem = db.prepare(`
+      INSERT INTO invoice_item_details (item_id, title, description, quantity, unit_price, amount, sort_order)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     for (const item of items) {
-      insertItem.run(invoiceId, item.title, item.details, item.quantity, item.unit_price, item.amount, item.sort_order);
+      const itemResult = insertItem.run(invoiceId, item.title, item.details, item.quantity, item.unit_price, item.amount, item.sort_order, item.detail_mode);
+
+      if (item.detail_mode === 'itemized' && item.subItems.length > 0) {
+        const itemId = itemResult.lastInsertRowid;
+        for (const sub of item.subItems) {
+          insertSubItem.run(itemId, sub.title || '', sub.description, sub.quantity, sub.unit_price, sub.amount, sub.sort_order);
+        }
+      }
     }
 
     res.redirect(`/invoices/${invoiceId}`);
@@ -330,12 +449,26 @@ router.post('/:id/duplicate', (req, res) => {
     const newInvoiceId = result.lastInsertRowid;
 
     const insertItem = db.prepare(`
-      INSERT INTO invoice_items (invoice_id, title, details, quantity, unit_price, amount, sort_order)
+      INSERT INTO invoice_items (invoice_id, title, details, quantity, unit_price, amount, sort_order, detail_mode)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const insertSubItem = db.prepare(`
+      INSERT INTO invoice_item_details (item_id, title, description, quantity, unit_price, amount, sort_order)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     for (const item of items) {
-      insertItem.run(newInvoiceId, item.title, item.details, item.quantity, item.unit_price, item.amount, item.sort_order);
+      const itemResult = insertItem.run(newInvoiceId, item.title, item.details, item.quantity, item.unit_price, item.amount, item.sort_order, item.detail_mode || 'text');
+
+      // Copy sub-items if itemized mode
+      if (item.detail_mode === 'itemized') {
+        const newItemId = itemResult.lastInsertRowid;
+        const subItems = db.prepare('SELECT * FROM invoice_item_details WHERE item_id = ? ORDER BY sort_order ASC').all(item.id);
+        for (const sub of subItems) {
+          insertSubItem.run(newItemId, sub.title || '', sub.description, sub.quantity, sub.unit_price, sub.amount, sub.sort_order);
+        }
+      }
     }
 
     res.redirect(`/invoices/${newInvoiceId}/edit`);
