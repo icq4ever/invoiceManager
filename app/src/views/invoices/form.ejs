@@ -62,27 +62,32 @@
     <% } %>
 
     <form method="POST" action="<%= invoice.id ? '/invoices/' + invoice.id : '/invoices' %>" id="invoiceForm">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white"><%= t('invoice.title') %></h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4 mb-4">
+        <h2 class="text-base font-semibold mb-3 text-gray-900 dark:text-white"><%= t('invoice.title') %></h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.number') %></label>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.number') %></label>
             <input type="text" name="invoice_number" value="<%= invoice.invoice_number %>" readonly
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.date') %> *</label>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.date') %> *</label>
             <input type="date" name="issue_date" required value="<%= invoice.issue_date %>"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.validity') %></label>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.validity') %></label>
             <input type="text" name="validity_period" value="<%= invoice.validity_period || t('invoice.validity_default') %>"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.company') %></label>
-            <select name="company_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.tax_rate') %> (%)</label>
+            <input type="number" name="tax_rate" value="<%= invoice.tax_rate || 10 %>" min="0" max="100" step="0.1"
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.company') %></label>
+            <select name="company_id" class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
               <option value="">-</option>
               <% companies.forEach(c => { %>
               <option value="<%= c.id %>" <%= invoice.company_id == c.id ? 'selected' : '' %>><%= c.name %><%= c.is_default ? ` (${t('common.default')})` : '' %></option>
@@ -90,8 +95,8 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.recipient') %></label>
-            <select name="client_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.recipient') %></label>
+            <select name="client_id" class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
               <option value="">-</option>
               <% clients.forEach(c => { %>
               <option value="<%= c.id %>" <%= invoice.client_id == c.id ? 'selected' : '' %>><%= c.name %></option>
@@ -99,13 +104,8 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.tax_rate') %> (%)</label>
-            <input type="number" name="tax_rate" value="<%= invoice.tax_rate || 10 %>" min="0" max="100" step="0.1"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.currency') %></label>
-            <select name="currency" id="currencySelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.currency') %></label>
+            <select name="currency" id="currencySelect" class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
               <option value="KRW" <%= (invoice.currency || 'KRW') === 'KRW' ? 'selected' : '' %>><%= t('invoice.currency_krw') %></option>
               <option value="USD" <%= invoice.currency === 'USD' ? 'selected' : '' %>><%= t('invoice.currency_usd') %></option>
               <option value="EUR" <%= invoice.currency === 'EUR' ? 'selected' : '' %>><%= t('invoice.currency_eur') %></option>
@@ -114,15 +114,15 @@
               <option value="CNY" <%= invoice.currency === 'CNY' ? 'selected' : '' %>><%= t('invoice.currency_cny') %></option>
             </select>
           </div>
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('invoice.project_name') %></label>
+          <div class="col-span-2 md:col-span-1">
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.project_name') %></label>
             <input type="text" name="project_name" id="projectNameInput" value="<%= invoice.project_name || '' %>"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="(Shift+Enter to add line break)">
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="(Shift+Enter)">
           </div>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-6 mb-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><%= t('invoice.items') %></h2>
           <button type="button" id="addItem" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
@@ -133,7 +133,7 @@
         <div id="itemsContainer">
           <% if (items && items.length > 0) { %>
             <% items.forEach((item, index) => { %>
-            <div class="item-row border dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-700" data-index="<%= index %>">
+            <div class="item-row border dark:border-gray-600 rounded-lg p-2 sm:p-4 mb-4 bg-gray-50 dark:bg-gray-700" data-index="<%= index %>">
               <div class="flex justify-between items-start mb-3">
                 <span class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= t('invoice.item_title') %> #<span class="item-number"><%= index + 1 %></span></span>
                 <button type="button" class="remove-item text-red-600 dark:text-red-400 hover:text-red-800 text-sm"><%= t('common.delete') %></button>
@@ -189,36 +189,31 @@
               <!-- Itemized Mode (Option B) -->
               <div class="itemized-mode-section <%= item.detail_mode !== 'itemized' ? 'hidden' : '' %>">
                 <div class="sub-items-container border dark:border-gray-500 rounded-md overflow-hidden">
-                  <div class="grid grid-cols-12 gap-2 bg-gray-200 dark:bg-gray-600 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <div class="col-span-2"><%= t('invoice.sub_title') %></div>
-                    <div class="col-span-4"><%= t('invoice.sub_description') %></div>
-                    <div class="col-span-2 text-center"><%= t('invoice.quantity') %></div>
-                    <div class="col-span-2 text-right"><%= t('invoice.unit_price') %></div>
-                    <div class="col-span-2 text-right"><%= t('invoice.supply_amount') %></div>
+                  <!-- Desktop header -->
+                  <div class="hidden sm:grid grid-cols-12 gap-2 bg-gray-200 dark:bg-gray-600 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300">
+                    <div class="col-span-2">타이틀</div>
+                    <div class="col-span-4">내역</div>
+                    <div class="col-span-2 text-center">수량</div>
+                    <div class="col-span-2 text-right">단가</div>
+                    <div class="col-span-2 text-right">금액</div>
                   </div>
                   <div class="sub-items-list">
                     <% if (item.subItems && item.subItems.length > 0) { %>
                       <% item.subItems.forEach((sub, subIndex) => { %>
-                      <div class="sub-item-row grid grid-cols-12 gap-2 px-3 py-2 border-b dark:border-gray-600 items-center">
-                        <div class="col-span-2">
-                          <input type="text" name="sub_titles_<%= index %>[]" value="<%= sub.title || '' %>" placeholder="<%= t('invoice.sub_title') %>"
-                            class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium sub-title">
-                        </div>
-                        <div class="col-span-4">
-                          <input type="text" name="sub_descriptions_<%= index %>[]" value="<%= sub.description %>"
-                            class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-description">
-                        </div>
-                        <div class="col-span-2">
+                      <div class="sub-item-row flex flex-wrap sm:grid sm:grid-cols-12 gap-2 p-2 sm:px-3 sm:py-2 border-b dark:border-gray-600 items-center">
+                        <input type="text" name="sub_titles_<%= index %>[]" value="<%= sub.title || '' %>" placeholder="타이틀"
+                          class="w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium placeholder:font-bold sub-title">
+                        <input type="text" name="sub_descriptions_<%= index %>[]" value="<%= sub.description %>" placeholder="내역"
+                          class="w-full sm:col-span-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:font-normal sub-description">
+                        <div class="flex w-full sm:contents gap-2">
                           <input type="number" name="sub_quantities_<%= index %>[]" value="<%= sub.quantity %>" min="0" step="0.01"
-                            class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-quantity">
-                        </div>
-                        <div class="col-span-2">
+                            class="w-20 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-quantity">
                           <input type="number" name="sub_prices_<%= index %>[]" value="<%= sub.unit_price %>" min="0" step="1"
-                            class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-price">
+                            class="flex-1 min-w-0 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-price">
                         </div>
-                        <div class="col-span-1 text-right text-sm text-gray-900 dark:text-white sub-amount"><%= new Intl.NumberFormat('ko-KR').format(sub.amount) %></div>
-                        <div class="col-span-1 text-right">
-                          <button type="button" class="remove-sub-item text-red-500 hover:text-red-700 text-lg">×</button>
+                        <div class="flex w-full sm:contents justify-end gap-2 items-center">
+                          <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-sm font-medium sm:col-span-1 sub-amount"><%= ({KRW:'₩',USD:'$',EUR:'€',JPY:'¥',GBP:'£',CNY:'¥'})[invoice.currency||'KRW'] %><%= new Intl.NumberFormat('ko-KR').format(sub.amount) %></span>
+                          <button type="button" class="remove-sub-item text-red-500 hover:text-red-700 sm:col-span-1 sm:text-right">×</button>
                         </div>
                       </div>
                       <% }); %>
@@ -240,9 +235,9 @@
           <% } %>
         </div>
 
-        <div class="border-t dark:border-gray-600 pt-4 mt-4">
+        <div class="border-t dark:border-gray-600 pt-3 mt-3">
           <div class="flex justify-end">
-            <div class="w-64 space-y-2">
+            <div class="w-48 space-y-1 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-600 dark:text-gray-400"><%= t('invoice.subtotal') %></span>
                 <span id="subtotal" class="font-medium text-gray-900 dark:text-white">₩0</span>
@@ -251,7 +246,7 @@
                 <span class="text-gray-600 dark:text-gray-400"><%= t('invoice.tax') %> (<span id="taxRateDisplay">10</span>%)</span>
                 <span id="taxAmount" class="font-medium text-gray-900 dark:text-white">₩0</span>
               </div>
-              <div class="flex justify-between text-lg border-t dark:border-gray-600 pt-2">
+              <div class="flex justify-between text-base border-t dark:border-gray-600 pt-1">
                 <span class="font-semibold text-gray-900 dark:text-white"><%= t('invoice.total') %></span>
                 <span id="totalAmount" class="font-bold text-blue-600 dark:text-blue-400">₩0</span>
               </div>
@@ -260,17 +255,17 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><%= t('invoice.notes_title') %></h2>
-          <button type="button" id="addNote" class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4 mb-4">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white"><%= t('invoice.notes_title') %></h2>
+          <button type="button" id="addNote" class="bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-700">
             + <%= t('invoice.add_note') %>
           </button>
         </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"><%= t('invoice.select_template') %></label>
-          <select id="templateSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="mb-3">
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.select_template') %></label>
+          <select id="templateSelect" class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
             <option value=""><%= t('invoice.select_template') %></option>
             <% templates.forEach(tmpl => { %>
             <option value="<%= tmpl.content %>"><%= tmpl.title %></option>
@@ -288,10 +283,10 @@
             }
           %>
           <% notes.forEach((note, index) => { %>
-          <div class="note-row flex items-start gap-2 mb-2">
-            <span class="text-gray-500 dark:text-gray-400 mt-2"><%= index + 1 %>.</span>
-            <input type="text" class="note-input flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<%= note %>" placeholder="(Shift+Enter to add line break)">
-            <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-2">×</button>
+          <div class="note-row flex items-start gap-1 mb-1">
+            <span class="text-xs text-gray-500 dark:text-gray-400 mt-1.5 w-4"><%= index + 1 %>.</span>
+            <input type="text" class="note-input flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="<%= note %>" placeholder="(Shift+Enter)">
+            <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-1 text-sm">×</button>
           </div>
           <% }); %>
         </div>
@@ -299,9 +294,9 @@
         <input type="hidden" name="notes" id="notesInput" value="<%= invoice.notes %>">
       </div>
 
-      <div class="flex justify-end space-x-3">
-        <a href="/invoices" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
-        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"><%= t('common.save') %></button>
+      <div class="flex justify-end space-x-2">
+        <a href="/invoices" class="px-4 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
+        <button type="submit" class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"><%= t('common.save') %></button>
       </div>
     </form>
   </main>
@@ -309,7 +304,7 @@
   <!-- Footer -->
   <footer class="mt-auto py-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-      <div>Invoice Manager v<%= appVersion %></div>
+      <div>InvoiceManager v<%= appVersion %></div>
       <div class="flex items-center gap-4">
         <a href="https://github.com/icq4ever/invoiceManager" target="_blank" rel="noopener noreferrer" class="hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1">
           <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -360,7 +355,7 @@
     let itemCounter = <%= items ? items.length : 0 %>;
     function getItemTemplate(index) {
       return `
-      <div class="item-row border dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-700" data-index="${index}">
+      <div class="item-row border dark:border-gray-600 rounded-lg p-2 sm:p-4 mb-4 bg-gray-50 dark:bg-gray-700" data-index="${index}">
         <div class="flex justify-between items-start mb-3">
           <span class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= t('invoice.item_title') %> #<span class="item-number">1</span></span>
           <button type="button" class="remove-item text-red-600 dark:text-red-400 hover:text-red-800 text-sm"><%= t('common.delete') %></button>
@@ -414,12 +409,12 @@
         <!-- Itemized Mode (Option B) -->
         <div class="itemized-mode-section hidden">
           <div class="sub-items-container border dark:border-gray-500 rounded-md overflow-hidden">
-            <div class="grid grid-cols-12 gap-2 bg-gray-200 dark:bg-gray-600 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <div class="col-span-2"><%= t('invoice.sub_title') %></div>
-              <div class="col-span-4"><%= t('invoice.sub_description') %></div>
-              <div class="col-span-2 text-center"><%= t('invoice.quantity') %></div>
-              <div class="col-span-2 text-right"><%= t('invoice.unit_price') %></div>
-              <div class="col-span-2 text-right"><%= t('invoice.supply_amount') %></div>
+            <div class="hidden sm:grid grid-cols-12 gap-2 bg-gray-200 dark:bg-gray-600 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300">
+              <div class="col-span-2">타이틀</div>
+              <div class="col-span-4">내역</div>
+              <div class="col-span-2 text-center">수량</div>
+              <div class="col-span-2 text-right">단가</div>
+              <div class="col-span-2 text-right">금액</div>
             </div>
             <div class="sub-items-list"></div>
             <div class="px-3 py-2 border-t dark:border-gray-600">
@@ -439,26 +434,20 @@
 
     function getSubItemTemplate(itemIndex) {
       return `
-        <div class="sub-item-row grid grid-cols-12 gap-2 px-3 py-2 border-b dark:border-gray-600 items-center">
-          <div class="col-span-2">
-            <input type="text" name="sub_titles_${itemIndex}[]" value="" placeholder="<%= t('invoice.sub_title') %>"
-              class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium sub-title">
-          </div>
-          <div class="col-span-4">
-            <input type="text" name="sub_descriptions_${itemIndex}[]" value=""
-              class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-description">
-          </div>
-          <div class="col-span-2">
+        <div class="sub-item-row flex flex-wrap sm:grid sm:grid-cols-12 gap-2 p-2 sm:px-3 sm:py-2 border-b dark:border-gray-600 items-center">
+          <input type="text" name="sub_titles_${itemIndex}[]" value="" placeholder="타이틀"
+            class="w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium placeholder:font-bold sub-title">
+          <input type="text" name="sub_descriptions_${itemIndex}[]" value="" placeholder="내역"
+            class="w-full sm:col-span-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:font-normal sub-description">
+          <div class="flex w-full sm:contents gap-2">
             <input type="number" name="sub_quantities_${itemIndex}[]" value="1" min="0" step="0.01"
-              class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-quantity">
-          </div>
-          <div class="col-span-2">
+              class="w-20 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-quantity">
             <input type="number" name="sub_prices_${itemIndex}[]" value="0" min="0" step="1"
-              class="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-price">
+              class="flex-1 min-w-0 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-price">
           </div>
-          <div class="col-span-1 text-right text-sm text-gray-900 dark:text-white sub-amount">0</div>
-          <div class="col-span-1 text-right">
-            <button type="button" class="remove-sub-item text-red-500 hover:text-red-700 text-lg">×</button>
+          <div class="flex w-full sm:contents justify-end gap-2 items-center">
+            <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-sm font-medium sm:col-span-1 sub-amount">${getCurrencySymbol()}0</span>
+            <button type="button" class="remove-sub-item text-red-500 hover:text-red-700 sm:col-span-1 sm:text-right">×</button>
           </div>
         </div>
       `;
@@ -594,7 +583,7 @@
             const qty = parseFloat(subRow.querySelector('.sub-quantity').value) || 0;
             const price = parseFloat(subRow.querySelector('.sub-price').value) || 0;
             const subAmount = qty * price;
-            subRow.querySelector('.sub-amount').textContent = new Intl.NumberFormat('ko-KR').format(subAmount);
+            subRow.querySelector('.sub-amount').textContent = formatCurrency(subAmount);
             itemAmount += subAmount;
           });
         } else {
@@ -641,10 +630,10 @@
       const container = document.getElementById('notesContainer');
       const num = container.querySelectorAll('.note-row').length + 1;
       container.insertAdjacentHTML('beforeend', `
-        <div class="note-row flex items-start gap-2 mb-2">
-          <span class="text-gray-500 dark:text-gray-400 mt-2">${num}.</span>
-          <input type="text" class="note-input flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="" placeholder="(Shift+Enter to add line break)">
-          <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-2">×</button>
+        <div class="note-row flex items-start gap-1 mb-1">
+          <span class="text-xs text-gray-500 dark:text-gray-400 mt-1.5 w-4">${num}.</span>
+          <input type="text" class="note-input flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="" placeholder="(Shift+Enter)">
+          <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-1 text-sm">×</button>
         </div>
       `);
       attachNoteListeners();
@@ -655,10 +644,10 @@
         const container = document.getElementById('notesContainer');
         const num = container.querySelectorAll('.note-row').length + 1;
         container.insertAdjacentHTML('beforeend', `
-          <div class="note-row flex items-start gap-2 mb-2">
-            <span class="text-gray-500 dark:text-gray-400 mt-2">${num}.</span>
-            <input type="text" class="note-input flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="${this.value}" placeholder="(Shift+Enter to add line break)">
-            <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-2">×</button>
+          <div class="note-row flex items-start gap-1 mb-1">
+            <span class="text-xs text-gray-500 dark:text-gray-400 mt-1.5 w-4">${num}.</span>
+            <input type="text" class="note-input flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="${this.value}" placeholder="(Shift+Enter)">
+            <button type="button" class="remove-note text-red-600 dark:text-red-400 hover:text-red-800 p-1 text-sm">×</button>
           </div>
         `);
         attachNoteListeners();
