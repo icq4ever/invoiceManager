@@ -5,82 +5,48 @@
   </a>
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-  <!-- Mobile: Card Layout -->
-  <div class="sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
-    <% if (templates.length === 0) { %>
-    <div class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400"><%= t('template.no_templates') %></div>
-    <% } else { %>
-    <% templates.forEach(tmpl => { %>
-    <div class="px-4 py-3">
-      <!-- Row 1: Name + Default -->
-      <div class="flex justify-between items-center mb-1">
-        <span class="text-sm font-medium text-gray-900 dark:text-white truncate flex-1 mr-2"><%= tmpl.title %></span>
-        <% if (tmpl.is_default) { %>
-        <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"><%= t('common.default') %></span>
-        <% } %>
-      </div>
-      <!-- Row 2: Sort order + Actions -->
-      <div class="flex justify-between items-center">
-        <span class="text-xs text-gray-500 dark:text-gray-400">#<%= tmpl.sort_order %></span>
-        <div class="flex items-center gap-3 text-xs">
-          <a href="/templates/<%= tmpl.id %>/edit" class="text-blue-600 dark:text-blue-400"><%= t('common.edit') %></a>
-          <form method="POST" action="/templates/<%= tmpl.id %>/delete" class="inline" onsubmit="return confirm('<%= t('common.confirm_delete') %>')">
-            <button type="submit" class="text-red-600 dark:text-red-400"><%= t('common.delete') %></button>
-          </form>
-        </div>
-      </div>
-    </div>
-    <% }) %>
-    <% } %>
-  </div>
-
-  <!-- Desktop: Table Layout -->
-  <div class="hidden sm:block overflow-x-auto">
-    <table class="min-w-full">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('template.sort_order') %></th>
-          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('template.name') %></th>
-          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden md:table-cell"><%= t('template.content') %></th>
-          <th class="px-4 py-3 text-center text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('common.default') %></th>
-          <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('common.actions') %></th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-        <% if (templates.length === 0) { %>
-        <tr>
-          <td colspan="5" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400"><%= t('template.no_templates') %></td>
-        </tr>
-        <% } else { %>
-        <% templates.forEach(tmpl => { %>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300"><%= tmpl.sort_order %></td>
-          <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white"><%= tmpl.title %></td>
-          <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400 truncate max-w-md hidden md:table-cell"><%= tmpl.content %></td>
-          <td class="px-4 py-4 text-center">
-            <% if (tmpl.is_default) { %>
-            <span class="text-green-600 dark:text-green-400">✓</span>
-            <% } else { %>
-            <span class="text-gray-400">-</span>
-            <% } %>
-          </td>
-          <td class="px-4 py-4 text-right">
-            <div class="flex items-center justify-end gap-4">
-              <a href="/templates/<%= tmpl.id %>/edit" class="text-blue-600 dark:text-blue-400 hover:underline text-sm"><%= t('common.edit') %></a>
-              <form method="POST" action="/templates/<%= tmpl.id %>/delete" class="inline" onsubmit="return confirm('<%= t('common.confirm_delete') %>')">
-                <button type="submit" class="text-red-600 dark:text-red-400 hover:underline text-sm"><%= t('common.delete') %></button>
-              </form>
-            </div>
-          </td>
-        </tr>
-        <% }) %>
-        <% } %>
-      </tbody>
-    </table>
-  </div>
+<% if (templates.length === 0) { %>
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+  <p class="text-gray-500 dark:text-gray-400"><%= t('template.no_templates') %></p>
 </div>
+<% } else { %>
+<div class="space-y-3">
+  <% templates.forEach(tmpl => { %>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <!-- Title -->
+    <div class="px-4 py-3 flex items-center gap-2">
+      <h3 class="text-base font-semibold text-gray-900 dark:text-white"><%= tmpl.title %></h3>
+      <% if (tmpl.is_default) { %>
+      <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"><%= t('common.default') %></span>
+      <% } %>
+      <span class="text-xs text-gray-400 dark:text-gray-500 ml-auto">#<%= tmpl.sort_order %></span>
+    </div>
+
+    <!-- Content -->
+    <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+      <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2"><%= tmpl.content %></p>
+    </div>
+
+    <!-- Actions -->
+    <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex justify-end items-center gap-4 text-sm">
+      <a href="/templates/<%= tmpl.id %>/edit" class="text-blue-600 dark:text-blue-400 hover:underline"><%= t('common.edit') %></a>
+      <button type="button" onclick="if(confirm('<%= t('common.confirm_delete') %>')) document.getElementById('delete-form-<%= tmpl.id %>').submit()" class="text-red-600 dark:text-red-400 hover:underline"><%= t('common.delete') %></button>
+      <form id="delete-form-<%= tmpl.id %>" method="POST" action="/templates/<%= tmpl.id %>/delete" class="hidden"></form>
+    </div>
+  </div>
+  <% }) %>
+</div>
+<% } %>
 
 <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
   <p>* <%= t('template.default_note') %></p>
 </div>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

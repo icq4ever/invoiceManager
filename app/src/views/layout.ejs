@@ -23,8 +23,8 @@
         <div class="flex items-center">
           <a href="/dashboard" class="text-xl font-bold text-gray-900 dark:text-white"><%= t('app.name') %></a>
           <span class="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded font-medium">v<%= appVersion %></span>
-          <!-- Desktop menu -->
-          <div class="hidden md:flex ml-8 space-x-4">
+          <!-- Desktop menu (lg and up) -->
+          <div class="hidden lg:flex ml-8 space-x-4">
             <a href="/dashboard" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.dashboard') %></a>
             <a href="/invoices" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.invoices') %></a>
             <a href="/companies" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.companies') %></a>
@@ -52,10 +52,10 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
             </svg>
           </button>
-          <span class="hidden sm:inline text-sm text-gray-600 dark:text-gray-400 ml-2"><%= user.username %></span>
-          <a href="/logout" class="hidden md:inline text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 ml-2"><%= t('nav.logout') %></a>
-          <!-- Mobile menu button -->
-          <button type="button" id="mobileMenuBtn" class="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <span class="hidden lg:inline text-sm text-gray-600 dark:text-gray-400 ml-2"><%= user.username %></span>
+          <a href="/logout" class="hidden lg:inline text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 ml-2"><%= t('nav.logout') %></a>
+          <!-- Mobile/Tablet menu button -->
+          <button type="button" id="sideMenuBtn" class="lg:hidden p-2 ml-1 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -63,24 +63,63 @@
         </div>
       </div>
     </div>
-    <!-- Mobile menu -->
-    <div id="mobileMenu" class="hidden md:hidden border-t dark:border-gray-700 bg-white dark:bg-gray-800">
-      <div class="px-4 py-3 space-y-1">
-        <a href="/dashboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.dashboard') %></a>
-        <a href="/invoices" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.invoices') %></a>
-        <a href="/companies" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.companies') %></a>
-        <a href="/clients" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.clients') %></a>
-        <a href="/templates" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.templates') %></a>
-        <div class="border-t dark:border-gray-700 pt-2 mt-2">
-          <a href="/logout" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.logout') %></a>
-        </div>
-      </div>
-    </div>
   </nav>
+  <!-- Slide-in Side Menu (Mobile/Tablet) -->
+  <div id="sideMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300 opacity-0"></div>
+  <div id="sideMenu" class="fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out">
+    <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+      <div>
+        <span class="text-lg font-bold text-gray-900 dark:text-white"><%= t('app.name') %></span>
+        <span class="block text-xs text-gray-400 dark:text-gray-500">v<%= appVersion %></span>
+      </div>
+      <button type="button" id="sideMenuClose" class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav class="p-4 space-y-1">
+      <a href="/dashboard" class="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.dashboard') %></a>
+      <a href="/invoices" class="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.invoices') %></a>
+      <a href="/companies" class="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.companies') %></a>
+      <a href="/clients" class="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.clients') %></a>
+      <a href="/templates" class="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><%= t('nav.templates') %></a>
+    </nav>
+    <div class="absolute bottom-0 left-0 right-0 p-4 border-t dark:border-gray-700 flex items-center justify-between">
+      <span class="text-base font-medium text-gray-700 dark:text-gray-300"><%= user.username %></span>
+      <a href="/logout" class="text-base font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><%= t('nav.logout') %></a>
+    </div>
+  </div>
   <script>
-    document.getElementById('mobileMenuBtn').addEventListener('click', function() {
-      document.getElementById('mobileMenu').classList.toggle('hidden');
-    });
+    // Side menu toggle
+    const sideMenuBtn = document.getElementById('sideMenuBtn');
+    const sideMenuClose = document.getElementById('sideMenuClose');
+    const sideMenu = document.getElementById('sideMenu');
+    const sideMenuOverlay = document.getElementById('sideMenuOverlay');
+
+    function openSideMenu() {
+      sideMenuOverlay.classList.remove('hidden');
+      setTimeout(() => {
+        sideMenuOverlay.classList.add('opacity-100');
+        sideMenuOverlay.classList.remove('opacity-0');
+        sideMenu.classList.remove('-translate-x-full');
+      }, 10);
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSideMenu() {
+      sideMenuOverlay.classList.remove('opacity-100');
+      sideMenuOverlay.classList.add('opacity-0');
+      sideMenu.classList.add('-translate-x-full');
+      setTimeout(() => {
+        sideMenuOverlay.classList.add('hidden');
+      }, 300);
+      document.body.style.overflow = '';
+    }
+
+    sideMenuBtn.addEventListener('click', openSideMenu);
+    sideMenuClose.addEventListener('click', closeSideMenu);
+    sideMenuOverlay.addEventListener('click', closeSideMenu);
 
     function toggleLangMenu() {
       document.getElementById('langMenu').classList.toggle('hidden');
