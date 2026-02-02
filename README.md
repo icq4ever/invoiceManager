@@ -104,8 +104,10 @@ See [LICENSE](LICENSE) for details.
 - Added website and fax fields for company information
 - Per-invoice display options (stamp, website, fax, bank info visibility)
 - Per-invoice column width settings saved to database
+- Dynamic version badge in navigation header (from package.json)
 
 ### v1.0.1
+- Fixed invoice prefix not being duplicated when copying invoices
 - Bug fixes and improvements
 
 ### v1.0.0

@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 const { initDatabase } = require('./config/database');
+const { version: appVersion } = require('../package.json');
 const { i18nMiddleware } = require('./middleware/i18n');
 
 // Routes
@@ -51,10 +52,11 @@ app.set('layout extractScripts', false);
 // i18n middleware
 app.use(i18nMiddleware);
 
-// Make user and theme available in all views
+// Make user, theme, and version available in all views
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.theme = req.cookies?.theme || 'light';
+  res.locals.appVersion = appVersion;
   next();
 });
 
