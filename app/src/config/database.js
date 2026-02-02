@@ -116,6 +116,18 @@ function initDatabase() {
     // Column already exists
   }
 
+  // Add website and fax columns (migration)
+  try {
+    db.exec(`ALTER TABLE companies ADD COLUMN website TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE companies ADD COLUMN fax TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+
   // Clients table
   db.exec(`
     CREATE TABLE IF NOT EXISTS clients (
@@ -157,6 +169,33 @@ function initDatabase() {
   // Add currency column if not exists (migration)
   try {
     db.exec(`ALTER TABLE invoices ADD COLUMN currency TEXT DEFAULT 'KRW'`);
+  } catch (e) {
+    // Column already exists
+  }
+
+  // Add display option columns (migration)
+  try {
+    db.exec(`ALTER TABLE invoices ADD COLUMN show_stamp INTEGER DEFAULT 1`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE invoices ADD COLUMN show_website INTEGER DEFAULT 1`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE invoices ADD COLUMN show_fax INTEGER DEFAULT 1`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE invoices ADD COLUMN show_bank_info INTEGER DEFAULT 1`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE invoices ADD COLUMN column_widths TEXT`);
   } catch (e) {
     // Column already exists
   }

@@ -18,7 +18,11 @@
 | address | TEXT | Address (Korean) |
 | address_en | TEXT | Address (English) |
 | phone | TEXT | Phone number |
+| phone_en | TEXT | Phone number (English) |
+| website | TEXT | Website URL |
+| fax | TEXT | Fax number |
 | email | TEXT | Email |
+| email_en | TEXT | Email (English) |
 | bank_info | TEXT | Bank account info (Korean) |
 | bank_info_en | TEXT | Bank account info (English) |
 | logo_path | TEXT | Logo image path |
@@ -54,8 +58,13 @@
 | tax_amount | REAL | Tax amount |
 | total_amount | REAL | Total amount |
 | notes | TEXT | Additional notes (JSON array) |
-| status | TEXT | Invoice status |
+| status | TEXT | Invoice status (draft, confirmed, discarded) |
 | currency | TEXT | Currency (KRW, USD, EUR, JPY, GBP, CNY) |
+| show_stamp | INTEGER | Show stamp/signature (1=yes, 0=no) |
+| show_website | INTEGER | Show website row (1=yes, 0=no) |
+| show_fax | INTEGER | Show fax row (1=yes, 0=no) |
+| show_bank_info | INTEGER | Show bank info row (1=yes, 0=no) |
+| column_widths | TEXT | Saved column widths (JSON array) |
 | created_at | DATETIME | Creation timestamp |
 | updated_at | DATETIME | Update timestamp |
 
@@ -110,7 +119,11 @@
 | address | TEXT | 주소 (한글) |
 | address_en | TEXT | 주소 (영문) |
 | phone | TEXT | 전화번호 |
+| phone_en | TEXT | 전화번호 (영문) |
+| website | TEXT | 웹사이트 URL |
+| fax | TEXT | 팩스번호 |
 | email | TEXT | 이메일 |
+| email_en | TEXT | 이메일 (영문) |
 | bank_info | TEXT | 계좌정보 (한글) |
 | bank_info_en | TEXT | 계좌정보 (영문) |
 | logo_path | TEXT | 로고 이미지 경로 |
@@ -146,8 +159,13 @@
 | tax_amount | REAL | 부가세 |
 | total_amount | REAL | 합계 (총액) |
 | notes | TEXT | 기타 문구 (JSON 배열) |
-| status | TEXT | 상태 |
+| status | TEXT | 상태 (draft=작성중, confirmed=확정, discarded=폐기) |
 | currency | TEXT | 통화 (KRW, USD, EUR, JPY, GBP, CNY) |
+| show_stamp | INTEGER | 서명/도장 표시 (1=예, 0=아니오) |
+| show_website | INTEGER | 웹사이트 표시 (1=예, 0=아니오) |
+| show_fax | INTEGER | 팩스 표시 (1=예, 0=아니오) |
+| show_bank_info | INTEGER | 계좌정보 표시 (1=예, 0=아니오) |
+| column_widths | TEXT | 컬럼 폭 설정 (JSON 배열) |
 | created_at | DATETIME | 생성일 |
 | updated_at | DATETIME | 수정일 |
 
@@ -200,5 +218,5 @@
 
 | Version | Date | Description |
 |---------|------|-------------|
-| 1.1.0 | 2026-02 | Added itemized invoice details (detail_mode, invoice_item_details table) |
+| 1.1.0 | 2026-02 | Added itemized invoice details, status management, website/fax fields for companies, per-invoice display options & column widths, search indexes |
 | 1.0.0 | - | Initial schema |

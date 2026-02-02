@@ -78,7 +78,7 @@ See [LICENSE](LICENSE) for details.
 
 ## Roadmap
 
-- [ ] Invoice status management (sent, accepted, rejected)
+- [x] Invoice status management (draft, confirmed, discarded)
 - [ ] Email invoice delivery
 - [ ] Payment tracking
 - [ ] Multi-user support
@@ -93,9 +93,17 @@ See [LICENSE](LICENSE) for details.
 
 ### v1.1.0
 - Added itemized invoice details mode (sub-items with individual pricing)
+- Added invoice status management with dropdown (draft/confirmed/discarded)
+- Edit disabled for confirmed/discarded invoices
+- Delete confirmation with "cannot restore" warning
+- Hybrid search and pagination for invoice/client lists
+- Simplified restore UI (full backup only)
 - Added database schema version tracking
 - Improved invoice view table styling
 - Added GitHub link to navigation menu
+- Added website and fax fields for company information
+- Per-invoice display options (stamp, website, fax, bank info visibility)
+- Per-invoice column width settings saved to database
 
 ### v1.0.1
 - Bug fixes and improvements

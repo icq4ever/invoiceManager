@@ -57,7 +57,7 @@ router.post('/', upload.fields([
   { name: 'stamp', maxCount: 1 }
 ]), (req, res) => {
   const db = getDatabase();
-  const { name, business_number, representative, address, phone, email, bank_info, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en } = req.body;
+  const { name, business_number, representative, address, phone, email, bank_info, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax } = req.body;
 
   const logoPath = req.files?.logo?.[0] ? '/uploads/companies/' + req.files.logo[0].filename : null;
   const stampPath = req.files?.stamp?.[0] ? '/uploads/companies/' + req.files.stamp[0].filename : null;
@@ -69,9 +69,9 @@ router.post('/', upload.fields([
     }
 
     db.prepare(`
-      INSERT INTO companies (name, business_number, representative, address, phone, email, bank_info, logo_path, stamp_path, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(name, business_number, representative, address, phone, email, bank_info, logoPath, stampPath, invoice_prefix || 'INV', is_default ? 1 : 0, name_en, representative_en, address_en, phone_en, email_en, bank_info_en);
+      INSERT INTO companies (name, business_number, representative, address, phone, email, bank_info, logo_path, stamp_path, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(name, business_number, representative, address, phone, email, bank_info, logoPath, stampPath, invoice_prefix || 'INV', is_default ? 1 : 0, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax);
 
     res.redirect('/companies');
   } catch (err) {
@@ -98,7 +98,7 @@ router.post('/:id', upload.fields([
   { name: 'stamp', maxCount: 1 }
 ]), (req, res) => {
   const db = getDatabase();
-  const { name, business_number, representative, address, phone, email, bank_info, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en } = req.body;
+  const { name, business_number, representative, address, phone, email, bank_info, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax } = req.body;
   const companyId = req.params.id;
 
   const existing = db.prepare('SELECT * FROM companies WHERE id = ?').get(companyId);
@@ -124,9 +124,9 @@ router.post('/:id', upload.fields([
 
     db.prepare(`
       UPDATE companies
-      SET name = ?, business_number = ?, representative = ?, address = ?, phone = ?, email = ?, bank_info = ?, logo_path = ?, stamp_path = ?, invoice_prefix = ?, is_default = ?, name_en = ?, representative_en = ?, address_en = ?, phone_en = ?, email_en = ?, bank_info_en = ?
+      SET name = ?, business_number = ?, representative = ?, address = ?, phone = ?, email = ?, bank_info = ?, logo_path = ?, stamp_path = ?, invoice_prefix = ?, is_default = ?, name_en = ?, representative_en = ?, address_en = ?, phone_en = ?, email_en = ?, bank_info_en = ?, website = ?, fax = ?
       WHERE id = ?
-    `).run(name, business_number, representative, address, phone, email, bank_info, logoPath, stampPath, invoice_prefix || 'INV', is_default ? 1 : 0, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, companyId);
+    `).run(name, business_number, representative, address, phone, email, bank_info, logoPath, stampPath, invoice_prefix || 'INV', is_default ? 1 : 0, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax, companyId);
 
     res.redirect('/companies');
   } catch (err) {

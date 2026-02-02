@@ -120,6 +120,8 @@
     "address_en": "Address (English)",
     "phone": "Phone",
     "phone_en": "Phone (English)",
+    "website": "Website",
+    "fax": "Fax",
     "email": "Email",
     "email_en": "Email (English)",
     "bank_info": "Bank Info",

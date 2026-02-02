@@ -120,6 +120,8 @@
     "address_en": "Address (English)",
     "phone": "전화번호",
     "phone_en": "Phone (English)",
+    "website": "웹사이트",
+    "fax": "팩스",
     "email": "이메일",
     "email_en": "Email (English)",
     "bank_info": "계좌정보",

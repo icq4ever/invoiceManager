@@ -269,9 +269,10 @@ router.get('/:id', (req, res) => {
     SELECT i.*, c.name as client_name, c.business_number as client_business_number, c.address as client_address,
            co.name as company_name, co.business_number as company_business_number, co.representative,
            co.address as company_address, co.phone as company_phone, co.email as company_email,
+           co.bank_info as company_bank_info, co.website as company_website, co.fax as company_fax,
            co.logo_path, co.stamp_path,
            co.name_en as company_name_en, co.representative_en, co.address_en as company_address_en,
-           co.phone_en as company_phone_en, co.email_en as company_email_en
+           co.phone_en as company_phone_en, co.email_en as company_email_en, co.bank_info_en as company_bank_info_en
     FROM invoices i
     LEFT JOIN clients c ON i.client_id = c.id
     LEFT JOIN companies co ON i.company_id = co.id
@@ -288,6 +289,7 @@ router.get('/:id', (req, res) => {
   if (!invoice.company_address_en) invoice.company_address_en = invoice.company_address;
   if (!invoice.company_phone_en) invoice.company_phone_en = invoice.company_phone;
   if (!invoice.company_email_en) invoice.company_email_en = invoice.company_email;
+  if (!invoice.company_bank_info_en) invoice.company_bank_info_en = invoice.company_bank_info;
 
   const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY sort_order ASC').all(req.params.id);
 
@@ -496,6 +498,37 @@ router.post('/:id/set-status', (req, res) => {
   } catch (err) {
     console.error('Error setting invoice status:', err);
     res.status(500).json({ error: 'Failed to set status' });
+  }
+});
+
+// Save display options
+router.post('/:id/display-options', (req, res) => {
+  const db = getDatabase();
+  const { show_stamp, show_website, show_fax, show_bank_info, column_widths } = req.body;
+
+  try {
+    const invoice = db.prepare('SELECT id FROM invoices WHERE id = ?').get(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ error: 'Invoice not found' });
+    }
+
+    db.prepare(`
+      UPDATE invoices
+      SET show_stamp = ?, show_website = ?, show_fax = ?, show_bank_info = ?, column_widths = ?
+      WHERE id = ?
+    `).run(
+      show_stamp ? 1 : 0,
+      show_website ? 1 : 0,
+      show_fax ? 1 : 0,
+      show_bank_info ? 1 : 0,
+      column_widths ? JSON.stringify(column_widths) : null,
+      req.params.id
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error saving display options:', err);
+    res.status(500).json({ error: 'Failed to save display options' });
   }
 });
 

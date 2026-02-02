@@ -159,8 +159,20 @@
           <button onclick="window.print()" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700"><%= t('invoice.print') %> / PDF</button>
           <a href="/invoices/<%= invoice.id %>/edit" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"><%= t('common.edit') %></a>
           <label class="flex items-center space-x-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 cursor-pointer">
-            <input type="checkbox" id="showStampCheckbox" checked onchange="toggleStamp()" class="rounded">
+            <input type="checkbox" id="showStampCheckbox" <%= invoice.show_stamp !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
             <span class="text-sm text-gray-700 dark:text-gray-300"><%= t('invoice.show_stamp') %></span>
+          </label>
+          <label class="flex items-center space-x-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 cursor-pointer">
+            <input type="checkbox" id="showWebsiteCheckbox" <%= invoice.show_website !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
+            <span class="text-sm text-gray-700 dark:text-gray-300"><%= t('company.website') %></span>
+          </label>
+          <label class="flex items-center space-x-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 cursor-pointer">
+            <input type="checkbox" id="showFaxCheckbox" <%= invoice.show_fax !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
+            <span class="text-sm text-gray-700 dark:text-gray-300"><%= t('company.fax') %></span>
+          </label>
+          <label class="flex items-center space-x-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 cursor-pointer">
+            <input type="checkbox" id="showBankInfoCheckbox" <%= invoice.show_bank_info !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
+            <span class="text-sm text-gray-700 dark:text-gray-300"><%= t('company.bank_info') %></span>
           </label>
           <div class="relative" id="langDropdown">
             <button type="button" class="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" onclick="toggleLangMenu()">
@@ -236,14 +248,14 @@
           <div class="supplier-box" style="width: auto; min-width: 40%; max-width: 50%; flex-shrink: 0; position: relative;">
             <div class="font-bold text-gray-600 dark:text-gray-400 pb-1" style="font-size: 13px; font-weight: 800;"><%= t('invoice.supplier') %></div>
             <% if (invoice.stamp_path) { %>
-            <img id="stampImage" src="<%= invoice.stamp_path %>" alt="Signature" style="position: absolute; right: 0; top: 8px; height: 50px; width: auto; object-fit: contain; z-index: 10;">
+            <img id="stampImage" src="<%= invoice.stamp_path %>" alt="Signature" style="position: absolute; right: 0; top: 8px; height: 50px; width: auto; object-fit: contain; z-index: 10; <%= invoice.show_stamp === 0 ? 'display: none;' : '' %>">
             <% } %>
             <table class="w-full" style="border-collapse: collapse;">
               <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.name') %></td>
-                <td class="py-0.5 pl-3" style="width: 35%;"><%= lang === 'en' ? (invoice.company_name_en || invoice.company_name || '-') : (invoice.company_name || '-') %></td>
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2" style="width: 5%;"><%= t('company.representative') %></td>
-                <td class="py-0.5 text-right" style="width: 45%; vertical-align: middle;">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('company.name') %></td>
+                <td class="py-0.5 pl-3"><%= lang === 'en' ? (invoice.company_name_en || invoice.company_name || '-') : (invoice.company_name || '-') %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2" style="width: 15%;"><%= t('company.representative') %></td>
+                <td class="py-0.5 text-right" style="vertical-align: middle;">
                   <span><%= lang === 'en' ? (invoice.representative_en || invoice.representative || '-') : (invoice.representative || '-') %></span>
                   <span style="font-size: 12px; color: #999; margin-left: 8px;"><%= t('company.stamp_mark') %></span>
                 </td>
@@ -257,14 +269,24 @@
                 <td class="py-0.5 pl-3" colspan="3" style="white-space: pre-wrap;"><%= lang === 'en' ? ((invoice.company_address_en || invoice.company_address || '-').replace(/\\n/g, '\n')) : ((invoice.company_address || '-').replace(/\\n/g, '\n')) %></td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.phone') %></td>
-                <td class="py-0.5 pl-3" style="width: 35%;"><%= lang === 'en' ? (invoice.company_phone_en || invoice.company_phone || '-') : (invoice.company_phone || '-') %></td>
-                <td colspan="2"></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.phone') %></td>
+                <td class="py-0.5 pl-3" colspan="3"><%= lang === 'en' ? (invoice.company_phone_en || invoice.company_phone || '-') : (invoice.company_phone || '-') %></td>
+              </tr>
+              <tr id="websiteRow" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_website === 0 ? 'display: none;' : '' %>">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.website') %></td>
+                <td class="py-0.5 pl-3" colspan="3"><%= invoice.company_website || '-' %></td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 25%;"><%= t('company.email') %></td>
-                <td class="py-0.5 pl-3" style="width: 35%;"><%= lang === 'en' ? (invoice.company_email_en || invoice.company_email || '-') : (invoice.company_email || '-') %></td>
-                <td colspan="2"></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.email') %></td>
+                <td class="py-0.5 pl-3" colspan="3"><%= lang === 'en' ? (invoice.company_email_en || invoice.company_email || '-') : (invoice.company_email || '-') %></td>
+              </tr>
+              <tr id="faxRow" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_fax === 0 ? 'display: none;' : '' %>">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.fax') %></td>
+                <td class="py-0.5 pl-3" colspan="3"><%= invoice.company_fax || '-' %></td>
+              </tr>
+              <tr id="bankInfoRow" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_bank_info === 0 ? 'display: none;' : '' %>">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.bank_info') %></td>
+                <td class="py-0.5 pl-3" colspan="3" style="white-space: pre-wrap;"><%= lang === 'en' ? (invoice.company_bank_info_en || invoice.company_bank_info || '-') : (invoice.company_bank_info || '-') %></td>
               </tr>
             </table>
           </div>
@@ -394,25 +416,72 @@
         document.getElementById('moonIcon').classList.remove('hidden');
       }
     }
-    function toggleStamp() {
+    const invoiceId = <%= invoice.id %>;
+
+    // Save display options to database
+    function saveDisplayOptions() {
       const stampImage = document.getElementById('stampImage');
-      const checkbox = document.getElementById('showStampCheckbox');
-      if (stampImage) {
-        stampImage.style.display = checkbox.checked ? 'inline-block' : 'none';
-        localStorage.setItem('showStamp', checkbox.checked);
-      }
+      const websiteRow = document.getElementById('websiteRow');
+      const faxRow = document.getElementById('faxRow');
+      const bankInfoRow = document.getElementById('bankInfoRow');
+
+      const showStamp = document.getElementById('showStampCheckbox').checked;
+      const showWebsite = document.getElementById('showWebsiteCheckbox').checked;
+      const showFax = document.getElementById('showFaxCheckbox').checked;
+      const showBankInfo = document.getElementById('showBankInfoCheckbox').checked;
+
+      // Update UI immediately
+      if (stampImage) stampImage.style.display = showStamp ? 'inline-block' : 'none';
+      if (websiteRow) websiteRow.style.display = showWebsite ? '' : 'none';
+      if (faxRow) faxRow.style.display = showFax ? '' : 'none';
+      if (bankInfoRow) bankInfoRow.style.display = showBankInfo ? '' : 'none';
+
+      // Get current column widths
+      const columnWidths = getColumnWidths();
+
+      // Save to database
+      fetch(`/invoices/${invoiceId}/display-options`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          show_stamp: showStamp,
+          show_website: showWebsite,
+          show_fax: showFax,
+          show_bank_info: showBankInfo,
+          column_widths: columnWidths
+        })
+      });
     }
-    // Initialize stamp visibility from localStorage
+
+    // Get column widths from table headers
+    function getColumnWidths() {
+      const table = document.getElementById('itemsTable');
+      if (!table) return null;
+      const ths = table.querySelectorAll('thead th');
+      const widths = [];
+      ths.forEach(th => widths.push(th.style.width || ''));
+      return widths;
+    }
+
+    // Apply saved column widths
+    function applyColumnWidths(widths) {
+      if (!widths || !widths.length) return;
+      const table = document.getElementById('itemsTable');
+      if (!table) return;
+      const ths = table.querySelectorAll('thead th');
+      ths.forEach((th, i) => {
+        if (widths[i]) th.style.width = widths[i];
+      });
+    }
+
+    // Initialize column widths from saved data
     window.addEventListener('DOMContentLoaded', function() {
-      const checkbox = document.getElementById('showStampCheckbox');
-      const showStamp = localStorage.getItem('showStamp');
-      if (checkbox && showStamp === 'false') {
-        checkbox.checked = false;
-        const stampImage = document.getElementById('stampImage');
-        if (stampImage) {
-          stampImage.style.display = 'none';
-        }
-      }
+      <% if (invoice.column_widths) { %>
+      try {
+        const savedWidths = <%- invoice.column_widths %>;
+        applyColumnWidths(savedWidths);
+      } catch(e) { console.error('Failed to load column widths:', e); }
+      <% } %>
     });
 
     // Column resize functionality
@@ -458,6 +527,8 @@
         if (isResizing && currentTh) {
           const handle = currentTh.querySelector('.resize-handle');
           if (handle) handle.classList.remove('resizing');
+          // Save column widths after resize
+          saveDisplayOptions();
         }
         isResizing = false;
         currentTh = null;
