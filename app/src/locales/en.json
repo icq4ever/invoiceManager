@@ -9,7 +9,8 @@
     "companies": "Companies",
     "clients": "Clients",
     "templates": "Templates",
-    "logout": "Logout"
+    "logout": "Logout",
+    "bug_report": "Bug Report"
   },
   "common": {
     "save": "Save",

@@ -9,7 +9,8 @@
     "companies": "회사 정보",
     "clients": "클라이언트",
     "templates": "문구 템플릿",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "bug_report": "버그 리포트"
   },
   "common": {
     "save": "저장",
