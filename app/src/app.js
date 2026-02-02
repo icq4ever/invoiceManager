@@ -46,7 +46,7 @@ app.set('views', path.join(__dirname, 'views'));
 // Layout configuration
 app.use(expressLayouts);
 app.set('layout', 'layout');
-app.set('layout extractScripts', true);
+app.set('layout extractScripts', false);
 
 // i18n middleware
 app.use(i18nMiddleware);

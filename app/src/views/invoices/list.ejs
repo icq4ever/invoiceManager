@@ -58,6 +58,7 @@
   </div>
 </div>
 
+
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
   <div class="overflow-x-auto">
     <table class="min-w-full">
@@ -97,21 +98,34 @@
           <td class="px-4 py-4 text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= inv.client_name || '-' %></td>
           <td class="px-4 py-4 text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= inv.issue_date || '-' %></td>
           <td class="px-4 py-4 text-right font-medium text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></td>
-          <td class="px-4 py-4 text-center">
-            <% if (inv.status === 'draft') { %>
-            <span class="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300"><%= t('invoice.status_draft') %></span>
-            <% } else if (inv.status === 'sent') { %>
-            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300"><%= t('invoice.status_sent') %></span>
-            <% } else if (inv.status === 'accepted') { %>
-            <span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"><%= t('invoice.status_accepted') %></span>
-            <% } else { %>
-            <span class="px-2 py-1 text-xs rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"><%= t('invoice.status_rejected') %></span>
-            <% } %>
+          <td class="px-4 py-4 text-center relative">
+            <div class="status-dropdown inline-block">
+              <button type="button" data-status-btn="<%= inv.id %>"
+                class="status-btn px-2 py-1 text-xs rounded-full cursor-pointer transition-colors
+                <%= inv.status === 'draft' ? 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500' : inv.status === 'confirmed' ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800' : 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800' %>"
+                data-status="<%= inv.status %>">
+                <%= inv.status === 'draft' ? t('invoice.status_draft') : inv.status === 'confirmed' ? t('invoice.status_confirmed') : t('invoice.status_discarded') %>
+              </button>
+              <div class="status-menu hidden absolute z-10 mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1 min-w-[100px]">
+                <button type="button" data-set-status="draft" data-invoice-id="<%= inv.id %>"
+                  class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">
+                  <%= t('invoice.status_draft') %>
+                </button>
+                <button type="button" data-set-status="confirmed" data-invoice-id="<%= inv.id %>"
+                  class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-green-600 dark:text-green-400">
+                  <%= t('invoice.status_confirmed') %>
+                </button>
+                <button type="button" data-set-status="discarded" data-invoice-id="<%= inv.id %>"
+                  class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400">
+                  <%= t('invoice.status_discarded') %>
+                </button>
+              </div>
+            </div>
           </td>
           <td class="px-4 py-4 text-right">
             <div class="grid grid-cols-2 gap-x-4 gap-y-1 w-fit justify-end ml-auto">
               <a href="/invoices/<%= inv.id %>" class="text-green-600 dark:text-green-400 hover:underline text-sm"><%= t('invoice.print') %></a>
-              <a href="/invoices/<%= inv.id %>/edit" class="text-blue-600 dark:text-blue-400 hover:underline text-sm"><%= t('common.edit') %></a>
+              <a href="/invoices/<%= inv.id %>/edit" class="edit-link text-sm <%= inv.status === 'confirmed' || inv.status === 'discarded' ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed pointer-events-none' : 'text-blue-600 dark:text-blue-400 hover:underline' %>"><%= t('common.edit') %></a>
               <form method="POST" action="/invoices/<%= inv.id %>/duplicate">
                 <button type="submit" class="text-purple-600 dark:text-purple-400 hover:underline text-sm"><%= t('invoice.duplicate') %></button>
               </form>
@@ -196,3 +210,84 @@
 })();
 </script>
 <% } %>
+
+<script>
+(function() {
+  var statusLabels = {
+    draft: '<%- t("invoice.status_draft") %>',
+    confirmed: '<%- t("invoice.status_confirmed") %>',
+    discarded: '<%- t("invoice.status_discarded") %>'
+  };
+
+  var statusClasses = {
+    draft: 'status-btn px-2 py-1 text-xs rounded-full cursor-pointer transition-colors bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500',
+    confirmed: 'status-btn px-2 py-1 text-xs rounded-full cursor-pointer transition-colors bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800',
+    discarded: 'status-btn px-2 py-1 text-xs rounded-full cursor-pointer transition-colors bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800'
+  };
+
+  // Close all dropdowns
+  function closeAllMenus() {
+    document.querySelectorAll('.status-menu').forEach(function(menu) {
+      menu.classList.add('hidden');
+    });
+  }
+
+  // Toggle dropdown menu
+  document.addEventListener('click', function(e) {
+    var statusBtn = e.target.closest('[data-status-btn]');
+    if (statusBtn) {
+      e.stopPropagation();
+      var menu = statusBtn.nextElementSibling;
+      var isOpen = !menu.classList.contains('hidden');
+      closeAllMenus();
+      if (!isOpen) {
+        menu.classList.remove('hidden');
+      }
+      return;
+    }
+
+    // Handle status selection
+    var setStatusBtn = e.target.closest('[data-set-status]');
+    if (setStatusBtn) {
+      var newStatus = setStatusBtn.dataset.setStatus;
+      var invoiceId = setStatusBtn.dataset.invoiceId;
+      var dropdown = setStatusBtn.closest('.status-dropdown');
+      var btn = dropdown.querySelector('[data-status-btn]');
+      var row = dropdown.closest('tr');
+
+      fetch('/invoices/' + invoiceId + '/set-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.success) {
+            btn.dataset.status = data.status;
+            btn.textContent = statusLabels[data.status];
+            btn.className = statusClasses[data.status];
+
+            // Update edit link visibility
+            var editLink = row.querySelector('.edit-link');
+            if (editLink) {
+              if (data.status === 'confirmed' || data.status === 'discarded') {
+                editLink.className = 'edit-link text-sm text-gray-400 dark:text-gray-500 cursor-not-allowed pointer-events-none';
+              } else {
+                editLink.className = 'edit-link text-sm text-blue-600 dark:text-blue-400 hover:underline';
+              }
+            }
+          }
+        })
+        .catch(function(err) {
+          console.error('Failed to set status:', err);
+        });
+
+      closeAllMenus();
+      return;
+    }
+
+    // Close menus when clicking outside
+    closeAllMenus();
+  });
+})();
+</script>

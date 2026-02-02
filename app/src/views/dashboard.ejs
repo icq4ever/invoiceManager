@@ -74,12 +74,12 @@
           <td class="px-6 py-4 text-center">
             <% if (inv.status === 'draft') { %>
             <span class="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300"><%= t('invoice.status_draft') %></span>
-            <% } else if (inv.status === 'sent') { %>
-            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300"><%= t('invoice.status_sent') %></span>
-            <% } else if (inv.status === 'accepted') { %>
-            <span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"><%= t('invoice.status_accepted') %></span>
+            <% } else if (inv.status === 'confirmed') { %>
+            <span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"><%= t('invoice.status_confirmed') %></span>
+            <% } else if (inv.status === 'discarded') { %>
+            <span class="px-2 py-1 text-xs rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"><%= t('invoice.status_discarded') %></span>
             <% } else { %>
-            <span class="px-2 py-1 text-xs rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"><%= t('invoice.status_rejected') %></span>
+            <span class="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300"><%= inv.status %></span>
             <% } %>
           </td>
         </tr>

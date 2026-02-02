@@ -474,6 +474,31 @@ router.post('/:id/delete', (req, res) => {
   }
 });
 
+// Set invoice status directly
+router.post('/:id/set-status', (req, res) => {
+  const db = getDatabase();
+  const { status } = req.body;
+  const validStatuses = ['draft', 'confirmed', 'discarded'];
+
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+
+  try {
+    const invoice = db.prepare('SELECT id FROM invoices WHERE id = ?').get(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ error: 'Invoice not found' });
+    }
+
+    db.prepare('UPDATE invoices SET status = ? WHERE id = ?').run(status, req.params.id);
+
+    res.json({ success: true, status: status });
+  } catch (err) {
+    console.error('Error setting invoice status:', err);
+    res.status(500).json({ error: 'Failed to set status' });
+  }
+});
+
 // Duplicate invoice
 router.post('/:id/duplicate', (req, res) => {
   const db = getDatabase();
