@@ -60,44 +60,88 @@
 
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-  <div class="overflow-x-auto">
+  <!-- Mobile: Card Layout -->
+  <div class="sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
+    <div id="noInvoicesRowMobile" class="<%= invoices.length > 0 || (!useClientSide && searchQuery) ? 'hidden' : '' %> px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+      <%= t('invoice.no_invoices') %>
+    </div>
+    <div id="noResultsRowMobile" class="<%= !useClientSide && searchQuery && invoices.length === 0 ? '' : 'hidden' %> px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+      <%= t('invoice.no_search_results') %>
+    </div>
+    <% if (invoices.length > 0) { %>
+    <% invoices.forEach(inv => { %>
+    <div class="invoice-row-mobile px-4 py-3" data-project="<%= (inv.project_name || '').toLowerCase() %>" data-client="<%= (inv.client_name || '').toLowerCase() %>">
+      <!-- Row 1: Project + Status -->
+      <div class="flex justify-between items-start mb-2">
+        <a href="/invoices/<%= inv.id %>" class="text-sm font-medium text-blue-600 dark:text-blue-400 truncate flex-1 mr-2"><%= formatProjectName(inv.project_name) %></a>
+        <div class="status-dropdown inline-block relative">
+          <button type="button" data-status-btn="<%= inv.id %>"
+            class="status-btn px-2 py-0.5 text-xs rounded-full cursor-pointer transition-colors whitespace-nowrap
+            <%= inv.status === 'draft' ? 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500' : inv.status === 'confirmed' ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800' : 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800' %>"
+            data-status="<%= inv.status %>">
+            <%= inv.status === 'draft' ? t('invoice.status_draft') : inv.status === 'confirmed' ? t('invoice.status_confirmed') : t('invoice.status_discarded') %>
+          </button>
+          <div class="status-menu hidden absolute z-10 mt-1 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1 min-w-[100px]">
+            <button type="button" data-set-status="draft" data-invoice-id="<%= inv.id %>" class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><%= t('invoice.status_draft') %></button>
+            <button type="button" data-set-status="confirmed" data-invoice-id="<%= inv.id %>" class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-green-600 dark:text-green-400"><%= t('invoice.status_confirmed') %></button>
+            <button type="button" data-set-status="discarded" data-invoice-id="<%= inv.id %>" class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400"><%= t('invoice.status_discarded') %></button>
+          </div>
+        </div>
+      </div>
+      <!-- Row 2: Amount + Actions -->
+      <div class="flex justify-between items-center">
+        <span class="text-sm font-medium text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></span>
+        <div class="flex items-center gap-3 text-xs">
+          <a href="/invoices/<%= inv.id %>" class="text-green-600 dark:text-green-400"><%= t('invoice.print') %></a>
+          <a href="/invoices/<%= inv.id %>/edit" class="<%= inv.status === 'confirmed' || inv.status === 'discarded' ? 'text-gray-400 dark:text-gray-500 pointer-events-none' : 'text-blue-600 dark:text-blue-400' %>"><%= t('common.edit') %></a>
+          <form method="POST" action="/invoices/<%= inv.id %>/duplicate" class="inline">
+            <button type="submit" class="text-purple-600 dark:text-purple-400"><%= t('invoice.duplicate') %></button>
+          </form>
+          <form method="POST" action="/invoices/<%= inv.id %>/delete" onsubmit="return confirm('<%= t('common.confirm_delete') %>')" class="inline">
+            <button type="submit" class="text-red-600 dark:text-red-400"><%= t('common.delete') %></button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+    <% } %>
+  </div>
+
+  <!-- Desktop: Table Layout -->
+  <div class="hidden sm:block overflow-x-auto">
     <table class="min-w-full">
       <thead class="bg-gray-50 dark:bg-gray-700">
         <tr>
-          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 sm:hidden"><%= t('invoice.project') %></th>
-          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden sm:table-cell"><%= t('invoice.number') %></th>
-          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden sm:table-cell"><%= t('invoice.project') %></th>
-          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden md:table-cell"><%= t('invoice.client') %></th>
-          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden lg:table-cell"><%= t('invoice.date') %></th>
-          <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('invoice.amount') %></th>
-          <th class="px-4 py-3 text-center text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('invoice.status') %></th>
-          <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('common.actions') %></th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.number') %></th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.project') %></th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell"><%= t('invoice.client') %></th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden lg:table-cell"><%= t('invoice.date') %></th>
+          <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.amount') %></th>
+          <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.status') %></th>
+          <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('common.actions') %></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
         <tr id="noInvoicesRow" class="<%= invoices.length > 0 || (!useClientSide && searchQuery) ? 'hidden' : '' %>">
-          <td colspan="8" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+          <td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
             <%= t('invoice.no_invoices') %>
           </td>
         </tr>
         <tr id="noResultsRow" class="<%= !useClientSide && searchQuery && invoices.length === 0 ? '' : 'hidden' %>">
-          <td colspan="8" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+          <td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
             <%= t('invoice.no_search_results') %>
           </td>
         </tr>
         <% if (invoices.length > 0) { %>
         <% invoices.forEach(inv => { %>
         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 invoice-row" data-project="<%= (inv.project_name || '').toLowerCase() %>" data-client="<%= (inv.client_name || '').toLowerCase() %>">
-          <td class="px-4 py-4 sm:hidden">
+          <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300"><%= inv.invoice_number %></td>
+          <td class="px-4 py-4 text-sm">
             <a href="/invoices/<%= inv.id %>" class="text-blue-600 dark:text-blue-400 hover:underline font-medium"><%= formatProjectName(inv.project_name) %></a>
           </td>
-          <td class="px-4 py-4 text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= inv.invoice_number %></td>
-          <td class="px-4 py-4 hidden sm:table-cell">
-            <a href="/invoices/<%= inv.id %>" class="text-blue-600 dark:text-blue-400 hover:underline font-medium"><%= formatProjectName(inv.project_name) %></a>
-          </td>
-          <td class="px-4 py-4 text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= inv.client_name || '-' %></td>
-          <td class="px-4 py-4 text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= inv.issue_date || '-' %></td>
-          <td class="px-4 py-4 text-right font-medium text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></td>
+          <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= inv.client_name || '-' %></td>
+          <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= inv.issue_date || '-' %></td>
+          <td class="px-4 py-4 text-sm text-right font-medium text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></td>
           <td class="px-4 py-4 text-center relative">
             <div class="status-dropdown inline-block">
               <button type="button" data-status-btn="<%= inv.id %>"
@@ -107,18 +151,9 @@
                 <%= inv.status === 'draft' ? t('invoice.status_draft') : inv.status === 'confirmed' ? t('invoice.status_confirmed') : t('invoice.status_discarded') %>
               </button>
               <div class="status-menu hidden absolute z-10 mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1 min-w-[100px]">
-                <button type="button" data-set-status="draft" data-invoice-id="<%= inv.id %>"
-                  class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">
-                  <%= t('invoice.status_draft') %>
-                </button>
-                <button type="button" data-set-status="confirmed" data-invoice-id="<%= inv.id %>"
-                  class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-green-600 dark:text-green-400">
-                  <%= t('invoice.status_confirmed') %>
-                </button>
-                <button type="button" data-set-status="discarded" data-invoice-id="<%= inv.id %>"
-                  class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400">
-                  <%= t('invoice.status_discarded') %>
-                </button>
+                <button type="button" data-set-status="draft" data-invoice-id="<%= inv.id %>" class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><%= t('invoice.status_draft') %></button>
+                <button type="button" data-set-status="confirmed" data-invoice-id="<%= inv.id %>" class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-green-600 dark:text-green-400"><%= t('invoice.status_confirmed') %></button>
+                <button type="button" data-set-status="discarded" data-invoice-id="<%= inv.id %>" class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400"><%= t('invoice.status_discarded') %></button>
               </div>
             </div>
           </td>
