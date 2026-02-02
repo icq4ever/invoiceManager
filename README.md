@@ -93,6 +93,15 @@ See [LICENSE](LICENSE) for details.
 
 ## Changelog
 
+### v1.2.0
+- Mobile UI improvements
+  - Added GitHub and Bug Report links to mobile side menu
+  - Full-width divider between navigation sections
+  - Improved dashboard stat card padding
+  - Added clear (X) button to search input
+- Shortened restore description text for single-line display
+- Various UI consistency improvements
+
 ### v1.1.0
 - Added itemized invoice details mode (sub-items with individual pricing)
 - Added invoice status management with dropdown (draft/confirmed/discarded)
@@ -119,4 +128,4 @@ See [LICENSE](LICENSE) for details.
 
 ---
 
-**Version**: 1.1.0 | Built with Node.js, Express, and Tailwind CSS
+**Version**: 1.2.0 | Built with Node.js, Express, and Tailwind CSS
