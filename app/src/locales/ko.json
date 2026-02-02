@@ -85,6 +85,12 @@
     "status_accepted": "수락",
     "status_rejected": "거절",
     "no_invoices": "견적서가 없습니다",
+    "search_placeholder": "프로젝트 또는 클라이언트 검색...",
+    "clear_search": "검색 초기화",
+    "page_info": "페이지 {{current}} / {{total}}",
+    "prev_page": "이전",
+    "next_page": "다음",
+    "no_search_results": "검색 결과가 없습니다",
     "tax_excluded": "부가세 제외",
     "currency": "통화",
     "currency_krw": "원화 (₩)",
@@ -141,7 +147,8 @@
     "phone": "연락처",
     "email": "이메일",
     "address": "주소",
-    "no_clients": "등록된 클라이언트가 없습니다"
+    "no_clients": "등록된 클라이언트가 없습니다",
+    "search_placeholder": "회사/이름 또는 담당자 검색..."
   },
   "template": {
     "title": "문구 템플릿",

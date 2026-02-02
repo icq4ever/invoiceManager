@@ -231,6 +231,11 @@ function initDatabase() {
     insertTemplate.run('비용 조정 안내', '최종 비용은 실제 작업 난이도에 따라 조정될 수 있습니다.', 0, 3);
   }
 
+  // Create indexes for search performance
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_project_name ON invoices(project_name)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_created_at ON invoices(created_at DESC)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_clients_name ON clients(name)`);
+
   // Record schema version if not set or different
   if (currentVersion !== SCHEMA_VERSION) {
     const description = currentVersion

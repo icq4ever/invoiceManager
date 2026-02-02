@@ -85,6 +85,12 @@
     "status_accepted": "Accepted",
     "status_rejected": "Rejected",
     "no_invoices": "No invoices",
+    "search_placeholder": "Search project or client...",
+    "clear_search": "Clear",
+    "page_info": "Page {{current}} / {{total}}",
+    "prev_page": "Prev",
+    "next_page": "Next",
+    "no_search_results": "No results found",
     "tax_excluded": "excl. Tax",
     "currency": "Currency",
     "currency_krw": "Korean Won (₩)",
@@ -141,7 +147,8 @@
     "phone": "Phone",
     "email": "Email",
     "address": "Address",
-    "no_clients": "No clients registered"
+    "no_clients": "No clients registered",
+    "search_placeholder": "Search name or contact..."
   },
   "template": {
     "title": "Templates",

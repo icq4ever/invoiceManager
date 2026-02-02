@@ -13,11 +13,49 @@
     return name.replace(/\\n/g, ' ').replace(/\n/g, ' ');
   }
 %>
-<div class="mb-6 flex justify-between items-center">
+<div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
   <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= t('invoice.list') %></h1>
-  <a href="/invoices/new" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-    <%= t('invoice.new') %>
-  </a>
+  <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+    <% if (useClientSide) { %>
+    <!-- Client-side filtering (instant) -->
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        <input type="text" id="invoiceSearch"
+          placeholder="<%= t('invoice.search_placeholder') %>"
+          class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
+        <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+      <button type="button" id="clearSearch" class="hidden px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white text-sm">
+        <%= t('invoice.clear_search') %>
+      </button>
+    </div>
+    <% } else { %>
+    <!-- Server-side filtering (for large datasets) -->
+    <form method="GET" action="/invoices" class="flex items-center gap-2">
+      <div class="relative">
+        <input type="text" name="q" value="<%= searchQuery || '' %>"
+          placeholder="<%= t('invoice.search_placeholder') %>"
+          class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
+        <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+      <button type="submit" class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-500">
+        <%= t('common.search') %>
+      </button>
+      <% if (searchQuery) { %>
+      <a href="/invoices" class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white text-sm">
+        <%= t('invoice.clear_search') %>
+      </a>
+      <% } %>
+    </form>
+    <% } %>
+    <a href="/invoices/new" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 text-center">
+      <%= t('invoice.new') %>
+    </a>
+  </div>
 </div>
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -25,35 +63,41 @@
     <table class="min-w-full">
       <thead class="bg-gray-50 dark:bg-gray-700">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase sm:hidden"><%= t('invoice.project') %></th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden sm:table-cell"><%= t('invoice.number') %></th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden sm:table-cell"><%= t('invoice.project') %></th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell"><%= t('invoice.client') %></th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden lg:table-cell"><%= t('invoice.date') %></th>
-          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.amount') %></th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('invoice.status') %></th>
-          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('common.actions') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 sm:hidden"><%= t('invoice.project') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden sm:table-cell"><%= t('invoice.number') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden sm:table-cell"><%= t('invoice.project') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden md:table-cell"><%= t('invoice.client') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden lg:table-cell"><%= t('invoice.date') %></th>
+          <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('invoice.amount') %></th>
+          <th class="px-4 py-3 text-center text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('invoice.status') %></th>
+          <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('common.actions') %></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-        <% if (invoices.length === 0) { %>
-        <tr>
-          <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400"><%= t('invoice.no_invoices') %></td>
+        <tr id="noInvoicesRow" class="<%= invoices.length > 0 || (!useClientSide && searchQuery) ? 'hidden' : '' %>">
+          <td colspan="8" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+            <%= t('invoice.no_invoices') %>
+          </td>
         </tr>
-        <% } else { %>
+        <tr id="noResultsRow" class="<%= !useClientSide && searchQuery && invoices.length === 0 ? '' : 'hidden' %>">
+          <td colspan="8" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+            <%= t('invoice.no_search_results') %>
+          </td>
+        </tr>
+        <% if (invoices.length > 0) { %>
         <% invoices.forEach(inv => { %>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-6 py-4 sm:hidden">
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 invoice-row" data-project="<%= (inv.project_name || '').toLowerCase() %>" data-client="<%= (inv.client_name || '').toLowerCase() %>">
+          <td class="px-4 py-4 sm:hidden">
             <a href="/invoices/<%= inv.id %>" class="text-blue-600 dark:text-blue-400 hover:underline font-medium"><%= formatProjectName(inv.project_name) %></a>
           </td>
-          <td class="px-6 py-4 text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= inv.invoice_number %></td>
-          <td class="px-6 py-4 hidden sm:table-cell">
+          <td class="px-4 py-4 text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= inv.invoice_number %></td>
+          <td class="px-4 py-4 hidden sm:table-cell">
             <a href="/invoices/<%= inv.id %>" class="text-blue-600 dark:text-blue-400 hover:underline font-medium"><%= formatProjectName(inv.project_name) %></a>
           </td>
-          <td class="px-6 py-4 text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= inv.client_name || '-' %></td>
-          <td class="px-6 py-4 text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= inv.issue_date || '-' %></td>
-          <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></td>
-          <td class="px-6 py-4 text-center">
+          <td class="px-4 py-4 text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= inv.client_name || '-' %></td>
+          <td class="px-4 py-4 text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= inv.issue_date || '-' %></td>
+          <td class="px-4 py-4 text-right font-medium text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></td>
+          <td class="px-4 py-4 text-center">
             <% if (inv.status === 'draft') { %>
             <span class="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300"><%= t('invoice.status_draft') %></span>
             <% } else if (inv.status === 'sent') { %>
@@ -64,7 +108,7 @@
             <span class="px-2 py-1 text-xs rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"><%= t('invoice.status_rejected') %></span>
             <% } %>
           </td>
-          <td class="px-6 py-4 text-right">
+          <td class="px-4 py-4 text-right">
             <div class="grid grid-cols-2 gap-x-4 gap-y-1 w-fit justify-end ml-auto">
               <a href="/invoices/<%= inv.id %>" class="text-green-600 dark:text-green-400 hover:underline text-sm"><%= t('invoice.print') %></a>
               <a href="/invoices/<%= inv.id %>/edit" class="text-blue-600 dark:text-blue-400 hover:underline text-sm"><%= t('common.edit') %></a>
@@ -82,4 +126,73 @@
       </tbody>
     </table>
   </div>
+  <% if (!useClientSide && totalPages > 1) { %>
+  <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex flex-col sm:flex-row justify-between items-center gap-2">
+    <span class="text-sm text-gray-600 dark:text-gray-300">
+      <%= t('invoice.page_info').replace('{{current}}', currentPage).replace('{{total}}', totalPages) %>
+    </span>
+    <div class="flex gap-2">
+      <% if (currentPage > 1) { %>
+      <a href="/invoices?page=<%= currentPage - 1 %><%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>"
+        class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
+        <%= t('invoice.prev_page') %>
+      </a>
+      <% } else { %>
+      <span class="px-3 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded-md text-gray-400 dark:text-gray-500 cursor-not-allowed">
+        <%= t('invoice.prev_page') %>
+      </span>
+      <% } %>
+      <% if (currentPage < totalPages) { %>
+      <a href="/invoices?page=<%= currentPage + 1 %><%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>"
+        class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
+        <%= t('invoice.next_page') %>
+      </a>
+      <% } else { %>
+      <span class="px-3 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded-md text-gray-400 dark:text-gray-500 cursor-not-allowed">
+        <%= t('invoice.next_page') %>
+      </span>
+      <% } %>
+    </div>
+  </div>
+  <% } %>
 </div>
+
+<% if (useClientSide) { %>
+<script>
+(function() {
+  const searchInput = document.getElementById('invoiceSearch');
+  const clearBtn = document.getElementById('clearSearch');
+  const rows = document.querySelectorAll('.invoice-row');
+  const noInvoicesRow = document.getElementById('noInvoicesRow');
+  const noResultsRow = document.getElementById('noResultsRow');
+
+  function filterInvoices() {
+    const query = searchInput.value.toLowerCase().trim();
+    let visibleCount = 0;
+
+    clearBtn.classList.toggle('hidden', !query);
+
+    rows.forEach(row => {
+      const project = row.dataset.project || '';
+      const client = row.dataset.client || '';
+      const match = !query || project.includes(query) || client.includes(query);
+      row.classList.toggle('hidden', !match);
+      if (match) visibleCount++;
+    });
+
+    noInvoicesRow.classList.add('hidden');
+    noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
+    if (rows.length === 0 && !query) {
+      noInvoicesRow.classList.remove('hidden');
+    }
+  }
+
+  searchInput.addEventListener('input', filterInvoices);
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    filterInvoices();
+    searchInput.focus();
+  });
+})();
+</script>
+<% } %>

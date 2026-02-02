@@ -7,11 +7,38 @@ const router = express.Router();
 // Apply auth to all routes
 router.use(requireAuth);
 
-// List clients
+// List clients with hybrid search and pagination
 router.get('/', (req, res) => {
   const db = getDatabase();
-  const clients = db.prepare('SELECT * FROM clients ORDER BY name ASC').all();
-  res.render('clients/list', { clients });
+  const searchQuery = req.query.q || '';
+  const page = parseInt(req.query.page) || 1;
+  const perPage = 50;
+  const clientSideThreshold = 100;
+
+  const totalCount = db.prepare('SELECT COUNT(*) as total FROM clients').get().total;
+  const useClientSide = totalCount <= clientSideThreshold && !searchQuery;
+
+  let clients, totalPages;
+
+  if (useClientSide) {
+    clients = db.prepare('SELECT * FROM clients ORDER BY name ASC').all();
+    totalPages = 1;
+  } else {
+    let whereClause = '';
+    let params = [];
+
+    if (searchQuery) {
+      whereClause = 'WHERE name LIKE ? OR contact_person LIKE ?';
+      params = [`%${searchQuery}%`, `%${searchQuery}%`];
+    }
+
+    const filteredCount = db.prepare(`SELECT COUNT(*) as total FROM clients ${whereClause}`).get(...params).total;
+    totalPages = Math.ceil(filteredCount / perPage);
+
+    clients = db.prepare(`SELECT * FROM clients ${whereClause} ORDER BY name ASC LIMIT ? OFFSET ?`).all(...params, perPage, (page - 1) * perPage);
+  }
+
+  res.render('clients/list', { clients, searchQuery, useClientSide, currentPage: page, totalPages });
 });
 
 // New client form

@@ -38,18 +38,67 @@ function generateInvoiceNumber(db, companyId) {
   return prefix + String(nextNum).padStart(4, '0');
 }
 
-// List invoices
+// List invoices with hybrid search (client-side for small data, server-side for large)
 router.get('/', (req, res) => {
   const db = getDatabase();
-  const invoices = db.prepare(`
-    SELECT i.*, c.name as client_name, co.name as company_name
-    FROM invoices i
-    LEFT JOIN clients c ON i.client_id = c.id
-    LEFT JOIN companies co ON i.company_id = co.id
-    ORDER BY i.created_at DESC
-  `).all();
+  const searchQuery = req.query.q || '';
+  const page = parseInt(req.query.page) || 1;
+  const perPage = 50;
+  const clientSideThreshold = 100; // Use client-side filtering under this count
 
-  res.render('invoices/list', { invoices });
+  // Get total count
+  const totalCount = db.prepare('SELECT COUNT(*) as total FROM invoices').get().total;
+  const useClientSide = totalCount <= clientSideThreshold && !searchQuery;
+
+  let invoices, totalPages;
+
+  if (useClientSide) {
+    // Small dataset: load all for instant client-side filtering
+    invoices = db.prepare(`
+      SELECT i.*, c.name as client_name, co.name as company_name
+      FROM invoices i
+      LEFT JOIN clients c ON i.client_id = c.id
+      LEFT JOIN companies co ON i.company_id = co.id
+      ORDER BY i.created_at DESC
+    `).all();
+    totalPages = 1;
+  } else {
+    // Large dataset: server-side filtering with pagination
+    let whereClause = '';
+    let params = [];
+
+    if (searchQuery) {
+      whereClause = 'WHERE i.project_name LIKE ? OR c.name LIKE ?';
+      params = [`%${searchQuery}%`, `%${searchQuery}%`];
+    }
+
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM invoices i
+      LEFT JOIN clients c ON i.client_id = c.id
+      ${whereClause}
+    `;
+    const filteredCount = db.prepare(countQuery).get(...params).total;
+    totalPages = Math.ceil(filteredCount / perPage);
+
+    invoices = db.prepare(`
+      SELECT i.*, c.name as client_name, co.name as company_name
+      FROM invoices i
+      LEFT JOIN clients c ON i.client_id = c.id
+      LEFT JOIN companies co ON i.company_id = co.id
+      ${whereClause}
+      ORDER BY i.created_at DESC
+      LIMIT ? OFFSET ?
+    `).all(...params, perPage, (page - 1) * perPage);
+  }
+
+  res.render('invoices/list', {
+    invoices,
+    searchQuery,
+    currentPage: page,
+    totalPages,
+    useClientSide
+  });
 });
 
 // New invoice form

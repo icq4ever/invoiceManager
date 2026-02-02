@@ -1,8 +1,44 @@
-<div class="mb-6 flex justify-between items-center">
+<div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
   <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= t('client.list') %></h1>
-  <a href="/clients/new" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-    <%= t('client.new') %>
-  </a>
+  <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+    <% if (useClientSide) { %>
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        <input type="text" id="clientSearch"
+          placeholder="<%= t('client.search_placeholder') %>"
+          class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
+        <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+      <button type="button" id="clearSearch" class="hidden px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white text-sm">
+        <%= t('invoice.clear_search') %>
+      </button>
+    </div>
+    <% } else { %>
+    <form method="GET" action="/clients" class="flex items-center gap-2">
+      <div class="relative">
+        <input type="text" name="q" value="<%= searchQuery || '' %>"
+          placeholder="<%= t('client.search_placeholder') %>"
+          class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
+        <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+      <button type="submit" class="px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-500">
+        <%= t('common.search') %>
+      </button>
+      <% if (searchQuery) { %>
+      <a href="/clients" class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white text-sm">
+        <%= t('invoice.clear_search') %>
+      </a>
+      <% } %>
+    </form>
+    <% } %>
+    <a href="/clients/new" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 text-center">
+      <%= t('client.new') %>
+    </a>
+  </div>
 </div>
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -10,26 +46,30 @@
     <table class="min-w-full">
       <thead class="bg-gray-50 dark:bg-gray-700">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('client.name') %></th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden sm:table-cell"><%= t('client.contact_person') %></th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell"><%= t('client.phone') %></th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden lg:table-cell"><%= t('client.email') %></th>
-          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"><%= t('common.actions') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('client.name') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden sm:table-cell"><%= t('client.business_number') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden md:table-cell"><%= t('client.contact_person') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden lg:table-cell"><%= t('client.phone') %></th>
+          <th class="px-4 py-3 text-left text-sm font-bold text-gray-700 dark:text-gray-200 hidden xl:table-cell"><%= t('client.email') %></th>
+          <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-200"><%= t('common.actions') %></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-        <% if (clients.length === 0) { %>
-        <tr>
-          <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400"><%= t('client.no_clients') %></td>
+        <tr id="noClientsRow" class="<%= clients.length > 0 || (!useClientSide && searchQuery) ? 'hidden' : '' %>">
+          <td colspan="6" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400"><%= t('client.no_clients') %></td>
         </tr>
-        <% } else { %>
+        <tr id="noResultsRow" class="<%= !useClientSide && searchQuery && clients.length === 0 ? '' : 'hidden' %>">
+          <td colspan="6" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400"><%= t('invoice.no_search_results') %></td>
+        </tr>
+        <% if (clients.length > 0) { %>
         <% clients.forEach(c => { %>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-6 py-4 font-medium text-gray-900 dark:text-white"><%= c.name %></td>
-          <td class="px-6 py-4 text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= c.contact_person || '-' %></td>
-          <td class="px-6 py-4 text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= c.phone || '-' %></td>
-          <td class="px-6 py-4 text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= c.email || '-' %></td>
-          <td class="px-6 py-4 text-right space-x-2">
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 client-row" data-name="<%= (c.name || '').toLowerCase() %>" data-contact="<%= (c.contact_person || '').toLowerCase() %>">
+          <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white"><%= c.name %></td>
+          <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= c.business_number || '-' %></td>
+          <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= c.contact_person || '-' %></td>
+          <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= c.phone || '-' %></td>
+          <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hidden xl:table-cell"><%= c.email || '-' %></td>
+          <td class="px-4 py-3 text-sm text-right space-x-2">
             <a href="/clients/<%= c.id %>/edit" class="text-blue-600 dark:text-blue-400 hover:underline"><%= t('common.edit') %></a>
             <form method="POST" action="/clients/<%= c.id %>/delete" class="inline" onsubmit="return confirm('<%= t('common.confirm_delete') %>')">
               <button type="submit" class="text-red-600 dark:text-red-400 hover:underline ml-2"><%= t('common.delete') %></button>
@@ -42,3 +82,65 @@
     </table>
   </div>
 </div>
+
+<% if (!useClientSide && totalPages > 1) { %>
+<div class="mt-4 flex justify-between items-center">
+  <span class="text-sm text-gray-600 dark:text-gray-400">
+    <%= t('invoice.page_info').replace('{{current}}', currentPage).replace('{{total}}', totalPages) %>
+  </span>
+  <div class="flex gap-2">
+    <% if (currentPage > 1) { %>
+    <a href="/clients?page=<%= currentPage - 1 %><%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>"
+       class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600">
+      <%= t('invoice.prev_page') %>
+    </a>
+    <% } %>
+    <% if (currentPage < totalPages) { %>
+    <a href="/clients?page=<%= currentPage + 1 %><%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>"
+       class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600">
+      <%= t('invoice.next_page') %>
+    </a>
+    <% } %>
+  </div>
+</div>
+<% } %>
+
+<% if (useClientSide) { %>
+<script>
+(function() {
+  const searchInput = document.getElementById('clientSearch');
+  const clearBtn = document.getElementById('clearSearch');
+  const rows = document.querySelectorAll('.client-row');
+  const noClientsRow = document.getElementById('noClientsRow');
+  const noResultsRow = document.getElementById('noResultsRow');
+
+  function filterClients() {
+    const query = searchInput.value.toLowerCase().trim();
+    let visibleCount = 0;
+
+    clearBtn.classList.toggle('hidden', !query);
+
+    rows.forEach(row => {
+      const name = row.dataset.name || '';
+      const contact = row.dataset.contact || '';
+      const match = !query || name.includes(query) || contact.includes(query);
+      row.classList.toggle('hidden', !match);
+      if (match) visibleCount++;
+    });
+
+    noClientsRow.classList.add('hidden');
+    noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
+    if (rows.length === 0 && !query) {
+      noClientsRow.classList.remove('hidden');
+    }
+  }
+
+  searchInput.addEventListener('input', filterClients);
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    filterClients();
+    searchInput.focus();
+  });
+})();
+</script>
+<% } %>
