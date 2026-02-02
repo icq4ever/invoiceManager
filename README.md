@@ -103,7 +103,8 @@ See [LICENSE](LICENSE) for details.
 - Added GitHub link to navigation menu
 - Added website and fax fields for company information
 - Per-invoice display options (stamp, website, fax, bank info visibility)
-- Per-invoice column width settings saved to database
+- Resizable table columns in invoice preview - drag column headers to adjust widths (saved per invoice)
+- Duplicate button in invoice preview page
 - Dynamic version badge in navigation header (from package.json)
 
 ### v1.0.1
