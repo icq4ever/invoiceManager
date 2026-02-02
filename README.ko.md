@@ -2,7 +2,7 @@
 
 다국어 지원(한글/영문)하는 자체 호스팅 기반 견적서 생성 및 관리 웹 애플리케이션입니다.
 
-**언어**: [English](README.md) | [한국어](README.ko.md)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)](https://github.com/icq4ever/invoiceManager) | **언어**: [English](README.md) | [한국어](README.ko.md)
 
 ## 주요 기능
 
@@ -95,6 +95,7 @@ Invoice Manager가 도움이 되었다면 개발을 지원해주세요:
 - 세부항목별 입력 모드 추가 (개별 금액 입력 가능)
 - 데이터베이스 스키마 버전 관리 추가
 - 견적서 보기 테이블 스타일 개선
+- 상단 메뉴에 GitHub 링크 추가
 
 ### v1.0.1
 - 버그 수정 및 개선

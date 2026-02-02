@@ -2,7 +2,7 @@
 
 A self-hosted web application for generating and managing multi-company invoices with multilingual support (Korean/English).
 
-**Language**: [English](README.md) | [한국어](README.ko.md)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)](https://github.com/icq4ever/invoiceManager) | **Language**: [English](README.md) | [한국어](README.ko.md)
 
 ## Features
 
@@ -95,6 +95,7 @@ See [LICENSE](LICENSE) for details.
 - Added itemized invoice details mode (sub-items with individual pricing)
 - Added database schema version tracking
 - Improved invoice view table styling
+- Added GitHub link to navigation menu
 
 ### v1.0.1
 - Bug fixes and improvements
