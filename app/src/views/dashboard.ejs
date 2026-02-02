@@ -17,21 +17,33 @@
   <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= t('dashboard.title') %></h1>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_invoices') %></div>
-    <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.invoices %></div>
-    <a href="/invoices" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_invoices') %></div>
+        <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.invoices %></div>
+      </div>
+      <a href="/invoices" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+    </div>
   </div>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_companies') %></div>
-    <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.companies %></div>
-    <a href="/companies" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_companies') %></div>
+        <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.companies %></div>
+      </div>
+      <a href="/companies" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+    </div>
   </div>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_clients') %></div>
-    <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.clients %></div>
-    <a href="/clients" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="text-gray-500 dark:text-gray-400 text-sm"><%= t('dashboard.total_clients') %></div>
+        <div class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.clients %></div>
+      </div>
+      <a href="/clients" class="text-blue-600 dark:text-blue-400 text-sm hover:underline"><%= t('dashboard.view') %> →</a>
+    </div>
   </div>
 </div>
 
