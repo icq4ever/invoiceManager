@@ -53,9 +53,7 @@
       .project-title { font-size: 24px !important; font-weight: 300 !important; overflow-wrap: break-word !important; word-break: keep-all !important; line-height: 1.2 !important; }
       tr { border-color: #000 !important; }
       .border-b { border-bottom: 1px solid #000 !important; }
-      .border-dashed {
-        border-bottom: 1px solid #ccc !important;
-      }
+      tr.border-gray-300, td.border-gray-300 { border-bottom: 1px solid #ccc !important; }
       
       .top-section {
         display: flex !important;
@@ -89,7 +87,7 @@
         font-size: inherit !important;
       }
       .summary-section table tr:first-child {
-        border-bottom: 1px dotted #000 !important;
+        border-bottom: 1px solid #ccc !important;
       }
       
       .summary-section table tr:last-child {
@@ -110,6 +108,23 @@
         border-top-color: #000 !important;
       }
       .resize-handle { display: none !important; }
+    }
+    /* Summary section styles (screen) */
+    .summary-section table tr:first-child {
+      border-bottom: 1px solid #d1d5db;
+    }
+    .summary-section table tr:nth-child(2) {
+      border-bottom: 1px solid #d1d5db;
+    }
+    .summary-section table tr:last-child {
+      border-top: 2px solid #1f2937;
+    }
+    .dark .summary-section table tr:first-child,
+    .dark .summary-section table tr:nth-child(2) {
+      border-bottom: 1px solid #4b5563;
+    }
+    .dark .summary-section table tr:last-child {
+      border-top: 2px solid #d1d5db;
     }
     /* Column resize handles */
     .resizable-th {
@@ -319,7 +334,7 @@
             <% items.forEach((item, itemIndex) => {
                const isLastItem = itemIndex === items.length - 1;
                const lastItemBorder = 'border-b border-gray-800 dark:border-gray-300';
-               const normalItemBorder = 'border-b border-gray-200 dark:border-gray-600';
+               const normalItemBorder = 'border-b border-gray-800 dark:border-gray-300';
             %>
             <% if (item.detail_mode === 'itemized' && item.subItems && item.subItems.length > 0) { %>
             <!-- Itemized mode: show sub-items -->
@@ -328,7 +343,7 @@
                const isLast = si === item.subItems.length - 1;
                const subBorder = isLast
                  ? (isLastItem ? lastItemBorder : normalItemBorder)
-                 : 'border-b border-dashed border-gray-200 dark:border-gray-600';
+                 : 'border-b border-gray-300 dark:border-gray-600';
             %>
             <tr>
               <% if (isFirst) { %><td class="py-1 font-medium align-top <%= isLastItem ? lastItemBorder : normalItemBorder %>" rowspan="<%= item.subItems.length %>"><%= item.title %></td><% } %>
@@ -355,11 +370,11 @@
         <!-- Summary -->
         <div class="flex mx-auto justify-end mb-4 summary-section">
           <table style="width: 100%;">
-            <tr class="border-b border-dashed border-gray-300 dark:border-gray-600">
+            <tr class="border-b border-gray-300 dark:border-gray-600">
               <td class="py-1 font-bold text-gray-600 dark:text-gray-400"><%= t('invoice.subtotal') %></td>
               <td class="py-1 text-right font-bold"><%= formatAmount(invoice.subtotal) %></td>
             </tr>
-            <tr class="border-b border-dashed border-gray-300 dark:border-gray-600">
+            <tr class="border-b border-gray-300 dark:border-gray-600">
               <td class="py-1 font-bold text-gray-600 dark:text-gray-400"><%= t('invoice.tax') %> (<%= invoice.tax_rate %>%)</td>
               <td class="py-1 text-right font-bold"><%= formatAmount(invoice.tax_amount) %></td>
             </tr>
