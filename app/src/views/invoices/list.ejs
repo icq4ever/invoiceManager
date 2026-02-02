@@ -18,44 +18,42 @@
   <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
     <% if (useClientSide) { %>
     <!-- Client-side filtering (instant) -->
-    <div class="flex items-center gap-1 w-full sm:w-auto">
-      <div class="relative flex-1 sm:flex-none">
-        <input type="text" id="invoiceSearch"
-          placeholder="<%= t('invoice.search_placeholder') %>"
-          class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
-        <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-      </div>
-      <button type="button" id="clearSearch" class="hidden p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white" title="<%= t('invoice.clear_search') %>">
-        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="relative w-full sm:w-64">
+      <input type="text" id="invoiceSearch"
+        placeholder="<%= t('invoice.search_placeholder') %>"
+        class="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 w-full">
+      <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <button type="button" id="clearSearch" class="hidden absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="<%= t('invoice.clear_search') %>">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
     <% } else { %>
     <!-- Server-side filtering (for large datasets) -->
-    <form method="GET" action="/invoices" class="flex items-center gap-1 w-full sm:w-auto">
-      <div class="relative flex-1 sm:flex-none">
+    <form method="GET" action="/invoices" class="flex items-center gap-2 w-full sm:w-auto">
+      <div class="relative flex-1 sm:w-64">
         <input type="text" name="q" value="<%= searchQuery || '' %>"
           placeholder="<%= t('invoice.search_placeholder') %>"
-          class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
+          class="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 w-full">
         <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
+        <% if (searchQuery) { %>
+        <a href="/invoices" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="<%= t('invoice.clear_search') %>">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </a>
+        <% } %>
       </div>
       <button type="submit" class="p-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500" title="<%= t('common.search') %>">
         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
       </button>
-      <% if (searchQuery) { %>
-      <a href="/invoices" class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white" title="<%= t('invoice.clear_search') %>">
-        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </a>
-      <% } %>
     </form>
     <% } %>
     <a href="/invoices/new" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 text-center w-full sm:w-auto">
