@@ -102,18 +102,6 @@
   </div>
 
   <div class="flex flex-col sm:flex-row gap-3">
-    <button id="btn-backup-database" onclick="downloadBackup('database')"
-            class="flex-1 sm:flex-none bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-      <span class="btn-text"><%= t('backup.download_database') %></span>
-      <span class="btn-loading hidden"><%= t('common.loading') %></span>
-    </button>
-
-    <button id="btn-backup-uploads" onclick="downloadBackup('uploads')"
-            class="flex-1 sm:flex-none bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-      <span class="btn-text"><%= t('backup.download_uploads') %></span>
-      <span class="btn-loading hidden"><%= t('common.loading') %></span>
-    </button>
-
     <button id="btn-backup-full" onclick="downloadBackup('full')"
             class="flex-1 sm:flex-none bg-purple-600 text-white px-4 py-2 rounded-md text-sm hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
       <span class="btn-text"><%= t('backup.download_full') %></span>
