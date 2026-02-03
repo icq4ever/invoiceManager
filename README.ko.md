@@ -18,13 +18,25 @@
 - 백업 & 복원
 - Docker 배포 지원
 
-## 스크린샷
+## 미리보기
 
-### 견적서 목록 & 미리보기
-![견적서 미리보기](assets/preview.png)
+### 대시보드
+![대시보드](assets/01_dashboard.png)
 
-### PDF 출력
-![PDF 출력](assets/output.png)
+### 견적서 목록
+![견적서 목록](assets/02_invoiceList.png)
+
+### 견적서 작성 - 단순 텍스트 모드
+![견적서 작성 - 단순 모드](assets/03_invoice_simple.png)
+
+### 견적서 작성 - 세부항목 모드
+![견적서 작성 - 세부항목 모드](assets/04_invoice_detail.png)
+
+### 견적서 인쇄 미리보기
+![견적서 인쇄 미리보기](assets/05_invoice_print_preview.png)
+
+### 클라이언트 목록
+![클라이언트 목록](assets/06_client_list.png)
 
 ## 빠른 시작
 

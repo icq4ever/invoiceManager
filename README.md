@@ -20,11 +20,23 @@ A self-hosted web application for generating and managing multi-company invoices
 
 ## Screenshots
 
-### Invoice List & Preview
-![Invoice Preview](assets/preview.png)
+### Dashboard
+![Dashboard](assets/01_dashboard.png)
 
-### PDF Output
-![PDF Output](assets/output.png)
+### Invoice List
+![Invoice List](assets/02_invoiceList.png)
+
+### Invoice Form - Simple Text Mode
+![Invoice Form - Simple Mode](assets/03_invoice_simple.png)
+
+### Invoice Form - Itemized Details Mode
+![Invoice Form - Itemized Mode](assets/04_invoice_detail.png)
+
+### Invoice Print Preview
+![Invoice Print Preview](assets/05_invoice_print_preview.png)
+
+### Client List
+![Client List](assets/06_client_list.png)
 
 ## Quick Start
 
