@@ -465,4 +465,32 @@ router.post('/restore/full', upload.single('backup'), async (req, res) => {
   }
 });
 
+// Reset all data (delete everything)
+router.post('/reset', async (req, res) => {
+  const t = req.t || ((key) => key);
+
+  try {
+    console.log(`[Reset] Data reset requested by ${req.session.user.username}`);
+
+    const db = getDatabase();
+
+    // Delete all data in correct order (respecting foreign keys)
+    db.prepare('DELETE FROM invoice_item_details').run();
+    db.prepare('DELETE FROM invoice_items').run();
+    db.prepare('DELETE FROM invoices').run();
+    db.prepare('DELETE FROM clients').run();
+    db.prepare('DELETE FROM companies').run();
+
+    // Reset autoincrement counters
+    db.prepare("DELETE FROM sqlite_sequence WHERE name IN ('companies', 'clients', 'invoices', 'invoice_items', 'invoice_item_details')").run();
+
+    console.log('[Reset] All data deleted successfully');
+    res.json({ success: true, message: t('reset.success') });
+
+  } catch (err) {
+    console.error('[Reset] Data reset error:', err);
+    res.status(500).json({ success: false, error: t('reset.error_failed') });
+  }
+});
+
 module.exports = router;

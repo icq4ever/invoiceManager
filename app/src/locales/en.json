@@ -201,5 +201,14 @@
     "error_invalid_full": "Invalid full backup. The archive must contain invoice.db file.",
     "confirm": "Are you sure you want to restore? This will replace current data.",
     "warning": "Warning: Restoring will overwrite existing data!"
+  },
+  "reset": {
+    "title": "Reset Data",
+    "description": "Permanently delete all data from the system.",
+    "warning": "Warning: This action cannot be undone!",
+    "button": "Delete All Data",
+    "confirm": "Are you absolutely sure you want to delete ALL data? This action cannot be undone and will permanently delete all invoices, clients, and company information.",
+    "success": "All data has been deleted. Please refresh the page.",
+    "error_failed": "Failed to delete data. Please try again."
   }
 }

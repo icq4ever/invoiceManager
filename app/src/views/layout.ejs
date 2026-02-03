@@ -229,6 +229,11 @@
         selectFile: '<%= typeof t === "function" ? t("restore.error_no_file").replace(/'/g, "\\'") : "Please select a file first" %>',
         confirm: '<%= typeof t === "function" ? t("restore.confirm").replace(/'/g, "\\'") : "Are you sure you want to restore?" %>',
         failed: '<%= typeof t === "function" ? t("restore.error_failed").replace(/'/g, "\\'") : "Restore failed" %>'
+      },
+      reset: {
+        confirm: '<%= typeof t === "function" ? t("reset.confirm").replace(/'/g, "\\'") : "Are you sure you want to delete all data?" %>',
+        success: '<%= typeof t === "function" ? t("reset.success").replace(/'/g, "\\'") : "All data deleted successfully" %>',
+        failed: '<%= typeof t === "function" ? t("reset.error_failed").replace(/'/g, "\\'") : "Failed to delete data" %>'
       }
     };
 
@@ -329,6 +334,62 @@
         btn.disabled = false;
         if (statusEl) {
           statusEl.innerHTML = '<span class="text-red-600 dark:text-red-400">✗ ' + i18n.restore.failed + '</span>';
+        }
+      });
+    }
+
+    // Reset all data function (global)
+    function resetAllData() {
+      // Double confirm
+      if (!confirm(i18n.reset.confirm)) {
+        return;
+      }
+
+      var btn = document.getElementById('btn-reset');
+      var statusEl = document.getElementById('reset-status');
+      if (!btn) return;
+
+      var btnText = btn.querySelector('.btn-text');
+      var btnLoading = btn.querySelector('.btn-loading');
+
+      // Show loading state
+      if (btnText) btnText.classList.add('hidden');
+      if (btnLoading) btnLoading.classList.remove('hidden');
+      btn.disabled = true;
+      if (statusEl) statusEl.innerHTML = '';
+
+      // Send reset request
+      fetch('/backup/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        if (btnText) btnText.classList.remove('hidden');
+        if (btnLoading) btnLoading.classList.add('hidden');
+        btn.disabled = false;
+
+        if (data.success) {
+          if (statusEl) {
+            statusEl.innerHTML = '<span class="text-green-600 dark:text-green-400">✓ ' + data.message + '</span>';
+          }
+          // Reload page after reset
+          setTimeout(function() { window.location.reload(); }, 2000);
+        } else {
+          if (statusEl) {
+            statusEl.innerHTML = '<span class="text-red-600 dark:text-red-400">✗ ' + (data.error || i18n.reset.failed) + '</span>';
+          }
+        }
+      })
+      .catch(function(err) {
+        console.error('Reset error:', err);
+        if (btnText) btnText.classList.remove('hidden');
+        if (btnLoading) btnLoading.classList.add('hidden');
+        btn.disabled = false;
+        if (statusEl) {
+          statusEl.innerHTML = '<span class="text-red-600 dark:text-red-400">✗ ' + i18n.reset.failed + '</span>';
         }
       });
     }
