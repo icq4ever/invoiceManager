@@ -28,3 +28,4 @@ app/temp/
 
 # Sample files (reference only)
 sample/
+scripts/insert-dummy-data.sql
