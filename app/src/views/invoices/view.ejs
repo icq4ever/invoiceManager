@@ -179,6 +179,10 @@
       }
       return currencySymbol + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
     }
+    function nl2br(text) {
+      if (!text) return '';
+      return text.replace(/\n/g, '<br>');
+    }
   %>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors">
@@ -392,7 +396,7 @@
             <!-- Text mode: show details as before -->
             <tr class="<%= isLastItem ? lastItemBorder : normalItemBorder %>">
               <td class="py-1.5 font-medium"><%= item.title %></td>
-              <td class="py-1.5 whitespace-pre-line text-gray-600 dark:text-gray-400"><%= item.details %></td>
+              <td class="py-1.5 text-gray-600 dark:text-gray-400"><%- nl2br(item.details) %></td>
               <td class="py-1.5 text-center"><%= item.quantity %></td>
               <td class="py-1.5 text-right"><%= formatAmount(item.unit_price) %></td>
               <td class="py-1.5 text-right"><%= formatAmount(item.amount) %></td>
