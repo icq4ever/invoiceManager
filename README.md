@@ -105,6 +105,12 @@ See [LICENSE](LICENSE) for details.
 
 ## Changelog
 
+### v1.2.2
+- Added data reset feature to dashboard with confirmation dialog
+- Invoice number column now visible in desktop view (640px+) instead of XL only (1280px+)
+- Fixed newline handling in invoice details for proper text formatting
+- Updated README with 6 detailed screenshots showcasing all major features
+
 ### v1.2.0
 - Mobile UI improvements
   - Added GitHub and Bug Report links to mobile side menu
@@ -140,4 +146,4 @@ See [LICENSE](LICENSE) for details.
 
 ---
 
-**Version**: 1.2.0 | Built with Node.js, Express, and Tailwind CSS
+**Version**: 1.2.2 | Built with Node.js, Express, and Tailwind CSS
