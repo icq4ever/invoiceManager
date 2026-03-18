@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const SCHEMA_VERSION = '1.1.0';
+const SCHEMA_VERSION = '1.2.0';
 
 let db = null;
 
@@ -269,6 +269,54 @@ function initDatabase() {
     insertTemplate.run('유지보수 협의', '유지보수, 정기 점검 등의 계약은 필요시 추후에 협의할 수 있습니다.', 0, 2);
     insertTemplate.run('비용 조정 안내', '최종 비용은 실제 작업 난이도에 따라 조정될 수 있습니다.', 0, 3);
   }
+
+  // SMTP settings columns on companies (migration v1.2.0)
+  const smtpColumns = [
+    { name: 'smtp_host', type: 'TEXT' },
+    { name: 'smtp_port', type: 'INTEGER DEFAULT 587' },
+    { name: 'smtp_secure', type: 'INTEGER DEFAULT 0' },
+    { name: 'smtp_user', type: 'TEXT' },
+    { name: 'smtp_pass', type: 'TEXT' },
+    { name: 'smtp_from_name', type: 'TEXT' },
+    { name: 'smtp_from_email', type: 'TEXT' }
+  ];
+  for (const col of smtpColumns) {
+    try {
+      db.exec(`ALTER TABLE companies ADD COLUMN ${col.name} ${col.type}`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
+
+  // Email templates table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS email_templates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      company_id INTEGER,
+      name TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      body TEXT NOT NULL,
+      is_default INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Email log table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS email_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id INTEGER,
+      recipient_email TEXT NOT NULL,
+      from_email TEXT,
+      from_name TEXT,
+      subject TEXT,
+      status TEXT DEFAULT 'sent',
+      error_message TEXT,
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL
+    )
+  `);
 
   // Create indexes for search performance
   db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_project_name ON invoices(project_name)`);

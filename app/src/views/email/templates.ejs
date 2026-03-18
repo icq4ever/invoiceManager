@@ -1,0 +1,52 @@
+<div class="mb-4 flex justify-between items-center">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= t('email.templates_title') %></h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400"><%= company.name %></p>
+  </div>
+  <div class="flex space-x-2">
+    <a href="/companies/<%= company.id %>/edit" class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
+    <a href="/email/templates/manage/<%= company.id %>/new" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"><%= t('common.add') %></a>
+  </div>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+  <% if (templates.length === 0) { %>
+  <div class="p-6 text-center text-gray-500 dark:text-gray-400">
+    <p><%= t('email.no_templates') %></p>
+  </div>
+  <% } else { %>
+  <div class="divide-y divide-gray-200 dark:divide-gray-700">
+    <% templates.forEach(template => { %>
+    <div class="p-4 flex justify-between items-start">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white"><%= template.name %></h3>
+          <% if (template.is_default) { %>
+          <span class="px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded"><%= t('common.default') %></span>
+          <% } %>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate"><%= t('email.subject') %>: <%= template.subject %></p>
+      </div>
+      <div class="flex items-center space-x-2 ml-4">
+        <a href="/email/templates/manage/<%= company.id %>/<%= template.id %>/edit" class="text-sm text-blue-600 dark:text-blue-400 hover:underline"><%= t('common.edit') %></a>
+        <form action="/email/templates/manage/<%= company.id %>/<%= template.id %>/delete" method="POST" class="inline" onsubmit="return confirm('<%= t('common.confirm_delete') %>')">
+          <button type="submit" class="text-sm text-red-600 dark:text-red-400 hover:underline"><%= t('common.delete') %></button>
+        </form>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+</div>
+
+<div class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+  <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"><%= t('email.template_variables') %></h3>
+  <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+    <p><code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">{{invoice_number}}</code> - <%= t('invoice.number') %></p>
+    <p><code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">{{project_name}}</code> - <%= t('invoice.project_name') %></p>
+    <p><code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">{{client_name}}</code> - <%= t('invoice.client') %></p>
+    <p><code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">{{company_name}}</code> - <%= t('company.name') %></p>
+    <p><code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">{{total_amount}}</code> - <%= t('invoice.total_amount') %></p>
+    <p><code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">{{issue_date}}</code> - <%= t('invoice.date') %></p>
+  </div>
+</div>
