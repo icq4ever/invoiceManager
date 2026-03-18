@@ -17,13 +17,15 @@ router.post('/send/:invoiceId', async (req, res) => {
   }
 
   try {
+    const lang = req.cookies?.lang || 'ko';
     await emailService.sendInvoiceEmail({
       invoiceId,
       recipientEmail,
       fromEmail,
       fromName,
       subject,
-      body
+      body,
+      lang
     });
 
     res.json({ success: true, message: 'Email sent successfully' });

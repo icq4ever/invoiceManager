@@ -88,8 +88,10 @@ function formatAmount(amount, currency) {
 
 /**
  * Generate PDF from invoice using PDFKit (no chromium dependency)
+ * @param {number} invoiceId
+ * @param {string} lang - 'ko' or 'en'
  */
-async function generateInvoicePdf(invoiceId) {
+async function generateInvoicePdf(invoiceId, lang = 'ko') {
   const db = getDatabase();
 
   // Get full invoice data
@@ -119,6 +121,70 @@ async function generateInvoicePdf(invoiceId) {
   }
 
   const currency = invoice.currency || 'KRW';
+  const isEn = lang === 'en';
+
+  // Bilingual labels
+  const L = isEn ? {
+    title: 'Invoice',
+    recipient: 'To',
+    date: 'Date',
+    validity: 'Validity',
+    supplier: 'From',
+    companyName: 'Company',
+    representative: 'Rep',
+    stampMark: '(sign)',
+    businessNumber: 'Tax ID',
+    address: 'Address',
+    phone: 'Phone',
+    website: 'Website',
+    email: 'Email',
+    fax: 'Fax',
+    bankInfo: 'Bank Info',
+    totalAmount: 'Total (incl. Tax)',
+    itemTitle: 'Item',
+    itemDetails: 'Details',
+    quantity: 'Qty',
+    unitPrice: 'Unit Price',
+    supplyAmount: 'Amount (excl. Tax)',
+    subtotal: 'Subtotal',
+    tax: 'Tax',
+    total: 'Total',
+    notes: 'Notes'
+  } : {
+    title: '견적서',
+    recipient: '수신',
+    date: '견적일',
+    validity: '유효기간',
+    supplier: '공급자',
+    companyName: '회사명',
+    representative: '대표자',
+    stampMark: '(인)',
+    businessNumber: '사업자번호',
+    address: '주소',
+    phone: '전화',
+    website: '웹사이트',
+    email: '이메일',
+    fax: '팩스',
+    bankInfo: '계좌정보',
+    totalAmount: '견적금액 (공급가액 + 세액)',
+    itemTitle: '항목명',
+    itemDetails: '세부 내역',
+    quantity: '수량',
+    unitPrice: '단가',
+    supplyAmount: '공급가액 (부가세 제외)',
+    subtotal: '소계 (공급가)',
+    tax: '부가세',
+    total: '합계 (총액)',
+    notes: '기타'
+  };
+
+  // Helper: pick bilingual field (EN fallback to KO)
+  const biName = isEn ? (invoice.company_name_en || invoice.company_name) : invoice.company_name;
+  const biRep = isEn ? (invoice.representative_en || invoice.representative) : invoice.representative;
+  const biAddr = isEn ? (invoice.company_address_en || invoice.company_address) : invoice.company_address;
+  const biPhone = isEn ? (invoice.company_phone_en || invoice.company_phone) : invoice.company_phone;
+  const biEmail = isEn ? (invoice.company_email_en || invoice.company_email) : invoice.company_email;
+  const biBankInfo = isEn ? (invoice.company_bank_info_en || invoice.company_bank_info) : invoice.company_bank_info;
 
   // Create PDF
   const doc = new PDFDocument({ size: 'A4', margin: 30 });
@@ -140,7 +206,7 @@ async function generateInvoicePdf(invoiceId) {
   let y = 30;
 
   // --- HEADER ---
-  doc.font(fontBold).fontSize(18).text('견적서', leftMargin, y);
+  doc.font(fontBold).fontSize(18).text(L.title, leftMargin, y);
 
   // Logo (if exists)
   if (invoice.logo_path) {
@@ -171,9 +237,9 @@ async function generateInvoicePdf(invoiceId) {
 
   // Client info table
   const infoRows = [
-    ['수신', invoice.client_name || '-'],
-    ['견적일', invoice.issue_date || '-'],
-    ['유효기간', invoice.validity_period || '-']
+    [L.recipient, invoice.client_name || '-'],
+    [L.date, invoice.issue_date || '-'],
+    [L.validity, invoice.validity_period || '-']
   ];
 
   doc.fontSize(8);
@@ -189,7 +255,7 @@ async function generateInvoicePdf(invoiceId) {
 
   // --- SUPPLIER INFO (right) ---
   let ry = startY;
-  doc.font(fontBold).fontSize(9).fillColor('#6b7280').text('공급자', rightColX, ry);
+  doc.font(fontBold).fontSize(9).fillColor('#6b7280').text(L.supplier, rightColX, ry);
   ry += 14;
 
   // Stamp image
@@ -203,20 +269,20 @@ async function generateInvoicePdf(invoiceId) {
   }
 
   const supplierRows = [
-    ['회사명', invoice.company_name || '-', '대표자', (invoice.representative || '-') + ' (인)'],
-    ['사업자번호', invoice.company_business_number || '-'],
-    ['주소', (invoice.company_address || '-').replace(/\\n/g, '\n')],
-    ['전화', invoice.company_phone || '-'],
+    [L.companyName, biName || '-', L.representative, (biRep || '-') + ' ' + L.stampMark],
+    [L.businessNumber, invoice.company_business_number || '-'],
+    [L.address, (biAddr || '-').replace(/\\n/g, '\n')],
+    [L.phone, biPhone || '-'],
   ];
   if (invoice.show_website !== 0 && invoice.company_website) {
-    supplierRows.push(['웹사이트', invoice.company_website]);
+    supplierRows.push([L.website, invoice.company_website]);
   }
-  supplierRows.push(['이메일', invoice.company_email || '-']);
+  supplierRows.push([L.email, biEmail || '-']);
   if (invoice.show_fax !== 0 && invoice.company_fax) {
-    supplierRows.push(['팩스', invoice.company_fax]);
+    supplierRows.push([L.fax, invoice.company_fax]);
   }
-  if (invoice.show_bank_info !== 0 && invoice.company_bank_info) {
-    supplierRows.push(['계좌정보', invoice.company_bank_info]);
+  if (invoice.show_bank_info !== 0 && (biBankInfo || invoice.company_bank_info)) {
+    supplierRows.push([L.bankInfo, biBankInfo || invoice.company_bank_info]);
   }
 
   doc.fontSize(7);
@@ -242,7 +308,7 @@ async function generateInvoicePdf(invoiceId) {
   y = Math.max(y, ry) + 20;
 
   // --- TOTAL AMOUNT ---
-  doc.font(fontBold).fontSize(12).fillColor('#000000').text('견적금액 (공급가액 + 세액)', leftMargin, y);
+  doc.font(fontBold).fontSize(12).fillColor('#000000').text(L.totalAmount, leftMargin, y);
   doc.font(fontBold).fontSize(14).fillColor('#2563eb').text(formatAmount(invoice.total_amount, currency), leftMargin, y, {
     width: pageWidth, align: 'right'
   });
@@ -260,7 +326,7 @@ async function generateInvoicePdf(invoiceId) {
     .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
   y += 3;
 
-  const headers = ['항목명', '세부 내역', '수량', '단가', '공급가액 (부가세 제외)'];
+  const headers = [L.itemTitle, L.itemDetails, L.quantity, L.unitPrice, L.supplyAmount];
   const headerAligns = ['left', 'left', 'center', 'right', 'right'];
   doc.font(fontBold).fontSize(7).fillColor('#000000');
   for (let i = 0; i < headers.length; i++) {
@@ -341,21 +407,21 @@ async function generateInvoicePdf(invoiceId) {
   doc.strokeColor('#d1d5db').lineWidth(0.5)
     .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
   y += 3;
-  doc.font(fontBold).fontSize(8).fillColor('#6b7280').text('소계 (공급가)', summaryX + 2, y, { width: summaryW * 0.5 });
+  doc.font(fontBold).fontSize(8).fillColor('#6b7280').text(L.subtotal, summaryX + 2, y, { width: summaryW * 0.5 });
   doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.subtotal, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
   y += 13;
 
   doc.strokeColor('#d1d5db').lineWidth(0.5)
     .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
   y += 3;
-  doc.font(fontBold).fillColor('#6b7280').text(`부가세 (${invoice.tax_rate}%)`, summaryX + 2, y, { width: summaryW * 0.5 });
+  doc.font(fontBold).fillColor('#6b7280').text(`${L.tax} (${invoice.tax_rate}%)`, summaryX + 2, y, { width: summaryW * 0.5 });
   doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.tax_amount, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
   y += 13;
 
   doc.strokeColor('#1f2937').lineWidth(1.5)
     .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
   y += 3;
-  doc.font(fontBold).fontSize(9).fillColor('#000000').text('합계 (총액)', summaryX + 2, y, { width: summaryW * 0.5 });
+  doc.font(fontBold).fontSize(9).fillColor('#000000').text(L.total, summaryX + 2, y, { width: summaryW * 0.5 });
   doc.text(formatAmount(invoice.total_amount, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
   y += 20;
 
@@ -378,7 +444,7 @@ async function generateInvoicePdf(invoiceId) {
       .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
     y += 5;
 
-    doc.font(fontBold).fontSize(8).fillColor('#000000').text('기타', leftMargin, y);
+    doc.font(fontBold).fontSize(8).fillColor('#000000').text(L.notes, leftMargin, y);
     y += 12;
 
     doc.font(fontRegular).fontSize(6.5).fillColor('#6b7280');
@@ -413,7 +479,7 @@ function renderTemplate(template, variables) {
 /**
  * Send invoice email with PDF attachment
  */
-async function sendInvoiceEmail({ invoiceId, recipientEmail, fromEmail, fromName, subject, body }) {
+async function sendInvoiceEmail({ invoiceId, recipientEmail, fromEmail, fromName, subject, body, lang = 'ko' }) {
   const db = getDatabase();
 
   // Get invoice with company info
@@ -455,7 +521,7 @@ async function sendInvoiceEmail({ invoiceId, recipientEmail, fromEmail, fromName
   }
 
   // Generate PDF using PDFKit (no chromium dependency)
-  const pdfBuffer = await generateInvoicePdf(invoiceId);
+  const pdfBuffer = await generateInvoicePdf(invoiceId, lang);
 
   // Build filename
   const pdfFilename = `${invoice.invoice_number || 'invoice'}.pdf`;
