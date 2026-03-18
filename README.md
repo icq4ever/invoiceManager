@@ -93,7 +93,7 @@ See [LICENSE](LICENSE) for details.
 ## Roadmap
 
 - [x] Invoice status management (draft, confirmed, discarded)
-- [ ] Email invoice delivery
+- [x] Email invoice delivery
 - [ ] Payment tracking
 - [ ] Multi-user support
 
@@ -104,6 +104,11 @@ See [LICENSE](LICENSE) for details.
 3. Submit a pull request
 
 ## Changelog
+
+### v1.2.3
+- Email PDF attachment now reflects user-adjusted column widths from the invoice view
+- Added email invoice delivery with SMTP settings and templates
+- PDF generation using PDFKit (no Chromium dependency)
 
 ### v1.2.2
 - Added data reset feature to dashboard with confirmation dialog
