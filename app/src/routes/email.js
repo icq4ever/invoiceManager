@@ -17,15 +17,13 @@ router.post('/send/:invoiceId', async (req, res) => {
   }
 
   try {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
     await emailService.sendInvoiceEmail({
       invoiceId,
       recipientEmail,
       fromEmail,
       fromName,
       subject,
-      body,
-      baseUrl
+      body
     });
 
     res.json({ success: true, message: 'Email sent successfully' });
@@ -43,13 +41,28 @@ router.post('/send/:invoiceId', async (req, res) => {
   }
 });
 
-// Test SMTP connection for a company
+// Test SMTP connection - accepts form data directly so save is not required
 router.post('/test-smtp/:companyId', async (req, res) => {
   try {
-    const smtpSettings = emailService.getSmtpSettings(req.params.companyId);
-    if (!smtpSettings) {
-      return res.status(404).json({ error: 'Company not found' });
+    let smtpSettings;
+
+    // If request body has SMTP fields, use them directly (unsaved form test)
+    if (req.body && req.body.smtp_host) {
+      smtpSettings = {
+        smtp_host: req.body.smtp_host,
+        smtp_port: parseInt(req.body.smtp_port) || 587,
+        smtp_secure: req.body.smtp_secure === '1' || req.body.smtp_secure === 1 ? 1 : 0,
+        smtp_user: req.body.smtp_user,
+        smtp_pass: req.body.smtp_pass
+      };
+    } else {
+      // Fall back to saved settings
+      smtpSettings = emailService.getSmtpSettings(req.params.companyId);
+      if (!smtpSettings) {
+        return res.status(404).json({ error: 'Company not found' });
+      }
     }
+
     await emailService.testSmtpConnection(smtpSettings);
     res.json({ success: true, message: 'SMTP connection successful' });
   } catch (err) {

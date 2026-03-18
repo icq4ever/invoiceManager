@@ -1,8 +1,12 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
-const ejs = require('ejs');
 const fs = require('fs');
+const PDFDocument = require('pdfkit');
 const { getDatabase } = require('../config/database');
+
+// Font paths
+const FONT_REGULAR = path.join(__dirname, '../fonts/Pretendard-Regular.otf');
+const FONT_BOLD = path.join(__dirname, '../fonts/Pretendard-Bold.otf');
 
 /**
  * Get SMTP settings for a company
@@ -71,78 +75,327 @@ function getDefaultFromName(smtpSettings) {
 }
 
 /**
- * Generate PDF from invoice using Puppeteer
+ * Format currency amount
  */
-async function generateInvoicePdf(invoiceId, baseUrl) {
-  let browser = null;
-  try {
-    const puppeteer = require('puppeteer');
+function formatAmount(amount, currency) {
+  const symbols = { KRW: '₩', USD: '$', EUR: '€', JPY: '¥', GBP: '£', CNY: '¥' };
+  const sym = symbols[currency] || '₩';
+  if (currency === 'KRW' || currency === 'JPY') {
+    return sym + new Intl.NumberFormat('ko-KR').format(Math.round(amount));
+  }
+  return sym + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+}
 
-    // Try to find chromium
-    const chromiumPaths = [
-      process.env.PUPPETEER_EXECUTABLE_PATH,
-      '/usr/bin/chromium-browser',
-      '/usr/bin/chromium',
-      '/usr/bin/google-chrome',
-      '/usr/bin/google-chrome-stable'
-    ].filter(Boolean);
+/**
+ * Generate PDF from invoice using PDFKit (no chromium dependency)
+ */
+async function generateInvoicePdf(invoiceId) {
+  const db = getDatabase();
 
-    // Also check common playwright paths
-    const homeDir = process.env.HOME || '/root';
-    const glob = require('path');
-    try {
-      const playwrightDir = path.join(homeDir, '.cache', 'ms-playwright');
-      if (fs.existsSync(playwrightDir)) {
-        const dirs = fs.readdirSync(playwrightDir).filter(d => d.startsWith('chromium'));
-        for (const dir of dirs) {
-          const chromePath = path.join(playwrightDir, dir, 'chrome-linux', 'chrome');
-          if (fs.existsSync(chromePath)) {
-            chromiumPaths.push(chromePath);
-          }
-        }
-      }
-    } catch (e) { /* ignore */ }
+  // Get full invoice data
+  const invoice = db.prepare(`
+    SELECT i.*, c.name as client_name, c.business_number as client_business_number, c.address as client_address,
+           co.name as company_name, co.business_number as company_business_number, co.representative,
+           co.address as company_address, co.phone as company_phone, co.email as company_email,
+           co.bank_info as company_bank_info, co.website as company_website, co.fax as company_fax,
+           co.logo_path, co.stamp_path,
+           co.name_en as company_name_en, co.representative_en, co.address_en as company_address_en,
+           co.phone_en as company_phone_en, co.email_en as company_email_en, co.bank_info_en as company_bank_info_en
+    FROM invoices i
+    LEFT JOIN clients c ON i.client_id = c.id
+    LEFT JOIN companies co ON i.company_id = co.id
+    WHERE i.id = ?
+  `).get(invoiceId);
 
-    let executablePath = null;
-    for (const p of chromiumPaths) {
-      if (p && fs.existsSync(p)) {
-        executablePath = p;
-        break;
-      }
-    }
+  if (!invoice) throw new Error('Invoice not found');
 
-    const launchOptions = {
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-    };
-    if (executablePath) {
-      launchOptions.executablePath = executablePath;
-    }
-
-    browser = await puppeteer.launch(launchOptions);
-    const page = await browser.newPage();
-
-    // Navigate to the invoice view page
-    const url = `${baseUrl}/invoices/${invoiceId}`;
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
-
-    // Hide non-print elements
-    await page.evaluate(() => {
-      document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
-    });
-
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      margin: { top: '5mm', right: '5mm', bottom: '5mm', left: '5mm' },
-      printBackground: true
-    });
-
-    return pdfBuffer;
-  } finally {
-    if (browser) {
-      await browser.close();
+  const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY sort_order ASC').all(invoiceId);
+  for (const item of items) {
+    if (item.detail_mode === 'itemized') {
+      item.subItems = db.prepare('SELECT * FROM invoice_item_details WHERE item_id = ? ORDER BY sort_order ASC').all(item.id);
+    } else {
+      item.subItems = [];
     }
   }
+
+  const currency = invoice.currency || 'KRW';
+
+  // Create PDF
+  const doc = new PDFDocument({ size: 'A4', margin: 30 });
+  const chunks = [];
+
+  doc.on('data', chunk => chunks.push(chunk));
+
+  // Register fonts
+  if (fs.existsSync(FONT_REGULAR)) {
+    doc.registerFont('Pretendard', FONT_REGULAR);
+    doc.registerFont('Pretendard-Bold', FONT_BOLD);
+  }
+
+  const fontRegular = fs.existsSync(FONT_REGULAR) ? 'Pretendard' : 'Helvetica';
+  const fontBold = fs.existsSync(FONT_BOLD) ? 'Pretendard-Bold' : 'Helvetica-Bold';
+
+  const pageWidth = doc.page.width - 60; // 30px margin each side
+  const leftMargin = 30;
+  let y = 30;
+
+  // --- HEADER ---
+  doc.font(fontBold).fontSize(18).text('견적서', leftMargin, y);
+
+  // Logo (if exists)
+  if (invoice.logo_path) {
+    const logoFile = path.join(__dirname, '../../uploads', invoice.logo_path.replace('/uploads/', ''));
+    if (fs.existsSync(logoFile)) {
+      try {
+        doc.image(logoFile, leftMargin + pageWidth - 100, y, { height: 25, fit: [100, 25], align: 'right' });
+      } catch (e) { /* skip if image fails */ }
+    }
+  }
+
+  y += 35;
+
+  // --- PROJECT & CLIENT INFO (left) ---
+  const leftColWidth = pageWidth * 0.5;
+  const rightColWidth = pageWidth * 0.45;
+  const rightColX = leftMargin + pageWidth - rightColWidth;
+
+  const startY = y;
+
+  // Project name
+  if (invoice.project_name) {
+    doc.font(fontRegular).fontSize(14);
+    const projText = (invoice.project_name || '').replace(/\\n/g, '\n');
+    doc.text(projText, leftMargin, y, { width: leftColWidth });
+    y = doc.y + 8;
+  }
+
+  // Client info table
+  const infoRows = [
+    ['수신', invoice.client_name || '-'],
+    ['견적일', invoice.issue_date || '-'],
+    ['유효기간', invoice.validity_period || '-']
+  ];
+
+  doc.fontSize(8);
+  for (const [label, value] of infoRows) {
+    doc.strokeColor('#d1d5db').lineWidth(0.5)
+      .moveTo(leftMargin, y).lineTo(leftMargin + leftColWidth - 20, y).stroke();
+    doc.font(fontBold).fillColor('#6b7280').text(label, leftMargin + 2, y + 2, { width: 60 });
+    doc.font(fontRegular).fillColor('#000000').text(value, leftMargin + 65, y + 2, { width: leftColWidth - 85 });
+    y += 15;
+  }
+  doc.strokeColor('#d1d5db').lineWidth(0.5)
+    .moveTo(leftMargin, y).lineTo(leftMargin + leftColWidth - 20, y).stroke();
+
+  // --- SUPPLIER INFO (right) ---
+  let ry = startY;
+  doc.font(fontBold).fontSize(9).fillColor('#6b7280').text('공급자', rightColX, ry);
+  ry += 14;
+
+  // Stamp image
+  if (invoice.stamp_path && invoice.show_stamp !== 0) {
+    const stampFile = path.join(__dirname, '../../uploads', invoice.stamp_path.replace('/uploads/', ''));
+    if (fs.existsSync(stampFile)) {
+      try {
+        doc.image(stampFile, rightColX + rightColWidth - 55, ry - 5, { height: 40, fit: [55, 40] });
+      } catch (e) { /* skip */ }
+    }
+  }
+
+  const supplierRows = [
+    ['회사명', invoice.company_name || '-', '대표자', (invoice.representative || '-') + ' (인)'],
+    ['사업자번호', invoice.company_business_number || '-'],
+    ['주소', (invoice.company_address || '-').replace(/\\n/g, '\n')],
+    ['전화', invoice.company_phone || '-'],
+  ];
+  if (invoice.show_website !== 0 && invoice.company_website) {
+    supplierRows.push(['웹사이트', invoice.company_website]);
+  }
+  supplierRows.push(['이메일', invoice.company_email || '-']);
+  if (invoice.show_fax !== 0 && invoice.company_fax) {
+    supplierRows.push(['팩스', invoice.company_fax]);
+  }
+  if (invoice.show_bank_info !== 0 && invoice.company_bank_info) {
+    supplierRows.push(['계좌정보', invoice.company_bank_info]);
+  }
+
+  doc.fontSize(7);
+  for (const row of supplierRows) {
+    doc.strokeColor('#d1d5db').lineWidth(0.5)
+      .moveTo(rightColX, ry).lineTo(rightColX + rightColWidth, ry).stroke();
+
+    doc.font(fontBold).fillColor('#6b7280').text(row[0], rightColX + 2, ry + 2, { width: 45 });
+    if (row.length === 4) {
+      // Two-column row (name + representative)
+      doc.font(fontRegular).fillColor('#000000').text(row[1], rightColX + 50, ry + 2, { width: rightColWidth * 0.35 });
+      doc.font(fontBold).fillColor('#6b7280').text(row[2], rightColX + rightColWidth * 0.55, ry + 2, { width: 30 });
+      doc.font(fontRegular).fillColor('#000000').text(row[3], rightColX + rightColWidth * 0.55 + 32, ry + 2, { width: rightColWidth * 0.35 });
+    } else {
+      doc.font(fontRegular).fillColor('#000000').text(row[1], rightColX + 50, ry + 2, { width: rightColWidth - 55 });
+    }
+    ry = Math.max(ry + 13, doc.y + 2);
+  }
+  doc.strokeColor('#d1d5db').lineWidth(0.5)
+    .moveTo(rightColX, ry).lineTo(rightColX + rightColWidth, ry).stroke();
+
+  // Move y past both columns
+  y = Math.max(y, ry) + 20;
+
+  // --- TOTAL AMOUNT ---
+  doc.font(fontBold).fontSize(12).fillColor('#000000').text('견적금액 (공급가액 + 세액)', leftMargin, y);
+  doc.font(fontBold).fontSize(14).fillColor('#2563eb').text(formatAmount(invoice.total_amount, currency), leftMargin, y, {
+    width: pageWidth, align: 'right'
+  });
+  y += 22;
+
+  // --- ITEMS TABLE ---
+  const colWidths = [pageWidth * 0.12, pageWidth * 0.40, pageWidth * 0.08, pageWidth * 0.16, pageWidth * 0.24];
+  const colX = [leftMargin];
+  for (let i = 1; i < colWidths.length; i++) {
+    colX.push(colX[i - 1] + colWidths[i - 1]);
+  }
+
+  // Table header
+  doc.strokeColor('#1f2937').lineWidth(1.5)
+    .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
+  y += 3;
+
+  const headers = ['항목명', '세부 내역', '수량', '단가', '공급가액 (부가세 제외)'];
+  const headerAligns = ['left', 'left', 'center', 'right', 'right'];
+  doc.font(fontBold).fontSize(7).fillColor('#000000');
+  for (let i = 0; i < headers.length; i++) {
+    const opts = { width: colWidths[i] - 4, align: headerAligns[i] };
+    doc.text(headers[i], colX[i] + 2, y, opts);
+  }
+  y += 12;
+  doc.strokeColor('#1f2937').lineWidth(0.5)
+    .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
+  y += 3;
+
+  // Table rows
+  doc.fontSize(7);
+  for (const item of items) {
+    if (item.detail_mode === 'itemized' && item.subItems && item.subItems.length > 0) {
+      // Itemized mode
+      const titleY = y;
+      for (let si = 0; si < item.subItems.length; si++) {
+        const sub = item.subItems[si];
+        const isLast = si === item.subItems.length - 1;
+
+        if (si === 0) {
+          doc.font(fontBold).fillColor('#000000').text(item.title, colX[0] + 2, y, { width: colWidths[0] - 4 });
+        }
+
+        let detailText = sub.description || '';
+        if (sub.title) detailText = sub.title + ' : ' + detailText;
+        doc.font(fontRegular).fillColor('#4b5563').text(detailText, colX[1] + 2, y, { width: colWidths[1] - 4 });
+        doc.text(String(sub.quantity), colX[2] + 2, y, { width: colWidths[2] - 4, align: 'center' });
+        doc.text(formatAmount(sub.unit_price, currency), colX[3] + 2, y, { width: colWidths[3] - 4, align: 'right' });
+        if (si === 0) {
+          doc.font(fontBold).fillColor('#000000').text(formatAmount(item.amount, currency), colX[4] + 2, y, { width: colWidths[4] - 4, align: 'right' });
+        }
+
+        y = Math.max(y + 11, doc.y + 2);
+
+        const lineColor = isLast ? '#1f2937' : '#d1d5db';
+        doc.strokeColor(lineColor).lineWidth(isLast ? 0.5 : 0.3)
+          .moveTo(colX[1], y).lineTo(leftMargin + pageWidth, y).stroke();
+        if (isLast) {
+          doc.moveTo(leftMargin, y).lineTo(colX[1], y).stroke();
+        }
+        y += 3;
+
+        // Page break check
+        if (y > doc.page.height - 100) {
+          doc.addPage();
+          y = 30;
+        }
+      }
+    } else {
+      // Text mode
+      doc.font(fontBold).fillColor('#000000').text(item.title, colX[0] + 2, y, { width: colWidths[0] - 4 });
+      doc.font(fontRegular).fillColor('#4b5563').text((item.details || '').replace(/\\n/g, '\n'), colX[1] + 2, y, { width: colWidths[1] - 4 });
+      doc.fillColor('#000000').text(String(item.quantity), colX[2] + 2, y, { width: colWidths[2] - 4, align: 'center' });
+      doc.text(formatAmount(item.unit_price, currency), colX[3] + 2, y, { width: colWidths[3] - 4, align: 'right' });
+      doc.text(formatAmount(item.amount, currency), colX[4] + 2, y, { width: colWidths[4] - 4, align: 'right' });
+
+      y = Math.max(y + 11, doc.y + 2);
+      doc.strokeColor('#1f2937').lineWidth(0.5)
+        .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
+      y += 3;
+    }
+
+    // Page break check
+    if (y > doc.page.height - 100) {
+      doc.addPage();
+      y = 30;
+    }
+  }
+
+  y += 5;
+
+  // --- SUMMARY ---
+  const summaryX = leftMargin + pageWidth * 0.55;
+  const summaryW = pageWidth * 0.45;
+
+  doc.strokeColor('#d1d5db').lineWidth(0.5)
+    .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
+  y += 3;
+  doc.font(fontBold).fontSize(8).fillColor('#6b7280').text('소계 (공급가)', summaryX + 2, y, { width: summaryW * 0.5 });
+  doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.subtotal, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
+  y += 13;
+
+  doc.strokeColor('#d1d5db').lineWidth(0.5)
+    .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
+  y += 3;
+  doc.font(fontBold).fillColor('#6b7280').text(`부가세 (${invoice.tax_rate}%)`, summaryX + 2, y, { width: summaryW * 0.5 });
+  doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.tax_amount, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
+  y += 13;
+
+  doc.strokeColor('#1f2937').lineWidth(1.5)
+    .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
+  y += 3;
+  doc.font(fontBold).fontSize(9).fillColor('#000000').text('합계 (총액)', summaryX + 2, y, { width: summaryW * 0.5 });
+  doc.text(formatAmount(invoice.total_amount, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
+  y += 20;
+
+  // --- NOTES ---
+  let notes = [];
+  try {
+    notes = JSON.parse(invoice.notes || '[]');
+  } catch (e) {
+    notes = invoice.notes ? [invoice.notes] : [];
+  }
+
+  if (notes.length > 0) {
+    // Check if we need a new page for notes
+    if (y > doc.page.height - 80) {
+      doc.addPage();
+      y = 30;
+    }
+
+    doc.strokeColor('#d1d5db').lineWidth(0.5)
+      .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
+    y += 5;
+
+    doc.font(fontBold).fontSize(8).fillColor('#000000').text('기타', leftMargin, y);
+    y += 12;
+
+    doc.font(fontRegular).fontSize(6.5).fillColor('#6b7280');
+    notes.forEach((note, i) => {
+      const noteText = `${i + 1}. ${(note || '').replace(/\\n/g, '\n')}`;
+      doc.text(noteText, leftMargin + 2, y, { width: pageWidth - 4 });
+      y = doc.y + 3;
+    });
+  }
+
+  // Finalize
+  doc.end();
+
+  return new Promise((resolve, reject) => {
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+  });
 }
 
 /**
@@ -160,7 +413,7 @@ function renderTemplate(template, variables) {
 /**
  * Send invoice email with PDF attachment
  */
-async function sendInvoiceEmail({ invoiceId, recipientEmail, fromEmail, fromName, subject, body, baseUrl }) {
+async function sendInvoiceEmail({ invoiceId, recipientEmail, fromEmail, fromName, subject, body }) {
   const db = getDatabase();
 
   // Get invoice with company info
@@ -201,8 +454,8 @@ async function sendInvoiceEmail({ invoiceId, recipientEmail, fromEmail, fromName
     actualFromName = fromName;
   }
 
-  // Generate PDF
-  const pdfBuffer = await generateInvoicePdf(invoiceId, baseUrl);
+  // Generate PDF using PDFKit (no chromium dependency)
+  const pdfBuffer = await generateInvoicePdf(invoiceId);
 
   // Build filename
   const pdfFilename = `${invoice.invoice_number || 'invoice'}.pdf`;
@@ -234,7 +487,7 @@ async function sendInvoiceEmail({ invoiceId, recipientEmail, fromEmail, fromName
 }
 
 /**
- * Test SMTP connection
+ * Test SMTP connection (from raw settings, not saved)
  */
 async function testSmtpConnection(smtpSettings) {
   const transporter = createTransporter(smtpSettings);
