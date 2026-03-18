@@ -1,0 +1,59 @@
+<div class="mb-4">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+    <%= template && template.id ? t('email.edit_template') : t('email.new_template') %>
+  </h1>
+  <p class="text-sm text-gray-500 dark:text-gray-400"><%= company.name %></p>
+</div>
+
+<% if (error) { %>
+<div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
+  <%= error %>
+</div>
+<% } %>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-6">
+  <form method="POST" action="<%= template && template.id ? '/email/templates/manage/' + company.id + '/' + template.id : '/email/templates/manage/' + company.id %>">
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.template_name') %> *</label>
+        <input type="text" name="name" required value="<%= template?.name || '' %>" placeholder="<%= t('email.template_name_placeholder') %>"
+          class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.subject') %> *</label>
+        <input type="text" name="subject" required value="<%= template?.subject || '' %>" placeholder="<%= t('email.subject_placeholder') %>"
+          class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.body') %> *</label>
+        <textarea name="body" required rows="10" placeholder="<%= t('email.body_placeholder') %>"
+          class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"><%= template?.body || '' %></textarea>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= t('email.body_help') %></p>
+      </div>
+      <div>
+        <label class="flex items-center">
+          <input type="checkbox" name="is_default" value="1" <%= template?.is_default ? 'checked' : '' %>
+            class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"><%= t('email.is_default_template') %></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+      <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2"><%= t('email.template_variables') %></h3>
+      <div class="text-xs text-gray-500 dark:text-gray-400 grid grid-cols-2 gap-1">
+        <span><code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{invoice_number}}</code> <%= t('invoice.number') %></span>
+        <span><code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{project_name}}</code> <%= t('invoice.project_name') %></span>
+        <span><code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{client_name}}</code> <%= t('invoice.client') %></span>
+        <span><code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{company_name}}</code> <%= t('company.name') %></span>
+        <span><code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{total_amount}}</code> <%= t('invoice.total_amount') %></span>
+        <span><code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{issue_date}}</code> <%= t('invoice.date') %></span>
+      </div>
+    </div>
+
+    <div class="mt-4 flex justify-end space-x-2">
+      <a href="/email/templates/manage/<%= company.id %>" class="px-4 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
+      <button type="submit" class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"><%= t('common.save') %></button>
+    </div>
+  </form>
+</div>

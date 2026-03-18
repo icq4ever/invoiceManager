@@ -227,8 +227,13 @@
   <main class="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
     <!-- Toolbar above invoice -->
     <div class="flex justify-between items-center gap-2 mb-4 no-print">
-      <!-- Left: Print/PDF -->
-      <button onclick="window.print()" class="bg-green-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm hover:bg-green-700"><%= t('invoice.print') %> / PDF</button>
+      <!-- Left: Print/PDF + Email -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button onclick="window.print()" class="bg-green-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm hover:bg-green-700"><%= t('invoice.print') %> / PDF</button>
+        <% if (hasSmtp) { %>
+        <button onclick="openEmailModal()" class="bg-orange-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm hover:bg-orange-700"><%= t('email.send') %></button>
+        <% } %>
+      </div>
       <!-- Right: Edit/Duplicate -->
       <div class="flex items-center gap-1.5 sm:gap-2">
         <a href="/invoices/<%= invoice.id %>/edit" class="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm hover:bg-blue-700"><%= t('common.edit') %></a>
@@ -449,7 +454,99 @@
         </div>
       </div>
     </div>
+    <!-- Email History -->
+    <% if (emailLog && emailLog.length > 0) { %>
+    <div class="mt-4 no-print">
+      <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"><%= t('email.history') %></h3>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow divide-y divide-gray-200 dark:divide-gray-700">
+        <% emailLog.forEach(log => { %>
+        <div class="p-3 text-xs">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-900 dark:text-white"><%= log.recipient_email %></span>
+            <span class="<%= log.status === 'sent' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' %>"><%= log.status === 'sent' ? t('email.status_sent') : t('email.status_failed') %></span>
+          </div>
+          <div class="text-gray-500 dark:text-gray-400 mt-1">
+            <span><%= log.subject %></span> · <span><%= new Date(log.sent_at).toLocaleString() %></span>
+            <% if (log.from_name) { %> · <span><%= log.from_name %> &lt;<%= log.from_email %>&gt;</span><% } %>
+          </div>
+          <% if (log.error_message) { %>
+          <div class="text-red-500 mt-1"><%= log.error_message %></div>
+          <% } %>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
   </main>
+
+  <!-- Email Send Modal -->
+  <% if (hasSmtp) { %>
+  <div id="emailModal" class="fixed inset-0 z-50 hidden no-print">
+    <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closeEmailModal()"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+        <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white"><%= t('email.send_invoice') %></h2>
+          <button onclick="closeEmailModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="p-4 space-y-3">
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.to') %> *</label>
+            <input type="email" id="emailTo" value="<%= invoice.client_email || '' %>" placeholder="recipient@example.com"
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.from_name') %></label>
+              <input type="text" id="emailFromName" value="<%= invoice.smtp_from_name || invoice.company_name || '' %>"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.from_email') %></label>
+              <input type="email" id="emailFromEmail" value="<%= invoice.smtp_from_email || invoice.smtp_user || invoice.company_email || '' %>"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <p class="text-xs text-gray-400 mt-0.5"><%= t('email.same_domain_note') %></p>
+            </div>
+          </div>
+          <% if (emailTemplates.length > 0) { %>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.template') %></label>
+            <select id="emailTemplate" onchange="applyEmailTemplate()"
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <option value="">-- <%= t('email.select_template') %> --</option>
+              <% emailTemplates.forEach(tmpl => { %>
+              <option value="<%= tmpl.id %>" data-subject="<%= tmpl.subject %>" data-body="<%- tmpl.body.replace(/"/g, '&quot;') %>" <%= tmpl.is_default ? 'selected' : '' %>><%= tmpl.name %><%= tmpl.is_default ? ' (' + t('common.default') + ')' : '' %></option>
+              <% }); %>
+            </select>
+          </div>
+          <% } %>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.subject') %> *</label>
+            <input type="text" id="emailSubject" value=""
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('email.body') %> *</label>
+            <textarea id="emailBody" rows="6"
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            <p><%= t('email.pdf_attached_note') %></p>
+          </div>
+        </div>
+        <div class="p-4 border-t dark:border-gray-700 flex justify-between items-center">
+          <span id="emailStatus" class="text-sm"></span>
+          <div class="flex space-x-2">
+            <button onclick="closeEmailModal()" class="px-4 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></button>
+            <button id="emailSendBtn" onclick="sendEmail()" class="px-4 py-1.5 text-sm bg-orange-600 text-white rounded-md hover:bg-orange-700"><%= t('email.send') %></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% } %>
 
   <!-- Footer -->
   <footer class="mt-auto py-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 no-print">
@@ -618,6 +715,110 @@
         document.body.style.userSelect = '';
       });
     })();
+
+    // Email modal functions
+    <% if (hasSmtp) { %>
+    const emailTemplateData = {
+      invoice_number: '<%= (invoice.invoice_number || "").replace(/'/g, "\\'") %>',
+      project_name: '<%= (invoice.project_name || "").replace(/'/g, "\\'") %>',
+      client_name: '<%= (invoice.client_name || "").replace(/'/g, "\\'") %>',
+      company_name: '<%= (invoice.company_name || "").replace(/'/g, "\\'") %>',
+      total_amount: '<%= formatAmount(invoice.total_amount) %>',
+      issue_date: '<%= invoice.issue_date || "" %>'
+    };
+
+    function replaceTemplateVars(text) {
+      let result = text;
+      for (const [key, value] of Object.entries(emailTemplateData)) {
+        result = result.replace(new RegExp('\\{\\{\\s*' + key + '\\s*\\}\\}', 'g'), value);
+      }
+      return result;
+    }
+
+    function openEmailModal() {
+      document.getElementById('emailModal').classList.remove('hidden');
+      document.getElementById('emailStatus').textContent = '';
+      // Apply default template if exists
+      const tmplSelect = document.getElementById('emailTemplate');
+      if (tmplSelect) {
+        const selected = tmplSelect.options[tmplSelect.selectedIndex];
+        if (selected && selected.value) {
+          applyEmailTemplate();
+        }
+      }
+    }
+
+    function closeEmailModal() {
+      document.getElementById('emailModal').classList.add('hidden');
+    }
+
+    function applyEmailTemplate() {
+      const select = document.getElementById('emailTemplate');
+      if (!select) return;
+      const option = select.options[select.selectedIndex];
+      if (!option || !option.value) return;
+
+      const subject = replaceTemplateVars(option.dataset.subject || '');
+      const body = replaceTemplateVars(option.dataset.body || '');
+      document.getElementById('emailSubject').value = subject;
+      document.getElementById('emailBody').value = body;
+    }
+
+    function sendEmail() {
+      const to = document.getElementById('emailTo').value.trim();
+      const fromName = document.getElementById('emailFromName').value.trim();
+      const fromEmail = document.getElementById('emailFromEmail').value.trim();
+      const subject = document.getElementById('emailSubject').value.trim();
+      const body = document.getElementById('emailBody').value.trim();
+      const statusEl = document.getElementById('emailStatus');
+      const sendBtn = document.getElementById('emailSendBtn');
+
+      if (!to || !subject || !body) {
+        statusEl.textContent = '<%= t("email.fill_required") %>';
+        statusEl.className = 'text-sm text-red-600 dark:text-red-400';
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = '<%= t("email.sending") %>';
+      statusEl.textContent = '<%= t("email.generating_pdf") %>';
+      statusEl.className = 'text-sm text-gray-500';
+
+      fetch('/email/send/' + invoiceId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: to,
+          fromEmail: fromEmail,
+          fromName: fromName,
+          subject: subject,
+          body: body
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '<%= t("email.send") %>';
+        if (data.success) {
+          statusEl.textContent = '<%= t("email.sent_success") %>';
+          statusEl.className = 'text-sm text-green-600 dark:text-green-400';
+          setTimeout(() => {
+            closeEmailModal();
+            window.location.reload();
+          }, 1500);
+        } else {
+          statusEl.textContent = data.error || '<%= t("email.sent_failed") %>';
+          statusEl.className = 'text-sm text-red-600 dark:text-red-400';
+        }
+      })
+      .catch(err => {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '<%= t("email.send") %>';
+        statusEl.textContent = '<%= t("email.sent_failed") %>';
+        statusEl.className = 'text-sm text-red-600 dark:text-red-400';
+      });
+    }
+    <% } %>
 
     // Mobile invoice zoom - fit invoice to screen width
     (function() {

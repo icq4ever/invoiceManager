@@ -267,12 +267,14 @@ router.get('/:id', (req, res) => {
   const db = getDatabase();
   const invoice = db.prepare(`
     SELECT i.*, c.name as client_name, c.business_number as client_business_number, c.address as client_address,
-           co.name as company_name, co.business_number as company_business_number, co.representative,
+           c.email as client_email,
+           co.id as company_id_ref, co.name as company_name, co.business_number as company_business_number, co.representative,
            co.address as company_address, co.phone as company_phone, co.email as company_email,
            co.bank_info as company_bank_info, co.website as company_website, co.fax as company_fax,
            co.logo_path, co.stamp_path,
            co.name_en as company_name_en, co.representative_en, co.address_en as company_address_en,
-           co.phone_en as company_phone_en, co.email_en as company_email_en, co.bank_info_en as company_bank_info_en
+           co.phone_en as company_phone_en, co.email_en as company_email_en, co.bank_info_en as company_bank_info_en,
+           co.smtp_host, co.smtp_from_email, co.smtp_from_name, co.smtp_user
     FROM invoices i
     LEFT JOIN clients c ON i.client_id = c.id
     LEFT JOIN companies co ON i.company_id = co.id
@@ -302,7 +304,14 @@ router.get('/:id', (req, res) => {
     }
   }
 
-  res.render('invoices/view', { invoice, items, layout: false });
+  // Get email templates and log for this company
+  const emailTemplates = invoice.company_id
+    ? db.prepare('SELECT * FROM email_templates WHERE company_id = ? ORDER BY is_default DESC, name ASC').all(invoice.company_id)
+    : [];
+  const emailLog = db.prepare('SELECT * FROM email_log WHERE invoice_id = ? ORDER BY sent_at DESC LIMIT 10').all(req.params.id);
+  const hasSmtp = !!(invoice.smtp_host && invoice.smtp_user);
+
+  res.render('invoices/view', { invoice, items, emailTemplates, emailLog, hasSmtp, layout: false });
 });
 
 // Edit invoice form

@@ -14,6 +14,7 @@ const companyRoutes = require('./routes/companies');
 const clientRoutes = require('./routes/clients');
 const templateRoutes = require('./routes/templates');
 const invoiceRoutes = require('./routes/invoices');
+const emailRoutes = require('./routes/email');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,6 +68,7 @@ app.use('/companies', companyRoutes);
 app.use('/clients', clientRoutes);
 app.use('/templates', templateRoutes);
 app.use('/invoices', invoiceRoutes);
+app.use('/email', emailRoutes);
 
 // Dashboard
 app.get('/dashboard', (req, res) => {
