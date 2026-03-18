@@ -315,7 +315,31 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   y += 22;
 
   // --- ITEMS TABLE ---
-  const colWidths = [pageWidth * 0.12, pageWidth * 0.40, pageWidth * 0.08, pageWidth * 0.16, pageWidth * 0.24];
+  // Parse saved column widths from DB (format: ["12%", "", "5%", "10%", "18%"])
+  const defaultRatios = [0.12, 0.40, 0.08, 0.16, 0.24];
+  let colRatios = [...defaultRatios];
+
+  if (invoice.column_widths) {
+    try {
+      const saved = JSON.parse(invoice.column_widths);
+      if (Array.isArray(saved) && saved.length === 5) {
+        const parsed = saved.map((w) => {
+          if (w && w.endsWith('%')) {
+            return parseFloat(w) / 100;
+          }
+          return 0;
+        });
+
+        const specified = parsed.reduce((sum, v) => sum + v, 0);
+        const zeroCount = parsed.filter(v => v === 0).length;
+        const remaining = zeroCount > 0 ? (1 - specified) / zeroCount : 0;
+
+        colRatios = parsed.map(v => v === 0 ? remaining : v);
+      }
+    } catch (e) { /* use defaults */ }
+  }
+
+  const colWidths = colRatios.map(r => pageWidth * r);
   const colX = [leftMargin];
   for (let i = 1; i < colWidths.length; i++) {
     colX.push(colX[i - 1] + colWidths[i - 1]);
