@@ -41,13 +41,23 @@
         </div>
       </div>
 
+      <% if (setup) { %>
+      <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 px-4 py-4 rounded mb-4">
+        <p class="font-semibold mb-2"><%= t('login.setup_title') %></p>
+        <p class="text-sm mb-3"><%= t('login.setup_description') %></p>
+        <div class="bg-gray-900 dark:bg-gray-950 text-green-400 text-xs font-mono p-3 rounded overflow-x-auto">
+          docker exec -it invoice-manager npm run set-credentials
+        </div>
+      </div>
+      <% } %>
+
       <% if (error) { %>
       <div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
         <%= error %>
       </div>
       <% } %>
 
-      <form method="POST" action="/login">
+      <form method="POST" action="/login" class="<%= setup ? 'opacity-50 pointer-events-none' : '' %>">
         <div class="mb-4">
           <label class="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" for="username">
             <%= t('login.username') %>
