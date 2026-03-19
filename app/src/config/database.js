@@ -199,6 +199,16 @@ function initDatabase() {
   } catch (e) {
     // Column already exists
   }
+  try {
+    db.exec(`ALTER TABLE invoices ADD COLUMN show_logo_watermark INTEGER DEFAULT 0`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    db.exec(`ALTER TABLE invoices ADD COLUMN show_logo INTEGER DEFAULT 1`);
+  } catch (e) {
+    // Column already exists
+  }
 
   // Invoice items table
   db.exec(`

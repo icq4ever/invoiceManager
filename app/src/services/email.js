@@ -220,9 +220,23 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   if (invoice.logo_path) {
     const logoFile = path.join(__dirname, '../../uploads', invoice.logo_path.replace('/uploads/', ''));
     if (fs.existsSync(logoFile)) {
-      try {
-        doc.image(logoFile, leftMargin + pageWidth - 100, y, { height: 25, fit: [100, 25], align: 'right' });
-      } catch (e) { /* skip if image fails */ }
+      if (invoice.show_logo !== 0) {
+        try {
+          doc.image(logoFile, leftMargin + pageWidth - 100, y, { height: 25, fit: [100, 25], align: 'right' });
+        } catch (e) { /* skip if image fails */ }
+      }
+
+      // Logo watermark (semi-transparent background)
+      if (invoice.show_logo_watermark === 1) {
+        try {
+          doc.save();
+          doc.opacity(0.06);
+          const centerX = doc.page.width / 2 - 150;
+          const centerY = doc.page.height / 2 - 150;
+          doc.image(logoFile, centerX, centerY, { fit: [300, 300], align: 'center', valign: 'center' });
+          doc.restore();
+        } catch (e) { /* skip if watermark fails */ }
+      }
     }
   }
 

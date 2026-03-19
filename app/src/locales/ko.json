@@ -83,6 +83,8 @@
     "print": "인쇄",
     "download_pdf": "PDF 다운로드",
     "show_stamp": "사인 보기",
+    "show_logo": "로고 보기",
+    "show_logo_watermark": "로고 워터마크",
     "status_draft": "작성중",
     "status_confirmed": "확정",
     "status_discarded": "폐기",
