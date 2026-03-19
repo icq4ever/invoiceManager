@@ -260,6 +260,14 @@
         <input type="checkbox" id="showBankInfoCheckbox" <%= invoice.show_bank_info !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
         <span class="text-gray-700 dark:text-gray-300"><%= t('company.bank_info') %></span>
       </label>
+      <% if (allBankAccounts && allBankAccounts.length > 0) { %>
+      <% allBankAccounts.forEach(function(ba) { %>
+      <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-blue-50 dark:bg-blue-900/30 cursor-pointer text-xs sm:text-sm bank-select-label" style="<%= invoice.show_bank_info === 0 ? 'display:none;' : '' %>">
+        <input type="checkbox" class="bank-select-checkbox rounded" value="<%= ba.id %>" <%= selectedBankIds.includes(ba.id) ? 'checked' : '' %> onchange="saveDisplayOptions()">
+        <span class="text-gray-700 dark:text-gray-300"><%= ba.bank_name %> (<%= ba.account_number %>)</span>
+      </label>
+      <% }); %>
+      <% } %>
     </div>
     <div class="invoice-scale-container overflow-hidden">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 invoice-wrapper">
@@ -349,10 +357,20 @@
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.fax') %></td>
                 <td class="py-0.5 pl-3" colspan="3"><%= invoice.company_fax || '-' %></td>
               </tr>
+              <% if (selectedBankAccounts && selectedBankAccounts.length > 0) { %>
+              <% selectedBankAccounts.forEach(function(ba, idx) { %>
+              <tr class="bank-account-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_bank_info === 0 ? 'display: none;' : '' %>">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= idx === 0 ? t('company.bank_info') : '' %></td>
+                <td class="py-0.5 pl-3" colspan="3" style="white-space: pre-wrap;"><%= lang === 'en' ? (ba.bank_name_en || ba.bank_name) : ba.bank_name %> <%= ba.account_number %><% if (ba.branch) { %> (<%= lang === 'en' ? (ba.branch_en || ba.branch) : ba.branch %>)<% } %><% if (ba.show_swift && ba.swift_code) { %>
+SWIFT: <%= ba.swift_code %><% } %></td>
+              </tr>
+              <% }); %>
+              <% } else { %>
               <tr id="bankInfoRow" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_bank_info === 0 ? 'display: none;' : '' %>">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.bank_info') %></td>
                 <td class="py-0.5 pl-3" colspan="3" style="white-space: pre-wrap;"><%= lang === 'en' ? (invoice.company_bank_info_en || invoice.company_bank_info || '-') : (invoice.company_bank_info || '-') %></td>
               </tr>
+              <% } %>
             </table>
           </div>
         </div>
@@ -615,6 +633,17 @@
       if (faxRow) faxRow.style.display = showFax ? '' : 'none';
       if (bankInfoRow) bankInfoRow.style.display = showBankInfo ? '' : 'none';
 
+      // Toggle bank account rows and selection checkboxes
+      document.querySelectorAll('.bank-account-row').forEach(function(row) {
+        row.style.display = showBankInfo ? '' : 'none';
+      });
+      document.querySelectorAll('.bank-select-label').forEach(function(label) {
+        label.style.display = showBankInfo ? '' : 'none';
+      });
+
+      // Collect selected bank account IDs
+      const selectedBanks = Array.from(document.querySelectorAll('.bank-select-checkbox:checked')).map(function(cb) { return cb.value; });
+
       // Get current column widths
       const columnWidths = getColumnWidths();
 
@@ -627,7 +656,8 @@
           show_website: showWebsite,
           show_fax: showFax,
           show_bank_info: showBankInfo,
-          column_widths: columnWidths
+          column_widths: columnWidths,
+          selected_bank_accounts: selectedBanks
         })
       });
     }
