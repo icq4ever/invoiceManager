@@ -32,7 +32,9 @@
     "username": "Username",
     "password": "Password",
     "submit": "Login",
-    "error": "Invalid username or password"
+    "error": "Invalid username or password",
+    "setup_title": "Initial setup required",
+    "setup_description": "No admin account has been configured. Run the following command:"
   },
   "dashboard": {
     "title": "Dashboard",
