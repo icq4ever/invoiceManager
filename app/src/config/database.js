@@ -318,6 +318,16 @@ function initDatabase() {
     )
   `);
 
+  // Admin settings table (credentials stored in DB, not env)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS admin_settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      username TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // Create indexes for search performance
   db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_project_name ON invoices(project_name)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_created_at ON invoices(created_at DESC)`);
