@@ -47,13 +47,17 @@ cd invoice-manager
 
 # Setup environment
 cp .env.example .env
-# Edit .env with your settings
 
 # Run with Docker
-docker-compose up --build -d
+docker compose up --build -d
 
-# Access at http://localhost:3000
+# Set up admin credentials
+docker exec -it invoice-manager npm run set-credentials
+
+# Access at http://localhost:3006
 ```
+
+> **Note**: On first launch, the login page will show setup instructions until you run the `set-credentials` command. You can re-run it anytime to change the admin username or password.
 
 ## Tech Stack
 

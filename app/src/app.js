@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const expressLayouts = require('express-ejs-layouts');
@@ -31,7 +32,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
   resave: false,
   saveUninitialized: false,
   cookie: {
