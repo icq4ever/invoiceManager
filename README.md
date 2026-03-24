@@ -123,6 +123,12 @@ See [LICENSE](LICENSE) for details.
 
 ## Changelog
 
+### v1.2.4
+- Added business registration certificate upload for clients (image/PDF)
+- Added client detail page with document preview and download
+- Client name in list is now clickable to view details
+- Added shared Nginx reverse proxy setup guide to README
+
 ### v1.2.3
 - Added email invoice delivery with SMTP settings and templates
 - PDF generation using PDFKit (no Chromium dependency)
