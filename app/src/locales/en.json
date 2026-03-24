@@ -152,7 +152,10 @@
     "email": "Email",
     "address": "Address",
     "no_clients": "No clients registered",
-    "search_placeholder": "Search name or contact..."
+    "search_placeholder": "Search name or contact...",
+    "business_registration": "Business Registration",
+    "view_document": "View",
+    "download": "Download"
   },
   "template": {
     "title": "Templates",

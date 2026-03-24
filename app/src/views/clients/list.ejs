@@ -68,7 +68,7 @@
         <% if (clients.length > 0) { %>
         <% clients.forEach(c => { %>
         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 client-row" data-name="<%= (c.name || '').toLowerCase() %>" data-contact="<%= (c.contact_person || '').toLowerCase() %>">
-          <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white"><%= c.name %></td>
+          <td class="px-4 py-3 text-sm font-medium"><a href="/clients/<%= c.id %>" class="text-blue-600 dark:text-blue-400 hover:underline"><%= c.name %></a></td>
           <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= c.business_number || '-' %></td>
           <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hidden md:table-cell"><%= c.contact_person || '-' %></td>
           <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= c.phone || '-' %></td>
