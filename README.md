@@ -59,6 +59,20 @@ docker exec -it invoice-manager npm run set-credentials
 
 > **Note**: On first launch, the login page will show setup instructions until you run the `set-credentials` command. You can re-run it anytime to change the admin username or password.
 
+### Using with a shared Nginx reverse proxy
+
+If you run a single Nginx container as a reverse proxy for multiple services on a shared Docker network, you need to connect the invoice-manager container to that network:
+
+```bash
+# Connect to your shared network (run after docker compose up)
+docker network connect shared invoice-manager
+
+# Reload Nginx to resolve the new upstream
+docker exec nginx nginx -s reload
+```
+
+Or, change `external: false` to `external: true` in `docker-compose.yml` under `networks.shared` so it automatically joins the existing network.
+
 ## Tech Stack
 
 - **Backend**: Node.js + Express.js
@@ -97,7 +111,7 @@ See [LICENSE](LICENSE) for details.
 ## Roadmap
 
 - [x] Invoice status management (draft, confirmed, discarded)
-- [ ] Email invoice delivery
+- [x] Email invoice delivery
 - [ ] Payment tracking
 - [ ] Multi-user support
 
@@ -108,6 +122,20 @@ See [LICENSE](LICENSE) for details.
 3. Submit a pull request
 
 ## Changelog
+
+### v1.2.4
+- Added business registration certificate upload for clients (image/PDF)
+- Added client detail page with document preview and download
+- Client name in list is now clickable to view details
+- Added shared Nginx reverse proxy setup guide to README
+
+### v1.2.3
+- Added email invoice delivery with SMTP settings and templates
+- PDF generation using PDFKit (no Chromium dependency)
+- Email PDF attachment now reflects user-adjusted column widths from the invoice view
+- Moved admin credentials from .env to database (`set-credentials` command)
+- Fixed Docker build: removed app bind mount to prevent cross-platform native module issues
+- Respects user language preference in PDF generation
 
 ### v1.2.2
 - Added data reset feature to dashboard with confirmation dialog

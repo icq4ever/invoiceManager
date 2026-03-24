@@ -142,6 +142,13 @@ function initDatabase() {
     )
   `);
 
+  // Add business_registration_path column to clients (migration)
+  try {
+    db.exec(`ALTER TABLE clients ADD COLUMN business_registration_path TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+
   // Invoices table
   db.exec(`
     CREATE TABLE IF NOT EXISTS invoices (

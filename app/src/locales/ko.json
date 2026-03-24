@@ -165,7 +165,10 @@
     "email": "이메일",
     "address": "주소",
     "no_clients": "등록된 클라이언트가 없습니다",
-    "search_placeholder": "회사/이름 또는 담당자 검색..."
+    "search_placeholder": "회사/이름 또는 담당자 검색...",
+    "business_registration": "사업자등록증",
+    "view_document": "보기",
+    "download": "다운로드"
   },
   "template": {
     "title": "문구 템플릿",

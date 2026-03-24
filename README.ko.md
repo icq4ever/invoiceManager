@@ -52,8 +52,25 @@ cp .env.example .env
 # Docker로 실행
 docker-compose up --build -d
 
-# http://localhost:3000 접속
+# 관리자 계정 설정
+docker exec -it invoice-manager npm run set-credentials
+
+# http://localhost:3006 접속
 ```
+
+### 공유 Nginx 리버스 프록시 사용 시
+
+하나의 Nginx 컨테이너로 여러 서비스를 리버스 프록시하는 환경에서는 invoice-manager를 해당 공유 네트워크에 연결해야 합니다:
+
+```bash
+# 공유 네트워크에 연결 (docker compose up 이후 실행)
+docker network connect shared invoice-manager
+
+# Nginx 리로드
+docker exec nginx nginx -s reload
+```
+
+또는 `docker-compose.yml`의 `networks.shared`에서 `external: false`를 `external: true`로 변경하면 자동으로 기존 네트워크에 참여합니다.
 
 ## 기술 스택
 
@@ -93,7 +110,7 @@ Invoice Manager가 도움이 되었다면 개발을 지원해주세요:
 ## 로드맵
 
 - [x] 견적서 상태 관리 (작성중, 확정, 폐기)
-- [ ] 이메일로 견적서 전달
+- [x] 이메일로 견적서 전달
 - [ ] 결제 추적
 - [ ] 다중 사용자 지원
 
@@ -104,6 +121,20 @@ Invoice Manager가 도움이 되었다면 개발을 지원해주세요:
 3. 풀 리퀘스트 제출
 
 ## 변경 이력
+
+### v1.2.4
+- 클라이언트별 사업자등록증 업로드 기능 추가 (이미지/PDF)
+- 클라이언트 상세 보기 페이지 추가 (문서 미리보기 및 다운로드)
+- 클라이언트 목록에서 이름 클릭 시 상세 페이지로 이동
+- 공유 Nginx 리버스 프록시 설정 가이드 README에 추가
+
+### v1.2.3
+- 이메일 견적서 발송 기능 추가 (SMTP 설정 및 템플릿 지원)
+- PDFKit 기반 PDF 생성 (Chromium 의존성 제거)
+- 이메일 PDF 첨부 시 사용자가 조정한 컬럼 크기가 반영되도록 개선
+- 관리자 인증 정보를 .env에서 데이터베이스로 이전 (`set-credentials` 명령어)
+- Docker 빌드 수정: 크로스 플랫폼 네이티브 모듈 충돌 방지를 위해 app 바인드 마운트 제거
+- PDF 생성 시 사용자 언어 설정 반영
 
 ### v1.2.2
 - 대시보드에 데이터 초기화 기능 추가 (확인 대화상자 포함)
