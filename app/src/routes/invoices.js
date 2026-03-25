@@ -244,6 +244,15 @@ router.post('/', (req, res) => {
       }
     }
 
+    // Auto-select all enabled bank accounts for the company
+    if (company_id) {
+      const enabledBanks = db.prepare('SELECT id FROM bank_accounts WHERE company_id = ? AND is_enabled = 1').all(company_id);
+      const insertBankLink = db.prepare('INSERT OR IGNORE INTO invoice_bank_accounts (invoice_id, bank_account_id) VALUES (?, ?)');
+      for (const ba of enabledBanks) {
+        insertBankLink.run(invoiceId, ba.id);
+      }
+    }
+
     res.redirect(`/invoices/${invoiceId}`);
   } catch (err) {
     console.error('Error creating invoice:', err);
@@ -305,6 +314,20 @@ router.get('/:id', (req, res) => {
     }
   }
 
+  // Get bank accounts for this invoice
+  const selectedBankAccounts = db.prepare(`
+    SELECT ba.* FROM bank_accounts ba
+    JOIN invoice_bank_accounts iba ON iba.bank_account_id = ba.id
+    WHERE iba.invoice_id = ? AND ba.is_enabled = 1
+    ORDER BY ba.sort_order ASC
+  `).all(req.params.id);
+
+  const allBankAccounts = invoice.company_id
+    ? db.prepare('SELECT * FROM bank_accounts WHERE company_id = ? AND is_enabled = 1 ORDER BY sort_order ASC').all(invoice.company_id)
+    : [];
+
+  const selectedBankIds = selectedBankAccounts.map(ba => ba.id);
+
   // Get email templates and log for this company
   const emailTemplates = invoice.company_id
     ? db.prepare('SELECT * FROM email_templates WHERE company_id = ? ORDER BY is_default DESC, name ASC').all(invoice.company_id)
@@ -312,7 +335,7 @@ router.get('/:id', (req, res) => {
   const emailLog = db.prepare('SELECT * FROM email_log WHERE invoice_id = ? ORDER BY sent_at DESC LIMIT 10').all(req.params.id);
   const hasSmtp = !!(invoice.smtp_host && invoice.smtp_user);
 
-  res.render('invoices/view', { invoice, items, emailTemplates, emailLog, hasSmtp, layout: false });
+  res.render('invoices/view', { invoice, items, emailTemplates, emailLog, hasSmtp, selectedBankAccounts, allBankAccounts, selectedBankIds, layout: false });
 });
 
 // Edit invoice form
@@ -515,7 +538,7 @@ router.post('/:id/set-status', (req, res) => {
 // Save display options
 router.post('/:id/display-options', (req, res) => {
   const db = getDatabase();
-  const { show_stamp, show_website, show_fax, show_bank_info, column_widths } = req.body;
+  const { show_stamp, show_website, show_fax, show_bank_info, column_widths, selected_bank_accounts } = req.body;
 
   try {
     const invoice = db.prepare('SELECT id FROM invoices WHERE id = ?').get(req.params.id);
@@ -535,6 +558,16 @@ router.post('/:id/display-options', (req, res) => {
       column_widths ? JSON.stringify(column_widths) : null,
       req.params.id
     );
+
+    // Update selected bank accounts
+    if (selected_bank_accounts !== undefined) {
+      db.prepare('DELETE FROM invoice_bank_accounts WHERE invoice_id = ?').run(req.params.id);
+      const bankIds = Array.isArray(selected_bank_accounts) ? selected_bank_accounts : (selected_bank_accounts ? [selected_bank_accounts] : []);
+      const insertBankLink = db.prepare('INSERT OR IGNORE INTO invoice_bank_accounts (invoice_id, bank_account_id) VALUES (?, ?)');
+      for (const bankId of bankIds) {
+        insertBankLink.run(req.params.id, parseInt(bankId));
+      }
+    }
 
     res.json({ success: true });
   } catch (err) {
@@ -587,6 +620,13 @@ router.post('/:id/duplicate', (req, res) => {
           insertSubItem.run(newItemId, sub.title || '', sub.description, sub.quantity, sub.unit_price, sub.amount, sub.sort_order);
         }
       }
+    }
+
+    // Copy bank account selections
+    const bankLinks = db.prepare('SELECT * FROM invoice_bank_accounts WHERE invoice_id = ?').all(req.params.id);
+    const insertBankLink = db.prepare('INSERT OR IGNORE INTO invoice_bank_accounts (invoice_id, bank_account_id) VALUES (?, ?)');
+    for (const link of bankLinks) {
+      insertBankLink.run(newInvoiceId, link.bank_account_id);
     }
 
     res.redirect(`/invoices/${newInvoiceId}/edit`);

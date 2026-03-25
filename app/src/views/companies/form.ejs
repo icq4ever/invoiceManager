@@ -21,6 +21,9 @@
         <button type="button" class="tab-button py-2 px-1 border-b-2 border-transparent text-gray-600 dark:text-gray-400 text-sm font-medium hover:text-gray-900 dark:hover:text-gray-300" data-tab="english" onclick="switchTab(event, 'english')">
           <%= t('company.english') %>
         </button>
+        <button type="button" class="tab-button py-2 px-1 border-b-2 border-transparent text-gray-600 dark:text-gray-400 text-sm font-medium hover:text-gray-900 dark:hover:text-gray-300" data-tab="bank" onclick="switchTab(event, 'bank')">
+          <%= t('company.bank_accounts') %>
+        </button>
         <button type="button" class="tab-button py-2 px-1 border-b-2 border-transparent text-gray-600 dark:text-gray-400 text-sm font-medium hover:text-gray-900 dark:hover:text-gray-300" data-tab="smtp" onclick="switchTab(event, 'smtp')">
           <%= t('email.smtp_settings') %>
         </button>
@@ -65,11 +68,8 @@
         <input type="email" name="email" value="<%= company?.email || '' %>"
           class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
       </div>
-      <div>
-        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_info') %></label>
-        <input type="text" name="bank_info" value="<%= company?.bank_info || '' %>" placeholder="<%= t('company.bank_placeholder') %>"
-          class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-      </div>
+      <input type="hidden" name="bank_info" value="<%= company?.bank_info || '' %>">
+      <input type="hidden" name="bank_info_en" value="<%= company?.bank_info_en || '' %>">
       <div>
         <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.invoice_prefix') %></label>
         <input type="text" name="invoice_prefix" value="<%= company?.invoice_prefix || 'INV' %>" placeholder="INV"
@@ -128,12 +128,72 @@
           <input type="text" name="address_en" id="addressEnInput" value="<%= company?.address_en || '' %>"
             class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="(Shift+Enter)">
         </div>
-        <div>
-          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_info_en') %></label>
-          <input type="text" name="bank_info_en" value="<%= company?.bank_info_en || '' %>" placeholder="<%= t('company.bank_placeholder') %>"
-            class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-        </div>
       </div>
+    </div>
+
+    <!-- Bank Accounts Tab -->
+    <div id="bank-tab" class="tab-content" style="display: none;">
+      <div id="bankAccountsList">
+        <% const accounts = (typeof bankAccounts !== 'undefined' && bankAccounts) ? bankAccounts : []; %>
+        <% if (accounts.length === 0) { %>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" id="noBankMsg"><%= t('company.no_bank_accounts') %></p>
+        <% } %>
+        <% accounts.forEach(function(ba, idx) { %>
+        <div class="bank-account-card border border-gray-300 dark:border-gray-600 rounded-lg p-3 mb-3">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">#<span class="bank-index"><%= idx + 1 %></span></span>
+            <button type="button" onclick="removeBankAccount(this)" class="text-xs text-red-600 hover:text-red-800 dark:text-red-400"><%= t('company.remove_bank_account') %></button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_name') %> *</label>
+              <input type="text" name="bank_name" value="<%= ba.bank_name || '' %>"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_name_en') %></label>
+              <input type="text" name="bank_name_en" value="<%= ba.bank_name_en || '' %>"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_number') %> *</label>
+              <input type="text" name="account_number" value="<%= ba.account_number || '' %>"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
+              <input type="text" name="swift_code" value="<%= ba.swift_code || '' %>"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.branch') %></label>
+              <input type="text" name="branch" value="<%= ba.branch || '' %>"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.branch_en') %></label>
+              <input type="text" name="branch_en" value="<%= ba.branch_en || '' %>"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+          </div>
+          <div class="flex items-center gap-4 mt-2">
+            <input type="hidden" name="bank_enabled" value="<%= ba.is_enabled ? '1' : '0' %>">
+            <label class="flex items-center">
+              <input type="checkbox" class="bank-enabled-cb rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" <%= ba.is_enabled ? 'checked' : '' %>>
+              <span class="ml-1.5 text-xs text-gray-700 dark:text-gray-300"><%= t('company.enabled') %></span>
+            </label>
+            <input type="hidden" name="bank_show_swift" value="<%= ba.show_swift ? '1' : '0' %>">
+            <label class="flex items-center">
+              <input type="checkbox" class="bank-show-swift-cb rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" <%= ba.show_swift ? 'checked' : '' %>>
+              <span class="ml-1.5 text-xs text-gray-700 dark:text-gray-300"><%= t('company.show_swift') %></span>
+            </label>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+      <button type="button" onclick="addBankAccount()" class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
+        + <%= t('company.add_bank_account') %>
+      </button>
     </div>
 
     <!-- SMTP Settings Tab -->
@@ -326,6 +386,94 @@
         this.value = value.substring(0, start) + '\\n' + value.substring(end);
         this.selectionStart = this.selectionEnd = start + 2;
       }
+    });
+  }
+
+  // Sync bank checkbox values to hidden inputs on form submit
+  document.querySelector('form').addEventListener('submit', function() {
+    document.querySelectorAll('.bank-account-card').forEach(function(card) {
+      const enabledCb = card.querySelector('.bank-enabled-cb');
+      const swiftCb = card.querySelector('.bank-show-swift-cb');
+      if (enabledCb) {
+        enabledCb.previousElementSibling.value = enabledCb.checked ? '1' : '0';
+      }
+      if (swiftCb) {
+        swiftCb.previousElementSibling.value = swiftCb.checked ? '1' : '0';
+      }
+    });
+  });
+
+  // Also sync on checkbox change for immediate feedback
+  document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('bank-enabled-cb') || e.target.classList.contains('bank-show-swift-cb')) {
+      const hidden = e.target.closest('.flex').querySelector('input[type="hidden"]');
+      if (hidden) hidden.value = e.target.checked ? '1' : '0';
+    }
+  });
+
+  // Bank account management
+  function addBankAccount() {
+    const list = document.getElementById('bankAccountsList');
+    const noBankMsg = document.getElementById('noBankMsg');
+    if (noBankMsg) noBankMsg.remove();
+
+    const idx = list.querySelectorAll('.bank-account-card').length + 1;
+    const inputClass = 'w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500';
+    const card = document.createElement('div');
+    card.className = 'bank-account-card border border-gray-300 dark:border-gray-600 rounded-lg p-3 mb-3';
+    card.innerHTML = `
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">#<span class="bank-index">${idx}</span></span>
+        <button type="button" onclick="removeBankAccount(this)" class="text-xs text-red-600 hover:text-red-800 dark:text-red-400"><%= t('company.remove_bank_account') %></button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_name') %> *</label>
+          <input type="text" name="bank_name" class="${inputClass}">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_name_en') %></label>
+          <input type="text" name="bank_name_en" class="${inputClass}">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_number') %> *</label>
+          <input type="text" name="account_number" class="${inputClass}">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
+          <input type="text" name="swift_code" class="${inputClass}">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.branch') %></label>
+          <input type="text" name="branch" class="${inputClass}">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.branch_en') %></label>
+          <input type="text" name="branch_en" class="${inputClass}">
+        </div>
+      </div>
+      <div class="flex items-center gap-4 mt-2">
+        <input type="hidden" name="bank_enabled" value="1">
+        <label class="flex items-center">
+          <input type="checkbox" class="bank-enabled-cb rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" checked>
+          <span class="ml-1.5 text-xs text-gray-700 dark:text-gray-300"><%= t('company.enabled') %></span>
+        </label>
+        <input type="hidden" name="bank_show_swift" value="1">
+        <label class="flex items-center">
+          <input type="checkbox" class="bank-show-swift-cb rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" checked>
+          <span class="ml-1.5 text-xs text-gray-700 dark:text-gray-300"><%= t('company.show_swift') %></span>
+        </label>
+      </div>
+    `;
+    list.appendChild(card);
+  }
+
+  function removeBankAccount(btn) {
+    const card = btn.closest('.bank-account-card');
+    card.remove();
+    // Re-index remaining cards
+    document.querySelectorAll('.bank-account-card .bank-index').forEach(function(el, i) {
+      el.textContent = i + 1;
     });
   }
 </script>
