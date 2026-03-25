@@ -111,6 +111,14 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
 
   if (!invoice) throw new Error('Invoice not found');
 
+  // Get selected bank accounts for this invoice
+  const selectedBankAccounts = db.prepare(`
+    SELECT ba.* FROM bank_accounts ba
+    JOIN invoice_bank_accounts iba ON iba.bank_account_id = ba.id
+    WHERE iba.invoice_id = ? AND ba.is_enabled = 1
+    ORDER BY ba.sort_order ASC
+  `).all(invoiceId);
+
   const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY sort_order ASC').all(invoiceId);
   for (const item of items) {
     if (item.detail_mode === 'itemized') {
@@ -281,7 +289,18 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   if (invoice.show_fax !== 0 && invoice.company_fax) {
     supplierRows.push([L.fax, invoice.company_fax]);
   }
-  if (invoice.show_bank_info !== 0 && (biBankInfo || invoice.company_bank_info)) {
+  if (invoice.show_bank_info !== 0 && selectedBankAccounts.length > 0) {
+    for (let i = 0; i < selectedBankAccounts.length; i++) {
+      const ba = selectedBankAccounts[i];
+      const bankName = isEn ? (ba.bank_name_en || ba.bank_name) : ba.bank_name;
+      const branchText = ba.branch ? (isEn ? (ba.branch_en || ba.branch) : ba.branch) : '';
+      let bankText = `${bankName} ${ba.account_number}`;
+      if (branchText) bankText += ` (${branchText})`;
+      if (ba.show_swift && ba.swift_code) bankText += `\nSWIFT: ${ba.swift_code}`;
+      supplierRows.push([i === 0 ? L.bankInfo : '', bankText]);
+    }
+  } else if (invoice.show_bank_info !== 0 && (biBankInfo || invoice.company_bank_info)) {
+    // Fallback to legacy free-text bank info
     supplierRows.push([L.bankInfo, biBankInfo || invoice.company_bank_info]);
   }
 

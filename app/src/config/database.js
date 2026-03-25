@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const SCHEMA_VERSION = '1.2.0';
+const SCHEMA_VERSION = '1.3.0';
 
 let db = null;
 
@@ -335,10 +335,69 @@ function initDatabase() {
     )
   `);
 
+  // Bank accounts table (v1.3.0)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS bank_accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      company_id INTEGER NOT NULL,
+      bank_name TEXT NOT NULL,
+      bank_name_en TEXT,
+      account_number TEXT NOT NULL,
+      branch TEXT,
+      branch_en TEXT,
+      swift_code TEXT,
+      is_enabled INTEGER DEFAULT 1,
+      show_swift INTEGER DEFAULT 1,
+      sort_order INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Invoice-bank account junction table (v1.3.0)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS invoice_bank_accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id INTEGER NOT NULL,
+      bank_account_id INTEGER NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE,
+      FOREIGN KEY (bank_account_id) REFERENCES bank_accounts(id) ON DELETE CASCADE,
+      UNIQUE(invoice_id, bank_account_id)
+    )
+  `);
+
+  // Migrate legacy bank_info to bank_accounts (v1.3.0)
+  const bankAccountCount = db.prepare('SELECT COUNT(*) as count FROM bank_accounts').get().count;
+  if (bankAccountCount === 0) {
+    const companiesWithBank = db.prepare("SELECT id, bank_info, bank_info_en FROM companies WHERE bank_info IS NOT NULL AND bank_info != ''").all();
+    if (companiesWithBank.length > 0) {
+      const insertBank = db.prepare(`
+        INSERT INTO bank_accounts (company_id, bank_name, bank_name_en, account_number, sort_order)
+        VALUES (?, ?, ?, '', 0)
+      `);
+      const insertInvoiceBank = db.prepare(`
+        INSERT OR IGNORE INTO invoice_bank_accounts (invoice_id, bank_account_id)
+        VALUES (?, ?)
+      `);
+      for (const co of companiesWithBank) {
+        const result = insertBank.run(co.id, co.bank_info, co.bank_info_en || null);
+        const bankId = result.lastInsertRowid;
+        // Link existing invoices that show bank info to this migrated bank account
+        const invoices = db.prepare('SELECT id FROM invoices WHERE company_id = ? AND show_bank_info = 1').all(co.id);
+        for (const inv of invoices) {
+          insertInvoiceBank.run(inv.id, bankId);
+        }
+      }
+      console.log(`Migrated ${companiesWithBank.length} legacy bank_info records to bank_accounts table`);
+    }
+  }
+
   // Create indexes for search performance
   db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_project_name ON invoices(project_name)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_created_at ON invoices(created_at DESC)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_clients_name ON clients(name)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_bank_accounts_company ON bank_accounts(company_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_invoice_bank_accounts_invoice ON invoice_bank_accounts(invoice_id)`);
 
   // Record schema version if not set or different
   if (currentVersion !== SCHEMA_VERSION) {
