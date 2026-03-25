@@ -210,7 +210,8 @@ router.post('/', (req, res) => {
       }
     }
 
-    const taxAmount = subtotal * (parseFloat(tax_rate) || 10) / 100;
+    const parsedTaxRate = parseFloat(tax_rate);
+    const taxAmount = subtotal * (isNaN(parsedTaxRate) ? 10 : parsedTaxRate) / 100;
     const totalAmount = subtotal + taxAmount;
 
     // Insert invoice
@@ -427,7 +428,8 @@ router.post('/:id', (req, res) => {
       }
     }
 
-    const taxAmount = subtotal * (parseFloat(tax_rate) || 10) / 100;
+    const parsedTaxRate = parseFloat(tax_rate);
+    const taxAmount = subtotal * (isNaN(parsedTaxRate) ? 10 : parsedTaxRate) / 100;
     const totalAmount = subtotal + taxAmount;
 
     // Update invoice
