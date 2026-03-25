@@ -244,6 +244,12 @@
     </div>
     <!-- Display options -->
     <div class="flex flex-wrap items-center gap-1.5 mb-4 no-print">
+      <% if (invoice.logo_path) { %>
+      <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm">
+        <input type="checkbox" id="showLogoCheckbox" <%= invoice.show_logo !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
+        <span class="text-gray-700 dark:text-gray-300"><%= t('invoice.show_logo') %></span>
+      </label>
+      <% } %>
       <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm">
         <input type="checkbox" id="showStampCheckbox" <%= invoice.show_stamp !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
         <span class="text-gray-700 dark:text-gray-300"><%= t('invoice.show_stamp') %></span>
@@ -260,6 +266,12 @@
         <input type="checkbox" id="showBankInfoCheckbox" <%= invoice.show_bank_info !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
         <span class="text-gray-700 dark:text-gray-300"><%= t('company.bank_info') %></span>
       </label>
+      <% if (invoice.logo_path) { %>
+      <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm">
+        <input type="checkbox" id="showLogoWatermarkCheckbox" <%= invoice.show_logo_watermark === 1 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
+        <span class="text-gray-700 dark:text-gray-300"><%= t('invoice.show_logo_watermark') %></span>
+      </label>
+      <% } %>
       <% if (allBankAccounts && allBankAccounts.length > 0) { %>
       <% allBankAccounts.forEach(function(ba) { %>
       <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-blue-50 dark:bg-blue-900/30 cursor-pointer text-xs sm:text-sm bank-select-label" style="<%= invoice.show_bank_info === 0 ? 'display:none;' : '' %>">
@@ -270,13 +282,18 @@
       <% } %>
     </div>
     <div class="invoice-scale-container overflow-hidden">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 invoice-wrapper">
-        <div class="invoice-content text-gray-900 dark:text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 invoice-wrapper" style="position: relative;">
+        <% if (invoice.logo_path) { %>
+        <div id="logoWatermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.06; pointer-events: none; z-index: 0; <%= invoice.show_logo_watermark !== 1 ? 'display: none;' : '' %>">
+          <img src="<%= invoice.logo_path %>" alt="" style="max-width: 400px; max-height: 400px; width: auto; height: auto;">
+        </div>
+        <% } %>
+        <div class="invoice-content text-gray-900 dark:text-white" style="position: relative; z-index: 1;">
         <!-- Header with Logo -->
         <div class="pb-4 flex justify-between items-start">
           <h1 class="text-2xl font-bold"><%= t('invoice.title') %></h1>
           <% if (invoice.logo_path) { %>
-          <img src="<%= invoice.logo_path %>" alt="Company Logo" class="h-8 max-w-xs object-contain">
+          <img id="headerLogo" src="<%= invoice.logo_path %>" alt="Company Logo" class="h-8 max-w-xs object-contain" style="<%= invoice.show_logo === 0 ? 'display: none;' : '' %>">
           <% } %>
         </div>
 
@@ -330,7 +347,7 @@
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2" style="width: 15%;"><%= t('company.representative') %></td>
                 <td class="py-0.5 text-right" style="vertical-align: middle;">
                   <span><%= lang === 'en' ? (invoice.representative_en || invoice.representative || '-') : (invoice.representative || '-') %></span>
-                  <span style="font-size: 12px; color: #999; margin-left: 8px;"><%= t('company.stamp_mark') %></span>
+                  <span id="stampMark" style="font-size: 12px; color: #999; margin-left: 8px; <%= (!invoice.stamp_path || invoice.show_stamp === 0) ? 'display: none;' : '' %>"><%= t('company.stamp_mark') %></span>
                 </td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
@@ -622,13 +639,23 @@ SWIFT: <%= ba.swift_code %><% } %></td>
       const faxRow = document.getElementById('faxRow');
       const bankInfoRow = document.getElementById('bankInfoRow');
 
+      const showLogoEl = document.getElementById('showLogoCheckbox');
+      const showLogo = showLogoEl ? showLogoEl.checked : true;
       const showStamp = document.getElementById('showStampCheckbox').checked;
       const showWebsite = document.getElementById('showWebsiteCheckbox').checked;
       const showFax = document.getElementById('showFaxCheckbox').checked;
       const showBankInfo = document.getElementById('showBankInfoCheckbox').checked;
+      const showLogoWatermarkEl = document.getElementById('showLogoWatermarkCheckbox');
+      const showLogoWatermark = showLogoWatermarkEl ? showLogoWatermarkEl.checked : false;
 
       // Update UI immediately
+      const headerLogo = document.getElementById('headerLogo');
+      if (headerLogo) headerLogo.style.display = showLogo ? '' : 'none';
       if (stampImage) stampImage.style.display = showStamp ? 'inline-block' : 'none';
+      const stampMark = document.getElementById('stampMark');
+      if (stampMark) stampMark.style.display = (showStamp && stampImage) ? '' : 'none';
+      const logoWatermark = document.getElementById('logoWatermark');
+      if (logoWatermark) logoWatermark.style.display = showLogoWatermark ? '' : 'none';
       if (websiteRow) websiteRow.style.display = showWebsite ? '' : 'none';
       if (faxRow) faxRow.style.display = showFax ? '' : 'none';
       if (bankInfoRow) bankInfoRow.style.display = showBankInfo ? '' : 'none';
@@ -652,10 +679,12 @@ SWIFT: <%= ba.swift_code %><% } %></td>
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          show_logo: showLogo,
           show_stamp: showStamp,
           show_website: showWebsite,
           show_fax: showFax,
           show_bank_info: showBankInfo,
+          show_logo_watermark: showLogoWatermark,
           column_widths: columnWidths,
           selected_bank_accounts: selectedBanks
         })
