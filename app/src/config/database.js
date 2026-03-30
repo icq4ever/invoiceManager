@@ -405,9 +405,19 @@ function initDatabase() {
   // Add PayPal account field to bank_accounts (v1.2.4)
   try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN paypal_account TEXT`); } catch (e) { /* already exists */ }
 
-  // Add per-invoice SWIFT and PayPal display options (v1.2.4)
+  // Add SWIFT/international transfer fields to bank_accounts (v1.2.4)
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN account_holder TEXT`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN account_holder_en TEXT`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN bank_address TEXT`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN bank_address_en TEXT`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN iban_code TEXT`); } catch (e) { /* already exists */ }
+
+  // Add per-invoice bank display options (v1.2.4)
   try { db.exec(`ALTER TABLE invoices ADD COLUMN show_swift INTEGER DEFAULT 0`); } catch (e) { /* already exists */ }
   try { db.exec(`ALTER TABLE invoices ADD COLUMN show_paypal INTEGER DEFAULT 0`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE invoices ADD COLUMN show_account_holder INTEGER DEFAULT 1`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE invoices ADD COLUMN show_branch INTEGER DEFAULT 0`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE invoices ADD COLUMN show_tax_id INTEGER DEFAULT 1`); } catch (e) { /* already exists */ }
 
   // Create indexes for search performance
   db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_project_name ON invoices(project_name)`);

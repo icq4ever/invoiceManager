@@ -161,13 +161,13 @@
                 class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
             </div>
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
-              <input type="text" name="swift_code" value="<%= ba.swift_code || '' %>"
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_holder') %></label>
+              <input type="text" name="account_holder" value="<%= ba.account_holder || '' %>"
                 class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
             </div>
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.branch') %></label>
-              <input type="text" name="branch" value="<%= ba.branch || '' %>"
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_holder_en') %></label>
+              <input type="text" name="account_holder_en" value="<%= ba.account_holder_en || '' %>"
                 class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
             </div>
             <div>
@@ -175,10 +175,39 @@
               <input type="text" name="branch_en" value="<%= ba.branch_en || '' %>"
                 class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
             </div>
-            <div class="md:col-span-2">
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.paypal_account') %></label>
-              <input type="text" name="paypal_account" value="<%= ba.paypal_account || '' %>" placeholder="email@example.com"
-                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          </div>
+          <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">SWIFT / International</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
+                <input type="text" name="swift_code" value="<%= ba.swift_code || '' %>"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.iban_code') %></label>
+                <input type="text" name="iban_code" value="<%= ba.iban_code || '' %>"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address') %></label>
+                <input type="text" name="bank_address" value="<%= ba.bank_address || '' %>"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address_en') %></label>
+                <input type="text" name="bank_address_en" value="<%= ba.bank_address_en || '' %>"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div class="md:col-span-2">
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.paypal_account') %></label>
+                <input type="text" name="paypal_account" value="<%= ba.paypal_account || '' %>" placeholder="email@example.com"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
             </div>
           </div>
           <div class="flex items-center gap-4 mt-2">
@@ -439,20 +468,45 @@
           <input type="text" name="account_number" class="${inputClass}">
         </div>
         <div>
-          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
-          <input type="text" name="swift_code" class="${inputClass}">
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_holder') %></label>
+          <input type="text" name="account_holder" class="${inputClass}">
         </div>
         <div>
-          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.branch') %></label>
-          <input type="text" name="branch" class="${inputClass}">
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_holder_en') %></label>
+          <input type="text" name="account_holder_en" class="${inputClass}">
         </div>
         <div>
           <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.branch_en') %></label>
           <input type="text" name="branch_en" class="${inputClass}">
         </div>
-        <div class="md:col-span-2">
-          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.paypal_account') %></label>
-          <input type="text" name="paypal_account" placeholder="email@example.com" class="${inputClass}">
+      </div>
+      <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">SWIFT / International</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
+            <input type="text" name="swift_code" class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.iban_code') %></label>
+            <input type="text" name="iban_code" class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address') %></label>
+            <input type="text" name="bank_address" class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address_en') %></label>
+            <input type="text" name="bank_address_en" class="${inputClass}">
+          </div>
+        </div>
+      </div>
+      <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div class="md:col-span-2">
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.paypal_account') %></label>
+            <input type="text" name="paypal_account" placeholder="email@example.com" class="${inputClass}">
+          </div>
         </div>
       </div>
       <div class="flex items-center gap-4 mt-2">

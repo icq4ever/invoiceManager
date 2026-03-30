@@ -49,15 +49,21 @@ function saveBankAccounts(db, companyId, body) {
   const bankNames = toArray(body['bank_name']);
   const bankNamesEn = toArray(body['bank_name_en']);
   const accountNumbers = toArray(body['account_number']);
+  const accountHolders = toArray(body['account_holder']);
+  const accountHoldersEn = toArray(body['account_holder_en']);
   const branches = toArray(body['branch']);
   const branchesEn = toArray(body['branch_en']);
   const swiftCodes = toArray(body['swift_code']);
+  const ibanCodes = toArray(body['iban_code']);
+  const bankAddresses = toArray(body['bank_address']);
+  const bankAddressesEn = toArray(body['bank_address_en']);
   const bankEnabled = toArray(body['bank_enabled']);
   const paypalAccounts = toArray(body['paypal_account']);
 
   const insert = db.prepare(`
-    INSERT INTO bank_accounts (company_id, bank_name, bank_name_en, account_number, branch, branch_en, swift_code, is_enabled, paypal_account, sort_order)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO bank_accounts (company_id, bank_name, bank_name_en, account_number, account_holder, account_holder_en,
+      branch, branch_en, swift_code, iban_code, bank_address, bank_address_en, is_enabled, paypal_account, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   for (let i = 0; i < bankNames.length; i++) {
@@ -67,9 +73,14 @@ function saveBankAccounts(db, companyId, body) {
       bankNames[i] || '',
       bankNamesEn[i] || null,
       accountNumbers[i] || '',
+      accountHolders[i] || null,
+      accountHoldersEn[i] || null,
       branches[i] || null,
       branchesEn[i] || null,
       swiftCodes[i] || null,
+      ibanCodes[i] || null,
+      bankAddresses[i] || null,
+      bankAddressesEn[i] || null,
       bankEnabled[i] === '1' ? 1 : 0,
       paypalAccounts[i] || null,
       i
