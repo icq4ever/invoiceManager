@@ -266,6 +266,10 @@
         <input type="checkbox" id="showFaxCheckbox" <%= invoice.show_fax !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
         <span class="text-gray-700 dark:text-gray-300"><%= t('company.fax') %></span>
       </label>
+      <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm">
+        <input type="checkbox" id="showClientAddressCheckbox" <%= invoice.show_client_address === 1 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
+        <span class="text-gray-700 dark:text-gray-300"><%= t('invoice.show_client_address') %></span>
+      </label>
       <% if (invoice.logo_path) { %>
       <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm">
         <input type="checkbox" id="showLogoWatermarkCheckbox" <%= invoice.show_logo_watermark === 1 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
@@ -342,6 +346,10 @@
               <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('invoice.recipient') %></td>
                 <td class="py-0.5 pl-3"><%= invoice.client_name || '-' %></td>
+              </tr>
+              <tr id="clientAddressRow" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_client_address !== 1 ? 'display: none;' : '' %>">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('client.address') %></td>
+                <td class="py-0.5 pl-3" style="white-space: pre-wrap;"><%= (invoice.client_address || '-').replace(/\\n/g, '\n') %></td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('invoice.date') %></td>
@@ -720,6 +728,8 @@
       const showBankInfo = document.getElementById('showBankInfoCheckbox').checked;
       const showLogoWatermarkEl = document.getElementById('showLogoWatermarkCheckbox');
       const showLogoWatermark = showLogoWatermarkEl ? showLogoWatermarkEl.checked : false;
+      const showClientAddressEl = document.getElementById('showClientAddressCheckbox');
+      const showClientAddress = showClientAddressEl ? showClientAddressEl.checked : false;
 
       // Bank mode: dropdown + Local/SWIFT radio + PayPal
       const bankDropdown = document.getElementById('bankSelectDropdown');
@@ -743,6 +753,8 @@
       var taxIdRow = document.getElementById('taxIdRow');
       if (taxIdRow) taxIdRow.style.display = showTaxId ? '' : 'none';
       if (faxRow) faxRow.style.display = showFax ? '' : 'none';
+      var clientAddressRow = document.getElementById('clientAddressRow');
+      if (clientAddressRow) clientAddressRow.style.display = showClientAddress ? '' : 'none';
       if (bankInfoRow) bankInfoRow.style.display = showBankInfo ? '' : 'none';
 
       // Toggle bank sub-options visibility
@@ -799,6 +811,7 @@
           show_paypal: showPaypal,
           show_account_holder: showAccountHolder,
           show_branch: showBranch,
+          show_client_address: showClientAddress,
           column_widths: columnWidths,
           selected_bank_accounts: selectedBanks
         })

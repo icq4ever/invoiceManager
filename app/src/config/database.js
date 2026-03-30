@@ -422,6 +422,7 @@ function initDatabase() {
   try { db.exec(`ALTER TABLE invoices ADD COLUMN show_account_holder INTEGER DEFAULT 1`); } catch (e) { /* already exists */ }
   try { db.exec(`ALTER TABLE invoices ADD COLUMN show_branch INTEGER DEFAULT 0`); } catch (e) { /* already exists */ }
   try { db.exec(`ALTER TABLE invoices ADD COLUMN show_tax_id INTEGER DEFAULT 1`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE invoices ADD COLUMN show_client_address INTEGER DEFAULT 0`); } catch (e) { /* already exists */ }
 
   // Create indexes for search performance
   db.exec(`CREATE INDEX IF NOT EXISTS idx_invoices_project_name ON invoices(project_name)`);

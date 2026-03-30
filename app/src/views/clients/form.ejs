@@ -40,8 +40,8 @@
       </div>
       <div>
         <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('client.address') %></label>
-        <input type="text" name="address" value="<%= client?.address || '' %>"
-          class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <input type="text" id="clientAddressInput" name="address" value="<%= (client?.address || '').replace(/\n/g, '\\n') %>"
+          class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="(Shift+Enter)">
       </div>
       <div class="md:col-span-2">
         <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('client.business_registration') %></label>
@@ -62,6 +62,19 @@
           class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
       </div>
     </div>
+
+    <script>
+      document.getElementById('clientAddressInput').addEventListener('keydown', function(e) {
+        if (e.shiftKey && e.key === 'Enter') {
+          e.preventDefault();
+          const start = this.selectionStart;
+          const end = this.selectionEnd;
+          const value = this.value;
+          this.value = value.substring(0, start) + '\\n' + value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+        }
+      });
+    </script>
 
     <div class="mt-4 flex justify-end space-x-2">
       <a href="/clients" class="px-4 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"><%= t('common.cancel') %></a>
