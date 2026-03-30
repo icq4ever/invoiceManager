@@ -53,10 +53,10 @@ function saveBankAccounts(db, companyId, body) {
   const branchesEn = toArray(body['branch_en']);
   const swiftCodes = toArray(body['swift_code']);
   const bankEnabled = toArray(body['bank_enabled']);
-  const bankShowSwift = toArray(body['bank_show_swift']);
+  const paypalAccounts = toArray(body['paypal_account']);
 
   const insert = db.prepare(`
-    INSERT INTO bank_accounts (company_id, bank_name, bank_name_en, account_number, branch, branch_en, swift_code, is_enabled, show_swift, sort_order)
+    INSERT INTO bank_accounts (company_id, bank_name, bank_name_en, account_number, branch, branch_en, swift_code, is_enabled, paypal_account, sort_order)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
@@ -71,7 +71,7 @@ function saveBankAccounts(db, companyId, body) {
       branchesEn[i] || null,
       swiftCodes[i] || null,
       bankEnabled[i] === '1' ? 1 : 0,
-      bankShowSwift[i] === '1' ? 1 : 0,
+      paypalAccounts[i] || null,
       i
     );
   }

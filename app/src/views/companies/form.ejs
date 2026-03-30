@@ -175,17 +175,17 @@
               <input type="text" name="branch_en" value="<%= ba.branch_en || '' %>"
                 class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
             </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.paypal_account') %></label>
+              <input type="text" name="paypal_account" value="<%= ba.paypal_account || '' %>" placeholder="email@example.com"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
           </div>
           <div class="flex items-center gap-4 mt-2">
             <input type="hidden" name="bank_enabled" value="<%= ba.is_enabled ? '1' : '0' %>">
             <label class="flex items-center">
               <input type="checkbox" class="bank-enabled-cb rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" <%= ba.is_enabled ? 'checked' : '' %>>
               <span class="ml-1.5 text-xs text-gray-700 dark:text-gray-300"><%= t('company.enabled') %></span>
-            </label>
-            <input type="hidden" name="bank_show_swift" value="<%= ba.show_swift ? '1' : '0' %>">
-            <label class="flex items-center">
-              <input type="checkbox" class="bank-show-swift-cb rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" <%= ba.show_swift ? 'checked' : '' %>>
-              <span class="ml-1.5 text-xs text-gray-700 dark:text-gray-300"><%= t('company.show_swift') %></span>
             </label>
           </div>
         </div>
@@ -390,24 +390,23 @@
   }
 
   // Sync bank checkbox values to hidden inputs on form submit
+  function syncCheckboxToHidden(cb) {
+    const label = cb.closest('label');
+    if (label && label.previousElementSibling && label.previousElementSibling.type === 'hidden') {
+      label.previousElementSibling.value = cb.checked ? '1' : '0';
+    }
+  }
+
   document.querySelector('form').addEventListener('submit', function() {
     document.querySelectorAll('.bank-account-card').forEach(function(card) {
-      const enabledCb = card.querySelector('.bank-enabled-cb');
-      const swiftCb = card.querySelector('.bank-show-swift-cb');
-      if (enabledCb) {
-        enabledCb.previousElementSibling.value = enabledCb.checked ? '1' : '0';
-      }
-      if (swiftCb) {
-        swiftCb.previousElementSibling.value = swiftCb.checked ? '1' : '0';
-      }
+      card.querySelectorAll('.bank-enabled-cb').forEach(syncCheckboxToHidden);
     });
   });
 
   // Also sync on checkbox change for immediate feedback
   document.addEventListener('change', function(e) {
-    if (e.target.classList.contains('bank-enabled-cb') || e.target.classList.contains('bank-show-swift-cb')) {
-      const hidden = e.target.closest('.flex').querySelector('input[type="hidden"]');
-      if (hidden) hidden.value = e.target.checked ? '1' : '0';
+    if (e.target.classList.contains('bank-enabled-cb')) {
+      syncCheckboxToHidden(e.target);
     }
   });
 
@@ -451,17 +450,16 @@
           <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.branch_en') %></label>
           <input type="text" name="branch_en" class="${inputClass}">
         </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.paypal_account') %></label>
+          <input type="text" name="paypal_account" placeholder="email@example.com" class="${inputClass}">
+        </div>
       </div>
       <div class="flex items-center gap-4 mt-2">
         <input type="hidden" name="bank_enabled" value="1">
         <label class="flex items-center">
           <input type="checkbox" class="bank-enabled-cb rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" checked>
           <span class="ml-1.5 text-xs text-gray-700 dark:text-gray-300"><%= t('company.enabled') %></span>
-        </label>
-        <input type="hidden" name="bank_show_swift" value="1">
-        <label class="flex items-center">
-          <input type="checkbox" class="bank-show-swift-cb rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" checked>
-          <span class="ml-1.5 text-xs text-gray-700 dark:text-gray-300"><%= t('company.show_swift') %></span>
         </label>
       </div>
     `;
