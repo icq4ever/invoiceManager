@@ -292,7 +292,11 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
 
   const supplierRows = [
     [L.companyName, biName || '-', L.representative, (biRep || '-') + ' ' + L.stampMark],
-    [L.businessNumber, invoice.company_business_number || '-'],
+  ];
+  if (invoice.show_tax_id !== 0) {
+    supplierRows.push([L.businessNumber, invoice.company_business_number || '-']);
+  }
+  supplierRows.push(
     [L.address, (biAddr || '-').replace(/\\n/g, '\n')],
     [L.phone, biPhone || '-'],
   ];
@@ -304,18 +308,36 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     supplierRows.push([L.fax, invoice.company_fax]);
   }
   if (invoice.show_bank_info !== 0 && selectedBankAccounts.length > 0) {
-    for (let i = 0; i < selectedBankAccounts.length; i++) {
-      const ba = selectedBankAccounts[i];
+    const ba = selectedBankAccounts[0]; // single bank selection
+    if (invoice.show_swift) {
+      // SWIFT mode — English only
+      const holderName = ba.account_holder_en || ba.account_holder || '';
+      let bankLine = `${ba.bank_name_en || ba.bank_name} ${ba.account_number}`;
+      if (holderName) bankLine += ` (${holderName})`;
+      supplierRows.push(['Bank Info', bankLine]);
+      if (ba.swift_code) {
+        let swiftLine = ba.swift_code;
+        if (ba.bank_address_en || ba.bank_address) swiftLine += ` / ${ba.bank_address_en || ba.bank_address}`;
+        supplierRows.push(['SWIFT Code', swiftLine]);
+      }
+      if (ba.iban_code) {
+        supplierRows.push(['IBAN', ba.iban_code]);
+      }
+    } else {
+      // Local mode — respects language
       const bankName = isEn ? (ba.bank_name_en || ba.bank_name) : ba.bank_name;
-      const branchText = ba.branch ? (isEn ? (ba.branch_en || ba.branch) : ba.branch) : '';
-      let bankText = `${bankName} ${ba.account_number}`;
-      if (branchText) bankText += ` (${branchText})`;
-      if (invoice.show_swift && ba.swift_code) bankText += `\nSWIFT: ${ba.swift_code}`;
-      supplierRows.push([i === 0 ? L.bankInfo : '', bankText]);
+      let bankText = bankName;
+      if (invoice.show_branch && ba.branch_en) bankText += ` (${ba.branch_en})`;
+      bankText += ` ${ba.account_number}`;
+      if (invoice.show_account_holder !== 0) {
+        const holderName = isEn ? (ba.account_holder_en || ba.account_holder) : ba.account_holder;
+        if (holderName) bankText += ` (${holderName})`;
+      }
+      supplierRows.push([L.bankInfo, bankText]);
     }
     // PayPal (per-invoice toggle)
     if (invoice.show_paypal) {
-      const paypalBa = selectedBankAccounts.find(ba => ba.paypal_account);
+      const paypalBa = selectedBankAccounts.find(b => b.paypal_account);
       if (paypalBa) {
         supplierRows.push(['PayPal', paypalBa.paypal_account]);
       }
