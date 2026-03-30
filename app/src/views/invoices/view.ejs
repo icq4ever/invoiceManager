@@ -916,7 +916,8 @@
     function replaceTemplateVars(text) {
       let result = text;
       for (const [key, value] of Object.entries(emailTemplateData)) {
-        result = result.replace(new RegExp('\\{\\{\\s*' + key + '\\s*\\}\\}', 'g'), value);
+        const sanitized = (value || '').replace(/\\n/g, ' ');
+        result = result.replace(new RegExp('\\{\\{\\s*' + key + '\\s*\\}\\}', 'g'), sanitized);
       }
       return result;
     }

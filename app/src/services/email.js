@@ -616,7 +616,7 @@ async function sendInvoiceEmail({ invoiceId, recipientEmail, fromEmail, fromName
     from: `"${actualFromName}" <${actualFromEmail}>`,
     to: recipientEmail,
     subject: subject,
-    html: body,
+    html: body.replace(/\n/g, '<br>'),
     attachments: [
       {
         filename: pdfFilename,
