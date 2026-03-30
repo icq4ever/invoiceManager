@@ -96,7 +96,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
 
   // Get full invoice data
   const invoice = db.prepare(`
-    SELECT i.*, c.name as client_name, c.business_number as client_business_number, c.address as client_address,
+    SELECT i.*, c.name as client_name, c.business_number as client_business_number, c.address as client_address, c.email as client_email, c.phone as client_phone,
            co.name as company_name, co.business_number as company_business_number, co.representative,
            co.address as company_address, co.phone as company_phone, co.email as company_email,
            co.bank_info as company_bank_info, co.website as company_website, co.fax as company_fax,
@@ -260,6 +260,12 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   ];
   if (invoice.show_client_address === 1) {
     infoRows.push([L.address, (invoice.client_address || '-').replace(/\\n/g, '\n')]);
+    if (invoice.client_phone) {
+      infoRows.push([L.phone, invoice.client_phone]);
+    }
+    if (invoice.client_email) {
+      infoRows.push([L.email, invoice.client_email]);
+    }
   }
   infoRows.push(
     [L.date, invoice.issue_date || '-'],

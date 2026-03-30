@@ -277,7 +277,7 @@ router.get('/:id', (req, res) => {
   const db = getDatabase();
   const invoice = db.prepare(`
     SELECT i.*, c.name as client_name, c.business_number as client_business_number, c.address as client_address,
-           c.email as client_email,
+           c.email as client_email, c.phone as client_phone,
            co.id as company_id_ref, co.name as company_name, co.business_number as company_business_number, co.representative,
            co.address as company_address, co.phone as company_phone, co.email as company_email,
            co.bank_info as company_bank_info, co.website as company_website, co.fax as company_fax,

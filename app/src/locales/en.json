@@ -85,7 +85,7 @@
     "show_stamp": "Show Stamp",
     "show_logo": "Show Logo",
     "show_logo_watermark": "Logo Watermark",
-    "show_client_address": "Recipient Address",
+    "show_client_info": "Recipient Info",
     "status_draft": "Draft",
     "status_confirmed": "Confirmed",
     "status_discarded": "Discarded",
