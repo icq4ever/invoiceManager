@@ -269,11 +269,12 @@
       </label>
       <% } %>
     </div>
-    <!-- Display options - Line 2: Bank Info toggle + account selection -->
+    <!-- Display options - Line 2: Bank Info slide toggle + account selection -->
     <div class="flex flex-wrap items-center gap-1.5 mb-4 no-print">
-      <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm">
-        <input type="checkbox" id="showBankInfoCheckbox" <%= invoice.show_bank_info !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
-        <span class="text-gray-700 dark:text-gray-300"><%= t('company.bank_info') %></span>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="showBankInfoCheckbox" <%= invoice.show_bank_info !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="sr-only peer">
+        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:after:border-gray-500 peer-checked:bg-blue-600"></div>
+        <span class="ml-1.5 text-xs sm:text-sm text-gray-700 dark:text-gray-300"><%= t('company.bank_info') %></span>
       </label>
       <label class="flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm bank-sub-option" style="<%= invoice.show_bank_info === 0 ? 'display:none;' : '' %>">
         <input type="checkbox" id="showSwiftCheckbox" <%= invoice.show_swift !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
@@ -389,23 +390,23 @@
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.fax') %></td>
                 <td class="py-0.5 pl-3" colspan="3"><%= invoice.company_fax || '-' %></td>
               </tr>
-              <% if (selectedBankAccounts && selectedBankAccounts.length > 0) { %>
-              <% selectedBankAccounts.forEach(function(ba, idx) { %>
-              <tr class="bank-account-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_bank_info === 0 ? 'display: none;' : '' %>">
+              <% if (allBankAccounts && allBankAccounts.length > 0) { %>
+              <% allBankAccounts.forEach(function(ba, idx) { %>
+              <% const isSelected = selectedBankIds.includes(ba.id); %>
+              <tr class="bank-account-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= (invoice.show_bank_info === 0 || !isSelected) ? 'display: none;' : '' %>">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= idx === 0 ? t('company.bank_info') : '' %></td>
                 <td class="py-0.5 pl-3" colspan="3" style="white-space: pre-wrap;"><%= lang === 'en' ? (ba.bank_name_en || ba.bank_name) : ba.bank_name %> <%= ba.account_number %><% if (ba.branch) { %> (<%= lang === 'en' ? (ba.branch_en || ba.branch) : ba.branch %>)<% } %><% if (ba.swift_code) { %><span class="swift-info" style="<%= invoice.show_swift === 0 ? 'display:none;' : '' %>">
 SWIFT: <%= ba.swift_code %></span><% } %></td>
               </tr>
               <% }); %>
-              <% } %>
-              <% const paypalAccount = (selectedBankAccounts || allBankAccounts || []).find(function(ba) { return ba.paypal_account; }); %>
+              <% const paypalAccount = allBankAccounts.find(function(ba) { return ba.paypal_account; }); %>
               <% if (paypalAccount) { %>
               <tr class="paypal-info-row" style="border-bottom: 1px solid #d1d5db; <%= (invoice.show_bank_info === 0 || invoice.show_paypal !== 1) ? 'display: none;' : '' %>">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">PayPal</td>
                 <td class="py-0.5 pl-3" colspan="3"><%= paypalAccount.paypal_account %></td>
               </tr>
               <% } %>
-              <% if (!selectedBankAccounts || selectedBankAccounts.length === 0) { %>
+              <% } else { %>
               <tr id="bankInfoRow" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_bank_info === 0 ? 'display: none;' : '' %>">
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.bank_info') %></td>
                 <td class="py-0.5 pl-3" colspan="3" style="white-space: pre-wrap;"><%= lang === 'en' ? (invoice.company_bank_info_en || invoice.company_bank_info || '-') : (invoice.company_bank_info || '-') %></td>
@@ -687,30 +688,27 @@ SWIFT: <%= ba.swift_code %></span><% } %></td>
       if (faxRow) faxRow.style.display = showFax ? '' : 'none';
       if (bankInfoRow) bankInfoRow.style.display = showBankInfo ? '' : 'none';
 
-      // Toggle bank account rows and sub-options
-      document.querySelectorAll('.bank-account-row').forEach(function(row) {
-        row.style.display = showBankInfo ? '' : 'none';
-      });
+      // Toggle bank sub-options (SWIFT checkbox, account checkboxes, PayPal checkbox)
       document.querySelectorAll('.bank-select-label, .bank-sub-option').forEach(function(el) {
         el.style.display = showBankInfo ? '' : 'none';
       });
 
-      // Toggle SWIFT info rows
-      document.querySelectorAll('.swift-info').forEach(function(el) {
-        el.style.display = (showBankInfo && showSwift) ? '' : 'none';
-      });
-
-      // Toggle PayPal rows
-      document.querySelectorAll('.paypal-info-row').forEach(function(el) {
-        el.style.display = (showBankInfo && showPaypal) ? '' : 'none';
-      });
-
-      // Toggle individual bank account rows based on selection
+      // Toggle individual bank account rows: show only when Bank Info ON + that account checked
       document.querySelectorAll('.bank-select-checkbox').forEach(function(cb) {
         var bankId = cb.value;
         document.querySelectorAll('.bank-account-row[data-bank-id="' + bankId + '"]').forEach(function(row) {
           row.style.display = (showBankInfo && cb.checked) ? '' : 'none';
         });
+      });
+
+      // Toggle SWIFT info (within bank rows)
+      document.querySelectorAll('.swift-info').forEach(function(el) {
+        el.style.display = showSwift ? '' : 'none';
+      });
+
+      // Toggle PayPal row: show only when Bank Info ON + PayPal checked
+      document.querySelectorAll('.paypal-info-row').forEach(function(el) {
+        el.style.display = (showBankInfo && showPaypal) ? '' : 'none';
       });
 
       // Collect selected bank account IDs
