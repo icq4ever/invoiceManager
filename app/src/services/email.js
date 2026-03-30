@@ -135,7 +135,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   const L = isEn ? {
     title: 'Invoice',
     recipient: 'To',
-    date: 'Date',
+    date: 'Issued',
     validity: 'Valid for',
     supplier: 'From',
     companyName: 'Company',
@@ -219,11 +219,12 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   // Logo (if exists)
   if (invoice.logo_path) {
     const logoFile = path.join(__dirname, '../../uploads', invoice.logo_path.replace('/uploads/', ''));
+    console.log('PDF logo debug:', { logo_path: invoice.logo_path, logoFile, exists: fs.existsSync(logoFile), show_logo: invoice.show_logo });
     if (fs.existsSync(logoFile)) {
       if (invoice.show_logo !== 0) {
         try {
-          doc.image(logoFile, leftMargin + pageWidth - 100, y, { height: 25, fit: [100, 25], align: 'right' });
-        } catch (e) { /* skip if image fails */ }
+          doc.image(logoFile, leftMargin + pageWidth - 120, y, { fit: [120, 30] });
+        } catch (e) { console.error('PDF logo error:', e.message); }
       }
 
       // Logo watermark (semi-transparent background)
@@ -242,54 +243,35 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
 
   y += 35;
 
-  // --- PROJECT & CLIENT INFO (left) ---
+  // --- PROJECT & CLIENT INFO (left) + SUPPLIER INFO (right) ---
   const leftColWidth = pageWidth * 0.5;
   const rightColWidth = pageWidth * 0.45;
   const rightColX = leftMargin + pageWidth - rightColWidth;
 
-  const startY = y;
-
-  // Project name
+  // Pre-calculate left column height
+  let leftHeight = 0;
   if (invoice.project_name) {
-    doc.font(fontRegular).fontSize(14);
     const projText = (invoice.project_name || '').replace(/\\n/g, '\n');
-    doc.text(projText, leftMargin, y, { width: leftColWidth });
-    y = doc.y + 8;
+    const projLines = Math.ceil(projText.length / 30) || 1;
+    leftHeight += projLines * 16 + 8;
   }
-
-  // Client info table
   const infoRows = [
     [L.recipient, invoice.client_name || '-'],
+  ];
+  if (invoice.show_client_address === 1) {
+    infoRows.push([L.address, (invoice.client_address || '-').replace(/\\n/g, '\n')]);
+  }
+  infoRows.push(
     [L.date, invoice.issue_date || '-'],
     [L.validity, invoice.validity_period || '-']
-  ];
-
-  doc.fontSize(8);
-  for (const [label, value] of infoRows) {
-    doc.strokeColor('#d1d5db').lineWidth(0.5)
-      .moveTo(leftMargin, y).lineTo(leftMargin + leftColWidth - 20, y).stroke();
-    doc.font(fontBold).fillColor('#6b7280').text(label, leftMargin + 2, y + 2, { width: 60 });
-    doc.font(fontRegular).fillColor('#000000').text(value, leftMargin + 65, y + 2, { width: leftColWidth - 85 });
-    y += 15;
+  );
+  for (const [, value] of infoRows) {
+    const lines = Math.ceil(((value || '').length) / 35) || 1;
+    leftHeight += Math.max(15, lines * 12 + 3);
   }
-  doc.strokeColor('#d1d5db').lineWidth(0.5)
-    .moveTo(leftMargin, y).lineTo(leftMargin + leftColWidth - 20, y).stroke();
+  leftHeight += 1; // bottom border
 
-  // --- SUPPLIER INFO (right) ---
-  let ry = startY;
-  doc.font(fontBold).fontSize(9).fillColor('#6b7280').text(L.supplier, rightColX, ry);
-  ry += 14;
-
-  // Stamp image
-  if (invoice.stamp_path && invoice.show_stamp !== 0) {
-    const stampFile = path.join(__dirname, '../../uploads', invoice.stamp_path.replace('/uploads/', ''));
-    if (fs.existsSync(stampFile)) {
-      try {
-        doc.image(stampFile, rightColX + rightColWidth - 55, ry - 5, { height: 40, fit: [55, 40] });
-      } catch (e) { /* skip */ }
-    }
-  }
-
+  // Pre-calculate right column height
   const supplierRows = [
     [L.companyName, biName || '-', L.representative, (biRep || '-') + ' ' + L.stampMark],
   ];
@@ -307,43 +289,90 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   if (invoice.show_fax !== 0 && invoice.company_fax) {
     supplierRows.push([L.fax, invoice.company_fax]);
   }
-  if (invoice.show_bank_info !== 0 && selectedBankAccounts.length > 0) {
-    const ba = selectedBankAccounts[0]; // single bank selection
-    if (invoice.show_swift) {
-      // SWIFT mode — independent fields
-      if (ba.swift_bank_branch) supplierRows.push(['Bank Name & Branch', ba.swift_bank_branch]);
-      if (ba.swift_bank_address) supplierRows.push(['Bank Address', ba.swift_bank_address]);
-      if (ba.bank_code || ba.swift_code) {
-        let codeLine = ba.bank_code || ba.swift_code;
-        if (ba.bank_code && ba.swift_code && ba.bank_code !== ba.swift_code) codeLine += ` / ${ba.swift_code}`;
-        supplierRows.push(['Bank Code / SWIFT', codeLine]);
+  if (invoice.show_bank_info !== 0) {
+    if (selectedBankAccounts.length > 0) {
+      const ba = selectedBankAccounts[0];
+      if (invoice.show_swift) {
+        if (ba.swift_bank_branch) supplierRows.push(['Bank Name & Branch', ba.swift_bank_branch]);
+        if (ba.swift_bank_address) supplierRows.push(['Bank Address', ba.swift_bank_address]);
+        if (ba.bank_code || ba.swift_code) {
+          let codeLine = ba.bank_code || ba.swift_code;
+          if (ba.bank_code && ba.swift_code && ba.bank_code !== ba.swift_code) codeLine += ` / ${ba.swift_code}`;
+          supplierRows.push(['Bank Code / SWIFT', codeLine]);
+        }
+        let acctLine = ba.account_number;
+        if (ba.iban_code && ba.iban_code !== ba.account_number) acctLine += ` / ${ba.iban_code}`;
+        supplierRows.push(['Account No. / IBAN', acctLine]);
+        if (ba.swift_account_name) supplierRows.push(['Account Name', ba.swift_account_name]);
+      } else {
+        const bankName = isEn ? (ba.bank_name_en || ba.bank_name) : ba.bank_name;
+        let bankText = bankName;
+        if (invoice.show_branch && ba.branch_en) bankText += ` (${ba.branch_en})`;
+        bankText += ` ${ba.account_number}`;
+        if (invoice.show_account_holder !== 0) {
+          const holderName = isEn ? (ba.account_holder_en || ba.account_holder) : ba.account_holder;
+          if (holderName) bankText += ` (${holderName})`;
+        }
+        supplierRows.push([L.bankInfo, bankText]);
       }
-      let acctLine = ba.account_number;
-      if (ba.iban_code && ba.iban_code !== ba.account_number) acctLine += ` / ${ba.iban_code}`;
-      supplierRows.push(['Account No. / IBAN', acctLine]);
-      if (ba.swift_account_name) supplierRows.push(['Account Name', ba.swift_account_name]);
-    } else {
-      // Local mode — respects language
-      const bankName = isEn ? (ba.bank_name_en || ba.bank_name) : ba.bank_name;
-      let bankText = bankName;
-      if (invoice.show_branch && ba.branch_en) bankText += ` (${ba.branch_en})`;
-      bankText += ` ${ba.account_number}`;
-      if (invoice.show_account_holder !== 0) {
-        const holderName = isEn ? (ba.account_holder_en || ba.account_holder) : ba.account_holder;
-        if (holderName) bankText += ` (${holderName})`;
-      }
-      supplierRows.push([L.bankInfo, bankText]);
+    } else if (biBankInfo || invoice.company_bank_info) {
+      supplierRows.push([L.bankInfo, biBankInfo || invoice.company_bank_info]);
     }
-    // PayPal (per-invoice toggle)
     if (invoice.show_paypal) {
-      const paypalBa = selectedBankAccounts.find(b => b.paypal_account);
+      const allBankAccounts = db.prepare('SELECT * FROM bank_accounts WHERE company_id = ? AND is_enabled = 1').all(invoice.company_id || invoice.comp_id);
+      const paypalBa = allBankAccounts.find(b => b.paypal_account);
       if (paypalBa) {
         supplierRows.push(['PayPal', paypalBa.paypal_account]);
       }
     }
-  } else if (invoice.show_bank_info !== 0 && (biBankInfo || invoice.company_bank_info)) {
-    // Fallback to legacy free-text bank info
-    supplierRows.push([L.bankInfo, biBankInfo || invoice.company_bank_info]);
+  }
+
+  let rightHeight = 14; // "From" label
+  for (const row of supplierRows) {
+    const val = row.length === 4 ? row[1] : row[1];
+    const lines = Math.ceil(((val || '').length) / 40) || 1;
+    rightHeight += Math.max(13, lines * 10 + 2);
+  }
+  rightHeight += 1; // bottom border
+
+  // Bottom-align: offset the shorter column
+  const maxHeight = Math.max(leftHeight, rightHeight);
+  const leftStartY = y + (maxHeight - leftHeight);
+  const rightStartY = y + (maxHeight - rightHeight);
+
+  // --- Draw LEFT column ---
+  let ly = leftStartY;
+  if (invoice.project_name) {
+    doc.font(fontRegular).fontSize(14);
+    const projText = (invoice.project_name || '').replace(/\\n/g, '\n');
+    doc.text(projText, leftMargin, ly, { width: leftColWidth });
+    ly = doc.y + 8;
+  }
+
+  doc.fontSize(8);
+  for (const [label, value] of infoRows) {
+    doc.strokeColor('#d1d5db').lineWidth(0.5)
+      .moveTo(leftMargin, ly).lineTo(leftMargin + leftColWidth - 20, ly).stroke();
+    doc.font(fontBold).fillColor('#6b7280').text(label, leftMargin + 2, ly + 2, { width: 60 });
+    doc.font(fontRegular).fillColor('#000000').text(value, leftMargin + 65, ly + 2, { width: leftColWidth - 85 });
+    ly = Math.max(ly + 15, doc.y + 3);
+  }
+  doc.strokeColor('#d1d5db').lineWidth(0.5)
+    .moveTo(leftMargin, ly).lineTo(leftMargin + leftColWidth - 20, ly).stroke();
+
+  // --- Draw RIGHT column ---
+  let ry = rightStartY;
+  doc.font(fontBold).fontSize(9).fillColor('#6b7280').text(L.supplier, rightColX, ry);
+  ry += 14;
+
+  // Stamp image
+  if (invoice.stamp_path && invoice.show_stamp !== 0) {
+    const stampFile = path.join(__dirname, '../../uploads', invoice.stamp_path.replace('/uploads/', ''));
+    if (fs.existsSync(stampFile)) {
+      try {
+        doc.image(stampFile, rightColX + rightColWidth - 55, ry - 5, { fit: [55, 40] });
+      } catch (e) { /* skip */ }
+    }
   }
 
   doc.fontSize(7);
@@ -485,32 +514,26 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
 
   y += 5;
 
-  // --- SUMMARY ---
-  const summaryX = leftMargin + pageWidth * 0.55;
-  const summaryW = pageWidth * 0.45;
-
-  doc.strokeColor('#d1d5db').lineWidth(0.5)
-    .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
-  y += 3;
-  doc.font(fontBold).fontSize(8).fillColor('#6b7280').text(L.subtotal, summaryX + 2, y, { width: summaryW * 0.5 });
-  doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.subtotal, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
+  // --- SUMMARY (full width: label left, amount right) ---
+  doc.font(fontBold).fontSize(8).fillColor('#6b7280').text(L.subtotal, leftMargin + 2, y, { width: pageWidth * 0.5 });
+  doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.subtotal, currency), leftMargin, y, { width: pageWidth - 2, align: 'right' });
   y += 13;
 
   doc.strokeColor('#d1d5db').lineWidth(0.5)
-    .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
+    .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
   y += 3;
-  doc.font(fontBold).fillColor('#6b7280').text(`${L.tax} (${invoice.tax_rate}%)`, summaryX + 2, y, { width: summaryW * 0.5 });
-  doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.tax_amount, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
+  doc.font(fontBold).fontSize(8).fillColor('#6b7280').text(`${L.tax} (${invoice.tax_rate}%)`, leftMargin + 2, y, { width: pageWidth * 0.5 });
+  doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.tax_amount, currency), leftMargin, y, { width: pageWidth - 2, align: 'right' });
   y += 13;
 
   doc.strokeColor('#1f2937').lineWidth(1.5)
-    .moveTo(summaryX, y).lineTo(summaryX + summaryW, y).stroke();
+    .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
   y += 3;
-  doc.font(fontBold).fontSize(9).fillColor('#000000').text(L.total, summaryX + 2, y, { width: summaryW * 0.5 });
-  doc.text(formatAmount(invoice.total_amount, currency), summaryX + summaryW * 0.5, y, { width: summaryW * 0.5 - 2, align: 'right' });
+  doc.font(fontBold).fontSize(9).fillColor('#000000').text(L.total, leftMargin + 2, y, { width: pageWidth * 0.5 });
+  doc.text(formatAmount(invoice.total_amount, currency), leftMargin, y, { width: pageWidth - 2, align: 'right' });
   y += 20;
 
-  // --- NOTES ---
+  // --- NOTES (positioned at page bottom) ---
   let notes = [];
   try {
     notes = JSON.parse(invoice.notes || '[]');
@@ -519,24 +542,37 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   }
 
   if (notes.length > 0) {
-    // Check if we need a new page for notes
-    if (y > doc.page.height - 80) {
-      doc.addPage();
-      y = 30;
+    // Estimate notes height: title(12) + separator(5) + each note line (~10)
+    const estimatedNotesHeight = 17 + notes.reduce((h, note) => {
+      const lines = Math.ceil(((note || '').length + 3) / 120) || 1;
+      return h + lines * 10 + 3;
+    }, 0);
+
+    const pageBottom = doc.page.height - 30; // 30px bottom margin
+    let notesY = pageBottom - estimatedNotesHeight;
+
+    // If notes would overlap with current content, place below content instead
+    if (notesY < y + 10) {
+      // Check if we need a new page
+      if (y > doc.page.height - 80) {
+        doc.addPage();
+        y = 30;
+      }
+      notesY = y;
     }
 
     doc.strokeColor('#d1d5db').lineWidth(0.5)
-      .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
-    y += 5;
+      .moveTo(leftMargin, notesY).lineTo(leftMargin + pageWidth, notesY).stroke();
+    notesY += 5;
 
-    doc.font(fontBold).fontSize(8).fillColor('#000000').text(L.notes, leftMargin, y);
-    y += 12;
+    doc.font(fontBold).fontSize(8).fillColor('#000000').text(L.notes, leftMargin, notesY);
+    notesY += 12;
 
     doc.font(fontRegular).fontSize(6.5).fillColor('#6b7280');
     notes.forEach((note, i) => {
       const noteText = `${i + 1}. ${(note || '').replace(/\\n/g, '\n')}`;
-      doc.text(noteText, leftMargin + 2, y, { width: pageWidth - 4 });
-      y = doc.y + 3;
+      doc.text(noteText, leftMargin + 2, notesY, { width: pageWidth - 4 });
+      notesY = doc.y + 3;
     });
   }
 
