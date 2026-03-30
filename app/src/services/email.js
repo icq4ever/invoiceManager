@@ -310,19 +310,18 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   if (invoice.show_bank_info !== 0 && selectedBankAccounts.length > 0) {
     const ba = selectedBankAccounts[0]; // single bank selection
     if (invoice.show_swift) {
-      // SWIFT mode — English only
-      const holderName = ba.account_holder_en || ba.account_holder || '';
-      let bankLine = `${ba.bank_name_en || ba.bank_name} ${ba.account_number}`;
-      if (holderName) bankLine += ` (${holderName})`;
-      supplierRows.push(['Bank Info', bankLine]);
-      if (ba.swift_code) {
-        let swiftLine = ba.swift_code;
-        if (ba.bank_address_en || ba.bank_address) swiftLine += ` / ${ba.bank_address_en || ba.bank_address}`;
-        supplierRows.push(['SWIFT Code', swiftLine]);
+      // SWIFT mode — independent fields
+      if (ba.swift_bank_branch) supplierRows.push(['Bank Name & Branch', ba.swift_bank_branch]);
+      if (ba.swift_bank_address) supplierRows.push(['Bank Address', ba.swift_bank_address]);
+      if (ba.bank_code || ba.swift_code) {
+        let codeLine = ba.bank_code || ba.swift_code;
+        if (ba.bank_code && ba.swift_code && ba.bank_code !== ba.swift_code) codeLine += ` / ${ba.swift_code}`;
+        supplierRows.push(['Bank Code / SWIFT', codeLine]);
       }
-      if (ba.iban_code) {
-        supplierRows.push(['IBAN', ba.iban_code]);
-      }
+      let acctLine = ba.account_number;
+      if (ba.iban_code && ba.iban_code !== ba.account_number) acctLine += ` / ${ba.iban_code}`;
+      supplierRows.push(['Account No. / IBAN', acctLine]);
+      if (ba.swift_account_name) supplierRows.push(['Account Name', ba.swift_account_name]);
     } else {
       // Local mode — respects language
       const bankName = isEn ? (ba.bank_name_en || ba.bank_name) : ba.bank_name;

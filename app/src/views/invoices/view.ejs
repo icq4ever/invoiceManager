@@ -417,21 +417,33 @@
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.bank_info') %></td>
                 <td class="py-0.5 pl-3" colspan="3"><%= lang === 'en' ? (ba.bank_name_en || ba.bank_name) : ba.bank_name %><% if (ba.branch_en) { %><span class="branch-info" style="<%= invoice.show_branch !== 1 ? 'display:none;' : '' %>"> (<%= ba.branch_en %>)</span><% } %> <%= ba.account_number %><% if (ba.account_holder) { %><span class="holder-info" style="<%= invoice.show_account_holder === 0 ? 'display:none;' : '' %>"> (<%= lang === 'en' ? (ba.account_holder_en || ba.account_holder) : ba.account_holder %>)</span><% } %></td>
               </tr>
-              <!-- SWIFT mode rows -->
+              <!-- SWIFT mode rows (independent fields) -->
+              <% if (ba.swift_bank_branch) { %>
               <tr class="bank-swift-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= (isHidden || invoice.show_swift !== 1) ? 'display: none;' : '' %>">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">Bank Info</td>
-                <td class="py-0.5 pl-3" colspan="3"><%= ba.bank_name_en || ba.bank_name %> <%= ba.account_number %><% if (ba.account_holder_en || ba.account_holder) { %> (<%= ba.account_holder_en || ba.account_holder %>)<% } %></td>
-              </tr>
-              <% if (ba.swift_code) { %>
-              <tr class="bank-swift-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= (isHidden || invoice.show_swift !== 1) ? 'display: none;' : '' %>">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">SWIFT Code</td>
-                <td class="py-0.5 pl-3" colspan="3"><%= ba.swift_code %><% if (ba.bank_address_en || ba.bank_address) { %> / <%= ba.bank_address_en || ba.bank_address %><% } %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">Bank Name & Branch</td>
+                <td class="py-0.5 pl-3" colspan="3"><%= ba.swift_bank_branch %></td>
               </tr>
               <% } %>
-              <% if (ba.iban_code) { %>
+              <% if (ba.swift_bank_address) { %>
               <tr class="bank-swift-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= (isHidden || invoice.show_swift !== 1) ? 'display: none;' : '' %>">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">IBAN</td>
-                <td class="py-0.5 pl-3" colspan="3"><%= ba.iban_code %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">Bank Address</td>
+                <td class="py-0.5 pl-3" colspan="3"><%= ba.swift_bank_address %></td>
+              </tr>
+              <% } %>
+              <% if (ba.bank_code || ba.swift_code) { %>
+              <tr class="bank-swift-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= (isHidden || invoice.show_swift !== 1) ? 'display: none;' : '' %>">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">Bank Code / SWIFT</td>
+                <td class="py-0.5 pl-3" colspan="3"><%= ba.bank_code || ba.swift_code %><% if (ba.bank_code && ba.swift_code && ba.bank_code !== ba.swift_code) { %> / <%= ba.swift_code %><% } %></td>
+              </tr>
+              <% } %>
+              <tr class="bank-swift-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= (isHidden || invoice.show_swift !== 1) ? 'display: none;' : '' %>">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">Account No. / IBAN</td>
+                <td class="py-0.5 pl-3" colspan="3"><%= ba.account_number %><% if (ba.iban_code && ba.iban_code !== ba.account_number) { %> / <%= ba.iban_code %><% } %></td>
+              </tr>
+              <% if (ba.swift_account_name) { %>
+              <tr class="bank-swift-row" data-bank-id="<%= ba.id %>" style="border-bottom: 1px solid #d1d5db; <%= (isHidden || invoice.show_swift !== 1) ? 'display: none;' : '' %>">
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap">Account Name</td>
+                <td class="py-0.5 pl-3" colspan="3"><%= ba.swift_account_name %></td>
               </tr>
               <% } %>
               <% }); %>
