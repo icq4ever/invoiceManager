@@ -123,6 +123,21 @@ See [LICENSE](LICENSE) for details.
 
 ## Changelog
 
+### v1.2.5
+- Added recipient address display option (toggle per invoice, supports multi-line with Shift+Enter)
+- Renamed "Date" label to "Issued" in English locale
+- Fixed email body newline rendering (textarea line breaks now show as `<br>` in HTML email)
+- Sanitized template variables: `\n` in project name replaced with space to prevent subject truncation
+- Email template uses English company name (`company_name_en`) when invoice language is English
+- Made "From Email" field readonly in email send modal (determined by SMTP settings)
+- Improved email PDF layout to match HTML invoice preview
+  - Logo rendering fix (NaN error resolved)
+  - Bottom-aligned left/right header columns
+  - Full-width summary section (Subtotal/Tax/Total)
+  - Dynamic row height for multi-line addresses
+  - Notes positioned at page bottom
+  - Bank/PayPal display respects invoice preview settings
+
 ### v1.2.4
 - Added business registration certificate upload for clients (image/PDF)
 - Added client detail page with document preview and download
