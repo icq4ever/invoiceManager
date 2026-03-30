@@ -180,9 +180,29 @@
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">SWIFT / International</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
-                <input type="text" name="swift_code" value="<%= ba.swift_code || '' %>"
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_name_branch') %></label>
+                <input type="text" name="swift_bank_branch" value="<%= ba.swift_bank_branch || '' %>" placeholder="WOORI BANK, Sangam Branch"
                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address_intl') %></label>
+                <input type="text" name="swift_bank_address" value="<%= ba.swift_bank_address || '' %>" placeholder="1581, Sangam-dong, Seoul, Korea"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_code') %></label>
+                <input type="text" name="bank_code" value="<%= ba.bank_code || '' %>" placeholder="HVBKKRSE"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
+                <input type="text" name="swift_code" value="<%= ba.swift_code || '' %>" placeholder="HVBKKRSE"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_number') %></label>
+                <input type="text" disabled value="<%= ba.account_number || '' %>"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
               </div>
               <div>
                 <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.iban_code') %></label>
@@ -190,13 +210,8 @@
                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
               </div>
               <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address') %></label>
-                <input type="text" name="bank_address" value="<%= ba.bank_address || '' %>"
-                  class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-              </div>
-              <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address_en') %></label>
-                <input type="text" name="bank_address_en" value="<%= ba.bank_address_en || '' %>"
+                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_name_intl') %></label>
+                <input type="text" name="swift_account_name" value="<%= ba.swift_account_name || '' %>"
                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
               </div>
             </div>
@@ -484,20 +499,32 @@
         <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">SWIFT / International</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_name_branch') %></label>
+            <input type="text" name="swift_bank_branch" placeholder="WOORI BANK, Sangam Branch" class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address_intl') %></label>
+            <input type="text" name="swift_bank_address" placeholder="1581, Sangam-dong, Seoul, Korea" class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_code') %></label>
+            <input type="text" name="bank_code" placeholder="HVBKKRSE" class="${inputClass}">
+          </div>
+          <div>
             <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.swift_code') %></label>
-            <input type="text" name="swift_code" class="${inputClass}">
+            <input type="text" name="swift_code" placeholder="HVBKKRSE" class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_number') %></label>
+            <input type="text" disabled class="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
           </div>
           <div>
             <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.iban_code') %></label>
             <input type="text" name="iban_code" class="${inputClass}">
           </div>
           <div>
-            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address') %></label>
-            <input type="text" name="bank_address" class="${inputClass}">
-          </div>
-          <div>
-            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.bank_address_en') %></label>
-            <input type="text" name="bank_address_en" class="${inputClass}">
+            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1"><%= t('company.account_name_intl') %></label>
+            <input type="text" name="swift_account_name" class="${inputClass}">
           </div>
         </div>
       </div>

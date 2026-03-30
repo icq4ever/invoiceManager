@@ -411,6 +411,10 @@ function initDatabase() {
   try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN bank_address TEXT`); } catch (e) { /* already exists */ }
   try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN bank_address_en TEXT`); } catch (e) { /* already exists */ }
   try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN iban_code TEXT`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN bank_code TEXT`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN swift_bank_branch TEXT`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN swift_bank_address TEXT`); } catch (e) { /* already exists */ }
+  try { db.exec(`ALTER TABLE bank_accounts ADD COLUMN swift_account_name TEXT`); } catch (e) { /* already exists */ }
 
   // Add per-invoice bank display options (v1.2.4)
   try { db.exec(`ALTER TABLE invoices ADD COLUMN show_swift INTEGER DEFAULT 0`); } catch (e) { /* already exists */ }
