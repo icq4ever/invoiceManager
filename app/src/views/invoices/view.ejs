@@ -906,9 +906,9 @@
     <% if (hasSmtp) { %>
     const emailTemplateData = {
       invoice_number: '<%= (invoice.invoice_number || "").replace(/'/g, "\\'") %>',
-      project_name: '<%= (invoice.project_name || "").replace(/'/g, "\\'") %>',
+      project_name: '<%= (invoice.project_name || "").replace(/\\n/g, " ").replace(/'/g, "\\'") %>',
       client_name: '<%= (invoice.client_name || "").replace(/'/g, "\\'") %>',
-      company_name: '<%= (invoice.company_name || "").replace(/'/g, "\\'") %>',
+      company_name: '<%= (lang === "en" ? (invoice.company_name_en || invoice.company_name || "") : (invoice.company_name || "")).replace(/'/g, "\\'") %>',
       total_amount: '<%= formatAmount(invoice.total_amount) %>',
       issue_date: '<%= invoice.issue_date || "" %>'
     };
