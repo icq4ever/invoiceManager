@@ -298,11 +298,11 @@
           <span class="text-gray-700 dark:text-gray-300"><%= t('company.bank_mode_swift') %></span>
         </label>
       </div>
-      <label class="bank-sub-option flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm" style="<%= invoice.show_bank_info === 0 ? 'display:none;' : '' %>">
+      <label class="bank-local-option flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm" style="<%= (invoice.show_bank_info === 0 || invoice.show_swift === 1) ? 'display:none;' : '' %>">
         <input type="checkbox" id="showAccountHolderCheckbox" <%= invoice.show_account_holder !== 0 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
         <span class="text-gray-700 dark:text-gray-300"><%= t('company.account_holder') %></span>
       </label>
-      <label class="bank-sub-option flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm" style="<%= invoice.show_bank_info === 0 ? 'display:none;' : '' %>">
+      <label class="bank-local-option flex items-center space-x-1 sm:space-x-1.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-gray-700 cursor-pointer text-xs sm:text-sm" style="<%= (invoice.show_bank_info === 0 || invoice.show_swift === 1) ? 'display:none;' : '' %>">
         <input type="checkbox" id="showBranchCheckbox" <%= invoice.show_branch === 1 ? 'checked' : '' %> onchange="saveDisplayOptions()" class="rounded">
         <span class="text-gray-700 dark:text-gray-300"><%= t('company.branch_en') %></span>
       </label>
@@ -381,7 +381,7 @@
                 <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2" style="width: 15%;"><%= t('company.representative') %></td>
                 <td class="py-0.5 text-right" style="vertical-align: middle;">
                   <span><%= lang === 'en' ? (invoice.representative_en || invoice.representative || '-') : (invoice.representative || '-') %></span>
-                  <span id="stampMark" style="font-size: 12px; color: #999; margin-left: 8px; <%= (!invoice.stamp_path || invoice.show_stamp === 0) ? 'display: none;' : '' %>"><%= t('company.stamp_mark') %></span>
+                  <span id="stampMark" style="color: #999; margin-left: 4px;"><%= t('company.stamp_mark') %></span>
                 </td>
               </tr>
               <tr id="taxIdRow" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_tax_id === 0 ? 'display: none;' : '' %>">
@@ -737,8 +737,6 @@
       const headerLogo = document.getElementById('headerLogo');
       if (headerLogo) headerLogo.style.display = showLogo ? '' : 'none';
       if (stampImage) stampImage.style.display = showStamp ? 'inline-block' : 'none';
-      const stampMark = document.getElementById('stampMark');
-      if (stampMark) stampMark.style.display = (showStamp && stampImage) ? '' : 'none';
       const logoWatermark = document.getElementById('logoWatermark');
       if (logoWatermark) logoWatermark.style.display = showLogoWatermark ? '' : 'none';
       if (websiteRow) websiteRow.style.display = showWebsite ? '' : 'none';
@@ -750,6 +748,10 @@
       // Toggle bank sub-options visibility
       document.querySelectorAll('.bank-sub-option').forEach(function(el) {
         el.style.display = showBankInfo ? '' : 'none';
+      });
+      // Local-only options (account holder, branch) — hide when SWIFT
+      document.querySelectorAll('.bank-local-option').forEach(function(el) {
+        el.style.display = (showBankInfo && !isSwift) ? '' : 'none';
       });
 
       // Toggle bank rows: show selected bank only, in correct mode
