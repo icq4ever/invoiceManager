@@ -538,7 +538,7 @@ router.post('/:id/set-status', (req, res) => {
 // Save display options
 router.post('/:id/display-options', (req, res) => {
   const db = getDatabase();
-  const { show_logo, show_stamp, show_website, show_fax, show_bank_info, show_logo_watermark, column_widths, selected_bank_accounts } = req.body;
+  const { show_logo, show_stamp, show_website, show_fax, show_bank_info, show_logo_watermark, show_swift, show_paypal, column_widths, selected_bank_accounts } = req.body;
 
   try {
     const invoice = db.prepare('SELECT id FROM invoices WHERE id = ?').get(req.params.id);
@@ -548,7 +548,7 @@ router.post('/:id/display-options', (req, res) => {
 
     db.prepare(`
       UPDATE invoices
-      SET show_logo = ?, show_stamp = ?, show_website = ?, show_fax = ?, show_bank_info = ?, show_logo_watermark = ?, column_widths = ?
+      SET show_logo = ?, show_stamp = ?, show_website = ?, show_fax = ?, show_bank_info = ?, show_logo_watermark = ?, show_swift = ?, show_paypal = ?, column_widths = ?
       WHERE id = ?
     `).run(
       show_logo !== false ? 1 : 0,
@@ -557,6 +557,8 @@ router.post('/:id/display-options', (req, res) => {
       show_fax ? 1 : 0,
       show_bank_info ? 1 : 0,
       show_logo_watermark ? 1 : 0,
+      show_swift ? 1 : 0,
+      show_paypal ? 1 : 0,
       column_widths ? JSON.stringify(column_widths) : null,
       req.params.id
     );
