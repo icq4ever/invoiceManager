@@ -310,8 +310,15 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
       const branchText = ba.branch ? (isEn ? (ba.branch_en || ba.branch) : ba.branch) : '';
       let bankText = `${bankName} ${ba.account_number}`;
       if (branchText) bankText += ` (${branchText})`;
-      if (ba.show_swift && ba.swift_code) bankText += `\nSWIFT: ${ba.swift_code}`;
+      if (invoice.show_swift && ba.swift_code) bankText += `\nSWIFT: ${ba.swift_code}`;
       supplierRows.push([i === 0 ? L.bankInfo : '', bankText]);
+    }
+    // PayPal (per-invoice toggle)
+    if (invoice.show_paypal) {
+      const paypalBa = selectedBankAccounts.find(ba => ba.paypal_account);
+      if (paypalBa) {
+        supplierRows.push(['PayPal', paypalBa.paypal_account]);
+      }
     }
   } else if (invoice.show_bank_info !== 0 && (biBankInfo || invoice.company_bank_info)) {
     // Fallback to legacy free-text bank info
