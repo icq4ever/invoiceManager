@@ -123,6 +123,12 @@ See [LICENSE](LICENSE) for details.
 
 ## Changelog
 
+### v1.2.6
+- Consolidated "Recipient Info" toggle: address, phone, and email shown together
+- Client address `\n` displayed as space in detail view, line breaks in PDF
+- Replaced LICENSE with AGPL-3.0 full text for GitHub detection
+- Display client phone in invoice view and email PDF
+
 ### v1.2.5
 - Added recipient address display option (toggle per invoice, supports multi-line with Shift+Enter)
 - Renamed "Date" label to "Issued" in English locale
