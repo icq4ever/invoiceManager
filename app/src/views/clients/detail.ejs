@@ -30,7 +30,7 @@
     </div>
     <div>
       <label class="block text-xs text-gray-500 dark:text-gray-400"><%= t('client.address') %></label>
-      <p class="text-sm text-gray-900 dark:text-white mt-0.5"><%= client.address || '-' %></p>
+      <p class="text-sm text-gray-900 dark:text-white mt-0.5"><%= (client.address || '-').replace(/\\n/g, ' ') %></p>
     </div>
 
     <div class="md:col-span-2">
