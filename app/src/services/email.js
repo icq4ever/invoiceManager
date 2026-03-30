@@ -298,8 +298,8 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   }
   supplierRows.push(
     [L.address, (biAddr || '-').replace(/\\n/g, '\n')],
-    [L.phone, biPhone || '-'],
-  ];
+    [L.phone, biPhone || '-']
+  );
   if (invoice.show_website !== 0 && invoice.company_website) {
     supplierRows.push([L.website, invoice.company_website]);
   }
