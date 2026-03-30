@@ -136,7 +136,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     title: 'Invoice',
     recipient: 'To',
     date: 'Date',
-    validity: 'Validity',
+    validity: 'Valid for',
     supplier: 'From',
     companyName: 'Company',
     representative: 'Rep',

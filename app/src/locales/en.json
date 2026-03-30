@@ -55,7 +55,7 @@
     "project_name": "Project Name",
     "client": "Client",
     "date": "Date",
-    "validity": "Validity",
+    "validity": "Valid for",
     "validity_default": "1 month from issue date",
     "amount": "Amount",
     "status": "Status",

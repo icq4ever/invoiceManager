@@ -117,7 +117,7 @@ router.get('/new', (req, res) => {
     invoice_number: generateInvoiceNumber(db, defaultCompanyId),
     company_id: defaultCompanyId,
     issue_date: new Date().toISOString().split('T')[0],
-    validity_period: '견적일로부터 1개월',
+    validity_period: res.locals.t('invoice.validity_default'),
     tax_rate: 10,
     notes: JSON.stringify(defaultTemplates.map(t => t.content))
   };
