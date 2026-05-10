@@ -125,7 +125,7 @@
         margin-top: auto !important;
         border-top-color: #000 !important;
       }
-      .resize-handle { display: none !important; }
+      .resize-handle, .info-label-handle { display: none !important; }
     }
     /* Summary section styles (screen) */
     .summary-section table tr:first-child {
@@ -167,6 +167,24 @@
     #itemsTable td {
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    /* From/To label column resize */
+    .info-table { table-layout: fixed; }
+    .info-table .info-label-col { width: var(--info-label-width, 30%); }
+    .info-label-cell { position: relative; }
+    .info-label-handle {
+      position: absolute;
+      top: 0;
+      right: -3px;
+      bottom: 0;
+      width: 6px;
+      cursor: col-resize;
+      background: transparent;
+      z-index: 5;
+    }
+    .info-label-handle:hover,
+    .info-label-handle.resizing {
+      background: rgba(59, 130, 246, 0.5);
     }
   </style>
   <%
@@ -342,29 +360,33 @@
             <% if (invoice.project_name) { %>
             <h2 class="project-title text-2xl font-light mb-3" style="word-break: keep-all; overflow-wrap: break-word; line-height: 1.2; white-space: pre-wrap;"><%= (invoice.project_name || '').replace(/\\n/g, '\n') %></h2>
             <% } %>
-            <table class="w-full" style="border-collapse: collapse;">
+            <table class="w-full info-table" data-info-side="recipient" style="border-collapse: collapse;">
+              <colgroup>
+                <col class="info-label-col">
+                <col>
+              </colgroup>
               <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('invoice.recipient') %></td>
+                <td class="info-label-cell font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('invoice.recipient') %><div class="info-label-handle"></div></td>
                 <td class="py-0.5 pl-3"><%= invoice.client_name || '-' %></td>
               </tr>
               <tr id="clientAddressRow" class="client-info-row" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_client_address !== 1 ? 'display: none;' : '' %>">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('client.address') %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('client.address') %></td>
                 <td class="py-0.5 pl-3" style="white-space: pre-wrap;"><%= (invoice.client_address || '-').replace(/\\n/g, '\n') %></td>
               </tr>
               <% if (invoice.client_phone) { %>
               <tr class="client-info-row" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_client_address !== 1 ? 'display: none;' : '' %>">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('client.phone') %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('client.phone') %></td>
                 <td class="py-0.5 pl-3"><%= invoice.client_phone %></td>
               </tr>
               <% } %>
               <% if (invoice.client_email) { %>
               <tr class="client-info-row" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_client_address !== 1 ? 'display: none;' : '' %>">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('client.email') %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('client.email') %></td>
                 <td class="py-0.5 pl-3"><%= invoice.client_email %></td>
               </tr>
               <% } %>
               <tr style="border-bottom: 1px solid #d1d5db;">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('invoice.date') %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('invoice.date') %></td>
                 <td class="py-0.5 pl-3">
                   <%
                     const issueDate = invoice.issue_date ? new Date(invoice.issue_date) : null;
@@ -382,23 +404,29 @@
                 </td>
               </tr>
               <tr style="border-bottom: 1px solid #d1d5db;">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('invoice.validity') %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('invoice.validity') %></td>
                 <td class="py-0.5 pl-3"><%= invoice.validity_period || '-' %></td>
               </tr>
             </table>
           </div>
 
           <!-- Right: Supplier/Company -->
-          <div class="supplier-box" style="width: auto; min-width: 40%; max-width: 50%; flex-shrink: 0; position: relative;">
+          <div class="supplier-box" style="width: 45%; flex-shrink: 0; position: relative;">
             <div class="font-bold text-gray-600 dark:text-gray-400 pb-1" style="font-size: 13px; font-weight: 800;"><%= t('invoice.supplier') %></div>
             <% if (invoice.stamp_path) { %>
             <img id="stampImage" src="<%= invoice.stamp_path %>" alt="Signature" style="position: absolute; right: 0; top: 8px; height: 50px; width: auto; object-fit: contain; z-index: 10; <%= invoice.show_stamp === 0 ? 'display: none;' : '' %>">
             <% } %>
-            <table class="w-full" style="border-collapse: collapse;">
+            <table class="w-full info-table" data-info-side="supplier" style="border-collapse: collapse;">
+              <colgroup>
+                <col class="info-label-col">
+                <col>
+                <col style="width: 15%;">
+                <col>
+              </colgroup>
               <tr style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db;">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap" style="width: 30%;"><%= t('company.name') %></td>
+                <td class="info-label-cell font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.name') %><div class="info-label-handle"></div></td>
                 <td class="py-0.5 pl-3"><%= lang === 'en' ? (invoice.company_name_en || invoice.company_name || '-') : (invoice.company_name || '-') %></td>
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2" style="width: 15%;"><%= t('company.representative') %></td>
+                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap pl-2"><%= t('company.representative') %></td>
                 <td class="py-0.5 text-right" style="vertical-align: middle;">
                   <span><%= lang === 'en' ? (invoice.representative_en || invoice.representative || '-') : (invoice.representative || '-') %></span>
                   <span id="stampMark" style="color: #999; margin-left: 4px;"><%= t('company.stamp_mark') %></span>
@@ -860,6 +888,57 @@
       } catch(e) { console.error('Failed to load column widths:', e); }
       <% } %>
     });
+
+    // From/To label column resize (per-table CSS variable, persisted in localStorage)
+    (function() {
+      const STORAGE_PREFIX = 'invoiceInfoLabelWidth:';
+
+      // Restore saved widths per side
+      document.querySelectorAll('.info-table[data-info-side]').forEach(t => {
+        const stored = localStorage.getItem(STORAGE_PREFIX + t.dataset.infoSide);
+        if (stored) t.style.setProperty('--info-label-width', stored);
+      });
+
+      let activeHandle = null;
+      let startX = 0;
+      let startWidth = 0;
+      let table = null;
+
+      document.querySelectorAll('.info-label-handle').forEach(handle => {
+        handle.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          activeHandle = this;
+          const cell = this.parentElement;
+          table = cell.closest('.info-table');
+          startX = e.pageX;
+          startWidth = cell.offsetWidth;
+          this.classList.add('resizing');
+          document.body.style.cursor = 'col-resize';
+          document.body.style.userSelect = 'none';
+        });
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!activeHandle || !table) return;
+        const diff = e.pageX - startX;
+        const newWidth = Math.max(40, startWidth + diff);
+        const tableWidth = table.offsetWidth;
+        const percent = Math.min(70, (newWidth / tableWidth) * 100);
+        table.style.setProperty('--info-label-width', percent.toFixed(1) + '%');
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (!activeHandle || !table) { activeHandle = null; table = null; return; }
+        activeHandle.classList.remove('resizing');
+        const finalWidth = table.style.getPropertyValue('--info-label-width');
+        const side = table.dataset.infoSide;
+        if (finalWidth && side) localStorage.setItem(STORAGE_PREFIX + side, finalWidth);
+        activeHandle = null;
+        table = null;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      });
+    })();
 
     // Column resize functionality
     (function() {
