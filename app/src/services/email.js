@@ -153,7 +153,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     itemDetails: 'Details',
     quantity: 'Qty',
     unitPrice: 'Unit Price',
-    supplyAmount: 'Amount (excl. Tax)',
+    supplyAmount: 'Amount (ex. Tax)',
     subtotal: 'Subtotal',
     tax: 'Tax',
     total: 'Total',
