@@ -12,11 +12,16 @@
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <style>
     body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
-    .drag-handle { cursor: grab; touch-action: none; }
-    .drag-handle:active { cursor: grabbing; }
-    .item-row.sortable-ghost { opacity: 0.4; }
+    .drag-handle, .sub-drag-handle { cursor: grab; touch-action: none; }
+    .drag-handle:active, .sub-drag-handle:active { cursor: grabbing; }
+    .sortable-ghost { opacity: 0.4; }
     .item-row.sortable-chosen { background-color: rgb(239 246 255); }
     .dark .item-row.sortable-chosen { background-color: rgb(30 58 138 / 0.3); }
+    .item-preview { display: none; }
+    .item-row[data-collapsed="true"] .item-body { display: none; }
+    .item-row[data-collapsed="true"] .item-preview { display: inline-flex; }
+    .item-row[data-collapsed="true"] .toggle-icon { transform: rotate(-90deg); }
+    .toggle-icon { transition: transform 0.15s ease; }
   </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors">
@@ -140,16 +145,24 @@
           <% if (items && items.length > 0) { %>
             <% items.forEach((item, index) => { %>
             <div class="item-row border dark:border-gray-600 rounded-lg p-2 sm:p-4 mb-4 bg-gray-50 dark:bg-gray-700" data-index="<%= index %>">
-              <div class="flex justify-between items-start mb-3">
-                <div class="flex items-center gap-2">
-                  <span class="drag-handle text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 select-none" title="Drag to reorder">
+              <div class="flex justify-between items-start mb-3 gap-2">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <span class="drag-handle text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 select-none flex-shrink-0" title="Drag to reorder">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a1 1 0 100 2 1 1 0 000-2zM7 9a1 1 0 100 2 1 1 0 000-2zM7 14a1 1 0 100 2 1 1 0 000-2zM13 4a1 1 0 100 2 1 1 0 000-2zM13 9a1 1 0 100 2 1 1 0 000-2zM13 14a1 1 0 100 2 1 1 0 000-2z"/></svg>
                   </span>
-                  <span class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= t('invoice.item_title') %> #<span class="item-number"><%= index + 1 %></span></span>
+                  <button type="button" class="item-toggle text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex-shrink-0" title="Collapse/Expand">
+                    <svg class="toggle-icon w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <span class="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0"><%= t('invoice.item_title') %> #<span class="item-number"><%= index + 1 %></span></span>
+                  <span class="item-preview text-sm text-gray-600 dark:text-gray-400 min-w-0 items-center gap-2 flex-1">
+                    <span class="preview-title truncate min-w-0">·&nbsp;<%= item.title %></span>
+                    <span class="preview-amount font-medium text-gray-900 dark:text-white whitespace-nowrap flex-shrink-0">₩<%= new Intl.NumberFormat('ko-KR').format(item.amount) %></span>
+                  </span>
                 </div>
-                <button type="button" class="remove-item text-red-600 dark:text-red-400 hover:text-red-800 text-sm"><%= t('common.delete') %></button>
+                <button type="button" class="remove-item text-red-600 dark:text-red-400 hover:text-red-800 text-sm flex-shrink-0"><%= t('common.delete') %></button>
               </div>
 
+              <div class="item-body">
               <!-- Item Title -->
               <div class="mb-3">
                 <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.item_title') %> *</label>
@@ -202,8 +215,9 @@
                 <div class="sub-items-container border dark:border-gray-500 rounded-md overflow-hidden">
                   <!-- Desktop header -->
                   <div class="hidden sm:grid grid-cols-12 gap-2 bg-gray-200 dark:bg-gray-600 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300">
+                    <div class="col-span-1"></div>
                     <div class="col-span-2">타이틀</div>
-                    <div class="col-span-4">내역</div>
+                    <div class="col-span-3">내역</div>
                     <div class="col-span-2 text-center">수량</div>
                     <div class="col-span-2 text-right">단가</div>
                     <div class="col-span-2 text-right">금액</div>
@@ -212,10 +226,13 @@
                     <% if (item.subItems && item.subItems.length > 0) { %>
                       <% item.subItems.forEach((sub, subIndex) => { %>
                       <div class="sub-item-row flex flex-wrap sm:grid sm:grid-cols-12 gap-2 p-2 sm:px-3 sm:py-2 border-b dark:border-gray-600 items-center">
+                        <span class="sub-drag-handle text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 select-none flex items-center justify-center sm:col-span-1 flex-shrink-0" title="Drag to reorder">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a1 1 0 100 2 1 1 0 000-2zM7 9a1 1 0 100 2 1 1 0 000-2zM7 14a1 1 0 100 2 1 1 0 000-2zM13 4a1 1 0 100 2 1 1 0 000-2zM13 9a1 1 0 100 2 1 1 0 000-2zM13 14a1 1 0 100 2 1 1 0 000-2z"/></svg>
+                        </span>
                         <input type="text" name="sub_titles_<%= index %>[]" value="<%= sub.title || '' %>" placeholder="타이틀"
-                          class="w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium placeholder:font-bold sub-title">
+                          class="flex-1 sm:flex-initial sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium placeholder:font-bold sub-title">
                         <input type="text" name="sub_descriptions_<%= index %>[]" value="<%= sub.description %>" placeholder="내역"
-                          class="w-full sm:col-span-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:font-normal sub-description">
+                          class="w-full sm:col-span-3 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:font-normal sub-description">
                         <div class="flex w-full sm:contents gap-2">
                           <input type="number" name="sub_quantities_<%= index %>[]" value="<%= sub.quantity %>" min="0" step="0.01"
                             class="w-20 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-quantity">
@@ -240,6 +257,7 @@
                     <span class="font-medium text-gray-900 dark:text-white ml-2 item-amount">₩<%= new Intl.NumberFormat('ko-KR').format(item.amount) %></span>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
             <% }); %>
@@ -367,16 +385,24 @@
     function getItemTemplate(index) {
       return `
       <div class="item-row border dark:border-gray-600 rounded-lg p-2 sm:p-4 mb-4 bg-gray-50 dark:bg-gray-700" data-index="${index}">
-        <div class="flex justify-between items-start mb-3">
-          <div class="flex items-center gap-2">
-            <span class="drag-handle text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 select-none" title="Drag to reorder">
+        <div class="flex justify-between items-start mb-3 gap-2">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <span class="drag-handle text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 select-none flex-shrink-0" title="Drag to reorder">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a1 1 0 100 2 1 1 0 000-2zM7 9a1 1 0 100 2 1 1 0 000-2zM7 14a1 1 0 100 2 1 1 0 000-2zM13 4a1 1 0 100 2 1 1 0 000-2zM13 9a1 1 0 100 2 1 1 0 000-2zM13 14a1 1 0 100 2 1 1 0 000-2z"/></svg>
             </span>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= t('invoice.item_title') %> #<span class="item-number">1</span></span>
+            <button type="button" class="item-toggle text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex-shrink-0" title="Collapse/Expand">
+              <svg class="toggle-icon w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+            </button>
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0"><%= t('invoice.item_title') %> #<span class="item-number">1</span></span>
+            <span class="item-preview text-sm text-gray-600 dark:text-gray-400 min-w-0 items-center gap-2 flex-1">
+              <span class="preview-title truncate min-w-0"></span>
+              <span class="preview-amount font-medium text-gray-900 dark:text-white whitespace-nowrap flex-shrink-0"></span>
+            </span>
           </div>
-          <button type="button" class="remove-item text-red-600 dark:text-red-400 hover:text-red-800 text-sm"><%= t('common.delete') %></button>
+          <button type="button" class="remove-item text-red-600 dark:text-red-400 hover:text-red-800 text-sm flex-shrink-0"><%= t('common.delete') %></button>
         </div>
 
+        <div class="item-body">
         <!-- Item Title -->
         <div class="mb-3">
           <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.item_title') %> *</label>
@@ -426,8 +452,9 @@
         <div class="itemized-mode-section hidden">
           <div class="sub-items-container border dark:border-gray-500 rounded-md overflow-hidden">
             <div class="hidden sm:grid grid-cols-12 gap-2 bg-gray-200 dark:bg-gray-600 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300">
+              <div class="col-span-1"></div>
               <div class="col-span-2">타이틀</div>
-              <div class="col-span-4">내역</div>
+              <div class="col-span-3">내역</div>
               <div class="col-span-2 text-center">수량</div>
               <div class="col-span-2 text-right">단가</div>
               <div class="col-span-2 text-right">금액</div>
@@ -444,6 +471,7 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
     `;
     }
@@ -451,10 +479,13 @@
     function getSubItemTemplate(itemIndex) {
       return `
         <div class="sub-item-row flex flex-wrap sm:grid sm:grid-cols-12 gap-2 p-2 sm:px-3 sm:py-2 border-b dark:border-gray-600 items-center">
+          <span class="sub-drag-handle text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 select-none flex items-center justify-center sm:col-span-1 flex-shrink-0" title="Drag to reorder">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a1 1 0 100 2 1 1 0 000-2zM7 9a1 1 0 100 2 1 1 0 000-2zM7 14a1 1 0 100 2 1 1 0 000-2zM13 4a1 1 0 100 2 1 1 0 000-2zM13 9a1 1 0 100 2 1 1 0 000-2zM13 14a1 1 0 100 2 1 1 0 000-2z"/></svg>
+          </span>
           <input type="text" name="sub_titles_${itemIndex}[]" value="" placeholder="타이틀"
-            class="w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium placeholder:font-bold sub-title">
+            class="flex-1 sm:flex-initial sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium placeholder:font-bold sub-title">
           <input type="text" name="sub_descriptions_${itemIndex}[]" value="" placeholder="내역"
-            class="w-full sm:col-span-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:font-normal sub-description">
+            class="w-full sm:col-span-3 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:font-normal sub-description">
           <div class="flex w-full sm:contents gap-2">
             <input type="number" name="sub_quantities_${itemIndex}[]" value="1" min="0" step="0.01"
               class="w-20 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-quantity">
@@ -534,9 +565,25 @@
         };
       });
 
-      // Attach sub-item listeners to existing items
+      // Item collapse/expand toggle
+      document.querySelectorAll('.item-toggle').forEach(btn => {
+        btn.onclick = function() {
+          const row = this.closest('.item-row');
+          const collapsed = row.dataset.collapsed === 'true';
+          if (!collapsed) updateItemPreview(row);
+          row.dataset.collapsed = collapsed ? 'false' : 'true';
+        };
+      });
+
+      // Title input keeps preview fresh
+      document.querySelectorAll('input[name="item_titles"]').forEach(input => {
+        input.oninput = function() { updateItemPreview(this.closest('.item-row')); };
+      });
+
+      // Attach sub-item listeners + sub-list sortable to existing items
       document.querySelectorAll('.item-row').forEach(row => {
         attachSubItemListeners(row);
+        ensureSubSortable(row);
       });
     }
 
@@ -574,6 +621,31 @@
             el.name = `${prefix}_${newIndex}[]`;
           });
         });
+      });
+    }
+
+    function updateItemPreview(row) {
+      const titleInput = row.querySelector('input[name="item_titles"]');
+      const amountEl = row.querySelector('.item-body .item-amount');
+      const previewTitle = row.querySelector('.preview-title');
+      const previewAmount = row.querySelector('.preview-amount');
+      if (previewTitle && titleInput) {
+        const title = titleInput.value.trim();
+        previewTitle.textContent = title ? '· ' + title : '';
+      }
+      if (previewAmount && amountEl) {
+        previewAmount.textContent = amountEl.textContent.trim();
+      }
+    }
+
+    function ensureSubSortable(itemRow) {
+      const list = itemRow.querySelector('.sub-items-list');
+      if (!list || list.dataset.sortableInited === '1') return;
+      list.dataset.sortableInited = '1';
+      Sortable.create(list, {
+        handle: '.sub-drag-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
       });
     }
 
@@ -629,6 +701,7 @@
         row.querySelectorAll('.item-amount').forEach(el => {
           el.textContent = formatCurrency(itemAmount);
         });
+        updateItemPreview(row);
       });
 
       const parsedTaxRate = parseFloat(document.querySelector('[name="tax_rate"]').value);
