@@ -541,7 +541,7 @@
             %>
             <tr>
               <% if (isFirst) { %><td class="py-1 font-medium align-top <%= isLastItem ? lastItemBorder : normalItemBorder %>" rowspan="<%= item.subItems.length %>"><%= item.title %></td><% } %>
-              <td class="py-1 <%= subBorder %>"><% if (item.subItems[si].title) { %><span class="font-medium"><%= item.subItems[si].title %></span><span class="text-gray-600 dark:text-gray-400"> : <%= item.subItems[si].description %></span><% } else { %><span class="text-gray-600 dark:text-gray-400"><%= item.subItems[si].description %></span><% } %></td>
+              <td class="py-1 <%= subBorder %>"><% if (item.subItems[si].title) { %><div class="font-bold"><%= item.subItems[si].title %></div><% } %><% if (item.subItems[si].description) { %><div class="text-gray-600 dark:text-gray-400" style="white-space: pre-wrap;"><%= item.subItems[si].description.replace(/\\n/g, '\n') %></div><% } %></td>
               <td class="py-1 text-center <%= subBorder %>"><%= item.subItems[si].quantity %></td>
               <td class="py-1 text-right <%= subBorder %>"><%= formatAmount(item.subItems[si].unit_price) %></td>
               <td class="py-1 text-right<%= isFirst ? ' font-medium' : '' %><%= isLast ? ' ' + (isLastItem ? lastItemBorder : normalItemBorder) : '' %>"><%= isFirst ? formatAmount(item.amount) : '' %></td>

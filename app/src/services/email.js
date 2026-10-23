@@ -469,16 +469,25 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
           doc.font(fontBold).fillColor('#000000').text(item.title, colX[0] + 2, y, { width: colWidths[0] - 4 });
         }
 
-        let detailText = sub.description || '';
-        if (sub.title) detailText = sub.title + ' : ' + detailText;
-        doc.font(fontRegular).fillColor('#4b5563').text(detailText, colX[1] + 2, y, { width: colWidths[1] - 4 });
+        // Sub-item title in bold, description on the next line
+        const detailOpts = { width: colWidths[1] - 4 };
+        const description = (sub.description || '').replace(/\\n/g, '\n');
+        if (sub.title) {
+          doc.font(fontBold).fillColor('#000000').text(sub.title, colX[1] + 2, y, detailOpts);
+          if (description) doc.font(fontRegular).fillColor('#4b5563').text(description, colX[1] + 2, doc.y, detailOpts);
+        } else {
+          doc.font(fontRegular).fillColor('#4b5563').text(description, colX[1] + 2, y, detailOpts);
+        }
+        const detailBottom = doc.y;
+
+        doc.font(fontRegular).fillColor('#4b5563');
         doc.text(String(sub.quantity), colX[2] + 2, y, { width: colWidths[2] - 4, align: 'center' });
         doc.text(formatAmount(sub.unit_price, currency), colX[3] + 2, y, { width: colWidths[3] - 4, align: 'right' });
         if (si === 0) {
           doc.font(fontBold).fillColor('#000000').text(formatAmount(item.amount, currency), colX[4] + 2, y, { width: colWidths[4] - 4, align: 'right' });
         }
 
-        y = Math.max(y + 11, doc.y + 2);
+        y = Math.max(y + 11, detailBottom + 2, doc.y + 2);
 
         const lineColor = isLast ? '#1f2937' : '#d1d5db';
         doc.strokeColor(lineColor).lineWidth(isLast ? 0.5 : 0.3)
