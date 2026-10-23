@@ -115,7 +115,7 @@ router.post('/', upload.fields([
   { name: 'stamp', maxCount: 1 }
 ]), (req, res) => {
   const db = getDatabase();
-  const { name, business_number, representative, address, phone, email, bank_info, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass, smtp_from_name, smtp_from_email } = req.body;
+  const { name, business_number, representative, address, phone, email, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, website, fax, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass, smtp_from_name, smtp_from_email } = req.body;
 
   const logoPath = req.files?.logo?.[0] ? '/uploads/companies/' + req.files.logo[0].filename : null;
   const stampPath = req.files?.stamp?.[0] ? '/uploads/companies/' + req.files.stamp[0].filename : null;
@@ -127,9 +127,9 @@ router.post('/', upload.fields([
     }
 
     const result = db.prepare(`
-      INSERT INTO companies (name, business_number, representative, address, phone, email, bank_info, logo_path, stamp_path, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass, smtp_from_name, smtp_from_email)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(name, business_number, representative, address, phone, email, bank_info, logoPath, stampPath, invoice_prefix || 'INV', is_default ? 1 : 0, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax, smtp_host || null, parseInt(smtp_port) || 587, smtp_secure ? 1 : 0, smtp_user || null, smtp_pass || null, smtp_from_name || null, smtp_from_email || null);
+      INSERT INTO companies (name, business_number, representative, address, phone, email, logo_path, stamp_path, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, website, fax, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass, smtp_from_name, smtp_from_email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(name, business_number, representative, address, phone, email, logoPath, stampPath, invoice_prefix || 'INV', is_default ? 1 : 0, name_en, representative_en, address_en, phone_en, email_en, website, fax, smtp_host || null, parseInt(smtp_port) || 587, smtp_secure ? 1 : 0, smtp_user || null, smtp_pass || null, smtp_from_name || null, smtp_from_email || null);
 
     // Save bank accounts
     saveBankAccounts(db, result.lastInsertRowid, req.body);
@@ -160,7 +160,7 @@ router.post('/:id', upload.fields([
   { name: 'stamp', maxCount: 1 }
 ]), (req, res) => {
   const db = getDatabase();
-  const { name, business_number, representative, address, phone, email, bank_info, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass, smtp_from_name, smtp_from_email } = req.body;
+  const { name, business_number, representative, address, phone, email, invoice_prefix, is_default, name_en, representative_en, address_en, phone_en, email_en, website, fax, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass, smtp_from_name, smtp_from_email } = req.body;
   const companyId = req.params.id;
 
   const existing = db.prepare('SELECT * FROM companies WHERE id = ?').get(companyId);
@@ -186,9 +186,9 @@ router.post('/:id', upload.fields([
 
     db.prepare(`
       UPDATE companies
-      SET name = ?, business_number = ?, representative = ?, address = ?, phone = ?, email = ?, bank_info = ?, logo_path = ?, stamp_path = ?, invoice_prefix = ?, is_default = ?, name_en = ?, representative_en = ?, address_en = ?, phone_en = ?, email_en = ?, bank_info_en = ?, website = ?, fax = ?, smtp_host = ?, smtp_port = ?, smtp_secure = ?, smtp_user = ?, smtp_pass = ?, smtp_from_name = ?, smtp_from_email = ?
+      SET name = ?, business_number = ?, representative = ?, address = ?, phone = ?, email = ?, logo_path = ?, stamp_path = ?, invoice_prefix = ?, is_default = ?, name_en = ?, representative_en = ?, address_en = ?, phone_en = ?, email_en = ?, website = ?, fax = ?, smtp_host = ?, smtp_port = ?, smtp_secure = ?, smtp_user = ?, smtp_pass = ?, smtp_from_name = ?, smtp_from_email = ?
       WHERE id = ?
-    `).run(name, business_number, representative, address, phone, email, bank_info, logoPath, stampPath, invoice_prefix || 'INV', is_default ? 1 : 0, name_en, representative_en, address_en, phone_en, email_en, bank_info_en, website, fax, smtp_host || null, parseInt(smtp_port) || 587, smtp_secure ? 1 : 0, smtp_user || null, smtp_pass || null, smtp_from_name || null, smtp_from_email || null, companyId);
+    `).run(name, business_number, representative, address, phone, email, logoPath, stampPath, invoice_prefix || 'INV', is_default ? 1 : 0, name_en, representative_en, address_en, phone_en, email_en, website, fax, smtp_host || null, parseInt(smtp_port) || 587, smtp_secure ? 1 : 0, smtp_user || null, smtp_pass || null, smtp_from_name || null, smtp_from_email || null, companyId);
 
     // Save bank accounts
     saveBankAccounts(db, companyId, req.body);

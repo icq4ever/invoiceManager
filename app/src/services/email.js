@@ -99,10 +99,10 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     SELECT i.*, c.name as client_name, c.business_number as client_business_number, c.address as client_address, c.email as client_email, c.phone as client_phone,
            co.name as company_name, co.business_number as company_business_number, co.representative,
            co.address as company_address, co.phone as company_phone, co.email as company_email,
-           co.bank_info as company_bank_info, co.website as company_website, co.fax as company_fax,
+           co.website as company_website, co.fax as company_fax,
            co.logo_path, co.stamp_path,
            co.name_en as company_name_en, co.representative_en, co.address_en as company_address_en,
-           co.phone_en as company_phone_en, co.email_en as company_email_en, co.bank_info_en as company_bank_info_en
+           co.phone_en as company_phone_en, co.email_en as company_email_en
     FROM invoices i
     LEFT JOIN clients c ON i.client_id = c.id
     LEFT JOIN companies co ON i.company_id = co.id
@@ -192,7 +192,6 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   const biAddr = isEn ? (invoice.company_address_en || invoice.company_address) : invoice.company_address;
   const biPhone = isEn ? (invoice.company_phone_en || invoice.company_phone) : invoice.company_phone;
   const biEmail = isEn ? (invoice.company_email_en || invoice.company_email) : invoice.company_email;
-  const biBankInfo = isEn ? (invoice.company_bank_info_en || invoice.company_bank_info) : invoice.company_bank_info;
 
   // Create PDF
   const doc = new PDFDocument({ size: 'A4', margin: 30 });
@@ -321,8 +320,6 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
         }
         supplierRows.push([L.bankInfo, bankText]);
       }
-    } else if (biBankInfo || invoice.company_bank_info) {
-      supplierRows.push([L.bankInfo, biBankInfo || invoice.company_bank_info]);
     }
     if (invoice.show_paypal) {
       const allBankAccounts = db.prepare('SELECT * FROM bank_accounts WHERE company_id = ? AND is_enabled = 1').all(invoice.company_id || invoice.comp_id);

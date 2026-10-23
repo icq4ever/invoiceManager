@@ -191,10 +191,10 @@ router.get('/:id', (req, res) => {
            c.email as client_email, c.phone as client_phone,
            co.id as company_id_ref, co.name as company_name, co.business_number as company_business_number, co.representative,
            co.address as company_address, co.phone as company_phone, co.email as company_email,
-           co.bank_info as company_bank_info, co.website as company_website, co.fax as company_fax,
+           co.website as company_website, co.fax as company_fax,
            co.logo_path, co.stamp_path,
            co.name_en as company_name_en, co.representative_en, co.address_en as company_address_en,
-           co.phone_en as company_phone_en, co.email_en as company_email_en, co.bank_info_en as company_bank_info_en,
+           co.phone_en as company_phone_en, co.email_en as company_email_en,
            co.smtp_host, co.smtp_from_email, co.smtp_from_name, co.smtp_user
     FROM invoices i
     LEFT JOIN clients c ON i.client_id = c.id
@@ -212,7 +212,6 @@ router.get('/:id', (req, res) => {
   if (!invoice.company_address_en) invoice.company_address_en = invoice.company_address;
   if (!invoice.company_phone_en) invoice.company_phone_en = invoice.company_phone;
   if (!invoice.company_email_en) invoice.company_email_en = invoice.company_email;
-  if (!invoice.company_bank_info_en) invoice.company_bank_info_en = invoice.company_bank_info;
 
   const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY sort_order ASC').all(req.params.id);
 

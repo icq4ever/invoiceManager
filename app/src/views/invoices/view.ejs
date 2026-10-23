@@ -502,11 +502,6 @@
                 <td class="py-0.5 pl-3" colspan="3"><%= paypalAccount.paypal_account %></td>
               </tr>
               <% } %>
-              <% } else { %>
-              <tr id="bankInfoRow" style="border-bottom: 1px solid #d1d5db; <%= invoice.show_bank_info === 0 ? 'display: none;' : '' %>">
-                <td class="font-bold text-gray-600 dark:text-gray-400 py-0.5 whitespace-nowrap"><%= t('company.bank_info') %></td>
-                <td class="py-0.5 pl-3" colspan="3" style="white-space: pre-wrap;"><%= lang === 'en' ? (invoice.company_bank_info_en || invoice.company_bank_info || '-') : (invoice.company_bank_info || '-') %></td>
-              </tr>
               <% } %>
             </table>
           </div>
@@ -756,7 +751,6 @@
       const stampImage = document.getElementById('stampImage');
       const websiteRow = document.getElementById('websiteRow');
       const faxRow = document.getElementById('faxRow');
-      const bankInfoRow = document.getElementById('bankInfoRow');
 
       const showLogoEl = document.getElementById('showLogoCheckbox');
       const showLogo = showLogoEl ? showLogoEl.checked : true;
@@ -795,7 +789,6 @@
       document.querySelectorAll('.client-info-row').forEach(function(el) {
         el.style.display = showClientAddress ? '' : 'none';
       });
-      if (bankInfoRow) bankInfoRow.style.display = showBankInfo ? '' : 'none';
 
       // Toggle bank sub-options visibility
       document.querySelectorAll('.bank-sub-option').forEach(function(el) {

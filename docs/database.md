@@ -23,8 +23,6 @@
 | fax | TEXT | Fax number |
 | email | TEXT | Email |
 | email_en | TEXT | Email (English) |
-| bank_info | TEXT | Bank account info (Korean) |
-| bank_info_en | TEXT | Bank account info (English) |
 | logo_path | TEXT | Logo image path |
 | stamp_path | TEXT | Signature/stamp image path |
 | invoice_prefix | TEXT | Invoice number prefix (e.g., INV, S42) |
@@ -124,8 +122,6 @@
 | fax | TEXT | 팩스번호 |
 | email | TEXT | 이메일 |
 | email_en | TEXT | 이메일 (영문) |
-| bank_info | TEXT | 계좌정보 (한글) |
-| bank_info_en | TEXT | 계좌정보 (영문) |
 | logo_path | TEXT | 로고 이미지 경로 |
 | stamp_path | TEXT | 서명/도장 이미지 경로 |
 | invoice_prefix | TEXT | 견적서 번호 접두사 (예: INV, S42) |
@@ -218,5 +214,8 @@
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 1.3.1 | 2026-10 | Schema cleanup: dropped unused columns (`companies.bank_info`, `bank_info_en`, `invoices.pdf_path`, `bank_accounts.branch`, `bank_address`, `bank_address_en`, `show_swift`, `show_paypal`). Migrations consolidated into one schema definition; a backup (`invoice.db.before-1.3.1-*.bak`) is created automatically before columns are dropped |
+| 1.3.0 | 2026-03 | Multiple bank accounts per company (`bank_accounts`, `invoice_bank_accounts`); legacy `bank_info` migrated |
+| 1.2.0 | 2026-03 | SMTP settings per company, email templates and email log |
 | 1.1.0 | 2026-02 | Added itemized invoice details, status management, website/fax fields for companies, per-invoice display options & column widths, search indexes |
 | 1.0.0 | - | Initial schema |
