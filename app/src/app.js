@@ -17,6 +17,7 @@ const templateRoutes = require('./routes/templates');
 const invoiceRoutes = require('./routes/invoices');
 const emailRoutes = require('./routes/email');
 const apiRoutes = require('./routes/api');
+const mcpRoutes = require('./routes/mcp');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -72,6 +73,7 @@ app.use('/templates', templateRoutes);
 app.use('/invoices', invoiceRoutes);
 app.use('/email', emailRoutes);
 app.use('/api/v1', apiRoutes);
+app.use('/mcp', mcpRoutes);
 
 // Dashboard
 app.get('/dashboard', (req, res) => {
@@ -100,7 +102,7 @@ app.get('/dashboard', (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  if (req.path.startsWith('/api/')) {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/mcp')) {
     // e.g. malformed JSON body (rejected by express.json before reaching the API router)
     const status = err.status || 500;
     return res.status(status).json({ error: status === 500 ? 'Internal server error' : err.message });
