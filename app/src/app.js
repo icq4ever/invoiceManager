@@ -16,6 +16,7 @@ const clientRoutes = require('./routes/clients');
 const templateRoutes = require('./routes/templates');
 const invoiceRoutes = require('./routes/invoices');
 const emailRoutes = require('./routes/email');
+const apiRoutes = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -70,6 +71,7 @@ app.use('/clients', clientRoutes);
 app.use('/templates', templateRoutes);
 app.use('/invoices', invoiceRoutes);
 app.use('/email', emailRoutes);
+app.use('/api/v1', apiRoutes);
 
 // Dashboard
 app.get('/dashboard', (req, res) => {
@@ -98,6 +100,11 @@ app.get('/dashboard', (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    // e.g. malformed JSON body (rejected by express.json before reaching the API router)
+    const status = err.status || 500;
+    return res.status(status).json({ error: status === 500 ? 'Internal server error' : err.message });
+  }
   console.error(err.stack);
   res.status(500).render('error', { message: 'Something went wrong!' });
 });
