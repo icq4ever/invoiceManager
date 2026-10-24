@@ -87,6 +87,14 @@ function formatAmount(amount, currency) {
 }
 
 /**
+ * Normalize user text for PDFKit: the form's literal "\\n" and CRLF/CR line breaks
+ * (from textareas) become "\n" ("\r" would otherwise render as a glyph)
+ */
+function pdfText(text) {
+  return (text || '').replace(/\\n/g, '\n').replace(/\r\n?/g, '\n');
+}
+
+/**
  * Generate PDF from invoice using PDFKit (no chromium dependency)
  * @param {number} invoiceId
  * @param {string} lang - 'ko' or 'en'
@@ -213,6 +221,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   let y = 30;
 
   // --- HEADER ---
+  // Text is black like the web print view (print CSS forces black); only the total amount stays blue
   doc.font(fontBold).fontSize(18).text(L.title, leftMargin, y);
 
   // Logo (if exists)
@@ -222,7 +231,8 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     if (fs.existsSync(logoFile)) {
       if (invoice.show_logo !== 0) {
         try {
-          doc.image(logoFile, leftMargin + pageWidth - 120, y, { fit: [120, 30] });
+          // Same size as the web print view (h-8 logo ≈ 16pt tall on A4)
+          doc.image(logoFile, leftMargin + pageWidth - 120, y + 2, { fit: [120, 16], align: 'right' });
         } catch (e) { console.error('PDF logo error:', e.message); }
       }
 
@@ -240,7 +250,8 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     }
   }
 
-  y += 35;
+  // Header height + gap below it (matches pb-8 in the invoice view)
+  y += 48;
 
   // --- PROJECT & CLIENT INFO (left) + SUPPLIER INFO (right) ---
   const leftColWidth = pageWidth * 0.5;
@@ -250,7 +261,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   // Pre-calculate left column height
   let leftHeight = 0;
   if (invoice.project_name) {
-    const projText = (invoice.project_name || '').replace(/\\n/g, '\n');
+    const projText = pdfText(invoice.project_name);
     const projLines = Math.ceil(projText.length / 30) || 1;
     leftHeight += projLines * 16 + 8;
   }
@@ -258,7 +269,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     [L.recipient, invoice.client_name || '-'],
   ];
   if (invoice.show_client_address === 1) {
-    infoRows.push([L.address, (invoice.client_address || '-').replace(/\\n/g, '\n')]);
+    infoRows.push([L.address, pdfText(invoice.client_address || '-')]);
     if (invoice.client_phone) {
       infoRows.push([L.phone, invoice.client_phone]);
     }
@@ -278,13 +289,13 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
 
   // Pre-calculate right column height
   const supplierRows = [
-    [L.companyName, biName || '-', L.representative, (biRep || '-') + ' ' + L.stampMark],
+    [L.companyName, biName || '-', L.representative, biRep || '-'],
   ];
   if (invoice.show_tax_id !== 0) {
     supplierRows.push([L.businessNumber, invoice.company_business_number || '-']);
   }
   supplierRows.push(
-    [L.address, (biAddr || '-').replace(/\\n/g, '\n')],
+    [L.address, pdfText(biAddr || '-')],
     [L.phone, biPhone || '-']
   );
   if (invoice.show_website !== 0 && invoice.company_website) {
@@ -347,7 +358,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   let ly = leftStartY;
   if (invoice.project_name) {
     doc.font(fontRegular).fontSize(14);
-    const projText = (invoice.project_name || '').replace(/\\n/g, '\n');
+    const projText = pdfText(invoice.project_name);
     doc.text(projText, leftMargin, ly, { width: leftColWidth });
     ly = doc.y + 8;
   }
@@ -356,7 +367,7 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   for (const [label, value] of infoRows) {
     doc.strokeColor('#d1d5db').lineWidth(0.5)
       .moveTo(leftMargin, ly).lineTo(leftMargin + leftColWidth - 20, ly).stroke();
-    doc.font(fontBold).fillColor('#6b7280').text(label, leftMargin + 2, ly + 2, { width: 60 });
+    doc.font(fontBold).fillColor('#000000').text(label, leftMargin + 2, ly + 2, { width: 60 });
     doc.font(fontRegular).fillColor('#000000').text(value, leftMargin + 65, ly + 2, { width: leftColWidth - 85 });
     ly = Math.max(ly + 15, doc.y + 3);
   }
@@ -365,30 +376,31 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
 
   // --- Draw RIGHT column ---
   let ry = rightStartY;
-  doc.font(fontBold).fontSize(9).fillColor('#6b7280').text(L.supplier, rightColX, ry);
+  doc.font(fontBold).fontSize(9).fillColor('#000000').text(L.supplier, rightColX, ry);
   ry += 14;
 
-  // Stamp image
-  if (invoice.stamp_path && invoice.show_stamp !== 0) {
-    const stampFile = path.join(__dirname, '../../uploads', invoice.stamp_path.replace('/uploads/', ''));
-    if (fs.existsSync(stampFile)) {
-      try {
-        doc.image(stampFile, rightColX + rightColWidth - 55, ry - 5, { fit: [55, 40] });
-      } catch (e) { /* skip */ }
-    }
-  }
+  const supplierTop = ry;
+  let stampCenterX = rightColX + rightColWidth - 27;
 
   doc.fontSize(7);
   for (const row of supplierRows) {
     doc.strokeColor('#d1d5db').lineWidth(0.5)
       .moveTo(rightColX, ry).lineTo(rightColX + rightColWidth, ry).stroke();
 
-    doc.font(fontBold).fillColor('#6b7280').text(row[0], rightColX + 2, ry + 2, { width: 45 });
+    doc.font(fontBold).fillColor('#000000').text(row[0], rightColX + 2, ry + 2, { width: 45 });
     if (row.length === 4) {
       // Two-column row (name + representative)
       doc.font(fontRegular).fillColor('#000000').text(row[1], rightColX + 50, ry + 2, { width: rightColWidth * 0.35 });
-      doc.font(fontBold).fillColor('#6b7280').text(row[2], rightColX + rightColWidth * 0.55, ry + 2, { width: 30 });
-      doc.font(fontRegular).fillColor('#000000').text(row[3], rightColX + rightColWidth * 0.55 + 32, ry + 2, { width: rightColWidth * 0.35 });
+      doc.font(fontBold).fillColor('#000000').text(row[2], rightColX + rightColWidth * 0.55, ry + 2, { width: 30 });
+      // Representative name + gray (인), right-aligned like the web view
+      const repRight = rightColX + rightColWidth - 2;
+      const repLeft = rightColX + rightColWidth * 0.55 + 32;
+      doc.font(fontRegular);
+      const markWidth = doc.widthOfString(L.stampMark);
+      const markX = repRight - markWidth;
+      doc.fillColor('#000000').text(L.stampMark, markX, ry + 2, { lineBreak: false });
+      doc.fillColor('#000000').text(row[3], repLeft, ry + 2, { width: markX - 3 - repLeft, align: 'right' });
+      stampCenterX = markX + markWidth / 2;
     } else {
       doc.font(fontRegular).fillColor('#000000').text(row[1], rightColX + 50, ry + 2, { width: rightColWidth - 55 });
     }
@@ -397,8 +409,18 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   doc.strokeColor('#d1d5db').lineWidth(0.5)
     .moveTo(rightColX, ry).lineTo(rightColX + rightColWidth, ry).stroke();
 
-  // Move y past both columns
-  y = Math.max(y, ry) + 20;
+  // Stamp image, centered on (인) and drawn over the table like the web view
+  if (invoice.stamp_path && invoice.show_stamp !== 0) {
+    const stampFile = path.join(__dirname, '../../uploads', invoice.stamp_path.replace('/uploads/', ''));
+    if (fs.existsSync(stampFile)) {
+      try {
+        doc.image(stampFile, stampCenterX - 27.5, supplierTop - 5, { fit: [55, 40], align: 'center', valign: 'center' });
+      } catch (e) { /* skip */ }
+    }
+  }
+
+  // Move y past both columns (left column ends at ly, right at ry)
+  y = Math.max(ly, ry) + 22;
 
   // --- TOTAL AMOUNT ---
   doc.font(fontBold).fontSize(12).fillColor('#000000').text(L.totalAmount, leftMargin, y);
@@ -471,16 +493,16 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
 
         // Sub-item title in bold, description on the next line
         const detailOpts = { width: colWidths[1] - 4 };
-        const description = (sub.description || '').replace(/\\n/g, '\n');
+        const description = pdfText(sub.description);
         if (sub.title) {
           doc.font(fontBold).fillColor('#000000').text(sub.title, colX[1] + 2, y, detailOpts);
-          if (description) doc.font(fontRegular).fillColor('#4b5563').text(description, colX[1] + 2, doc.y, detailOpts);
+          if (description) doc.font(fontRegular).fillColor('#000000').text(description, colX[1] + 2, doc.y, detailOpts);
         } else {
-          doc.font(fontRegular).fillColor('#4b5563').text(description, colX[1] + 2, y, detailOpts);
+          doc.font(fontRegular).fillColor('#000000').text(description, colX[1] + 2, y, detailOpts);
         }
         const detailBottom = doc.y;
 
-        doc.font(fontRegular).fillColor('#4b5563');
+        doc.font(fontRegular).fillColor('#000000');
         doc.text(String(sub.quantity), colX[2] + 2, y, { width: colWidths[2] - 4, align: 'center' });
         doc.text(formatAmount(sub.unit_price, currency), colX[3] + 2, y, { width: colWidths[3] - 4, align: 'right' });
         if (si === 0) {
@@ -506,12 +528,13 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     } else {
       // Text mode
       doc.font(fontBold).fillColor('#000000').text(item.title, colX[0] + 2, y, { width: colWidths[0] - 4 });
-      doc.font(fontRegular).fillColor('#4b5563').text((item.details || '').replace(/\\n/g, '\n'), colX[1] + 2, y, { width: colWidths[1] - 4 });
+      doc.font(fontRegular).fillColor('#000000').text(pdfText(item.details), colX[1] + 2, y, { width: colWidths[1] - 4 });
+      const detailBottom = doc.y;
       doc.fillColor('#000000').text(String(item.quantity), colX[2] + 2, y, { width: colWidths[2] - 4, align: 'center' });
       doc.text(formatAmount(item.unit_price, currency), colX[3] + 2, y, { width: colWidths[3] - 4, align: 'right' });
       doc.text(formatAmount(item.amount, currency), colX[4] + 2, y, { width: colWidths[4] - 4, align: 'right' });
 
-      y = Math.max(y + 11, doc.y + 2);
+      y = Math.max(y + 11, detailBottom + 2, doc.y + 2);
       doc.strokeColor('#1f2937').lineWidth(0.5)
         .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
       y += 3;
@@ -527,14 +550,14 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
   y += 5;
 
   // --- SUMMARY (full width: label left, amount right) ---
-  doc.font(fontBold).fontSize(8).fillColor('#6b7280').text(L.subtotal, leftMargin + 2, y, { width: pageWidth * 0.5 });
+  doc.font(fontBold).fontSize(8).fillColor('#000000').text(L.subtotal, leftMargin + 2, y, { width: pageWidth * 0.5 });
   doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.subtotal, currency), leftMargin, y, { width: pageWidth - 2, align: 'right' });
   y += 13;
 
   doc.strokeColor('#d1d5db').lineWidth(0.5)
     .moveTo(leftMargin, y).lineTo(leftMargin + pageWidth, y).stroke();
   y += 3;
-  doc.font(fontBold).fontSize(8).fillColor('#6b7280').text(`${L.tax} (${invoice.tax_rate}%)`, leftMargin + 2, y, { width: pageWidth * 0.5 });
+  doc.font(fontBold).fontSize(8).fillColor('#000000').text(`${L.tax} (${invoice.tax_rate}%)`, leftMargin + 2, y, { width: pageWidth * 0.5 });
   doc.font(fontBold).fillColor('#000000').text(formatAmount(invoice.tax_amount, currency), leftMargin, y, { width: pageWidth - 2, align: 'right' });
   y += 13;
 
@@ -580,9 +603,9 @@ async function generateInvoicePdf(invoiceId, lang = 'ko') {
     doc.font(fontBold).fontSize(8).fillColor('#000000').text(L.notes, leftMargin, notesY);
     notesY += 12;
 
-    doc.font(fontRegular).fontSize(6.5).fillColor('#6b7280');
+    doc.font(fontRegular).fontSize(6.5).fillColor('#000000');
     notes.forEach((note, i) => {
-      const noteText = `${i + 1}. ${(note || '').replace(/\\n/g, '\n')}`;
+      const noteText = `${i + 1}. ${pdfText(note)}`;
       doc.text(noteText, leftMargin + 2, notesY, { width: pageWidth - 4 });
       notesY = doc.y + 3;
     });
