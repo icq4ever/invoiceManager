@@ -6,6 +6,16 @@
 
 ## English
 
+### v1.3.2 (2026-10-24)
+- Email PDF now matches the web print view ([#11](https://github.com/icq4ever/invoiceManager/issues/11))
+  - Removed `≡`-like glyphs at line ends (CRLF line breaks from textareas)
+  - Multi-line item details no longer overlap the next row
+  - Proper space above the total amount when the project/recipient column is taller
+  - Logo size and signature position (centered on "(인)") match the web view
+  - All text printed in black; only the total amount stays blue
+- Invoice view: wider project title (wraps less) while the recipient table keeps its width
+- More space below the invoice header (view, print and email PDF)
+
 ### v1.3.1 (2026-10-23)
 - Database schema cleanup (schema v1.3.1)
   - Consolidated 37 incremental `ALTER TABLE` migrations into a single schema definition; older databases still get missing columns added automatically
@@ -105,6 +115,16 @@
 ---
 
 ## Korean
+
+### v1.3.2 (2026-10-24)
+- 이메일 PDF를 웹 인쇄 화면과 일치하도록 수정 ([#11](https://github.com/icq4ever/invoiceManager/issues/11))
+  - 줄 끝에 찍히던 `≡` 모양 문자 제거 (입력칸의 CRLF 줄바꿈)
+  - 여러 줄 세부 내역이 아래 행과 겹치던 문제 수정
+  - 프로젝트명/수신 칸이 더 길 때 견적금액 위 간격이 없던 문제 수정
+  - 로고 크기와 사인 위치("(인)" 기준 정렬)를 웹 화면과 일치
+  - 모든 글자를 검정으로 출력 (합계 금액만 파란색 유지)
+- 견적서 보기: 프로젝트명 폭을 넓혀 줄바꿈 감소 (수신 정보 표 폭은 유지)
+- 견적서 헤더 아래 간격 확대 (화면, 인쇄, 이메일 PDF)
 
 ### v1.3.1 (2026-10-23)
 - 데이터베이스 스키마 정리 (스키마 v1.3.1)

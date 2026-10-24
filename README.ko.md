@@ -126,4 +126,4 @@ Invoice Manager가 도움이 되었다면 개발을 지원해주세요:
 
 ---
 
-**버전**: 1.3.1 | Node.js, Express, Tailwind CSS로 제작
+**버전**: 1.3.2 | Node.js, Express, Tailwind CSS로 제작
