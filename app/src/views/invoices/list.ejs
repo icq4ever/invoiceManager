@@ -133,6 +133,9 @@
       <!-- Row 1: Project + Status -->
       <div class="flex justify-between items-start mb-2">
         <a href="/invoices/<%= inv.id %>" class="text-sm font-medium text-blue-600 dark:text-blue-400 truncate flex-1 mr-2"><%= formatProjectName(inv.project_name) %></a>
+        <button type="button" data-edit-tags="<%= inv.id %>" data-tag-ids="<%= JSON.stringify(inv.tag_ids || []) %>" title="<%= t('tag.title') %>" class="p-0.5 mr-1 rounded text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a2 2 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+        </button>
         <div class="status-dropdown inline-block relative">
           <button type="button" data-status-btn="<%= inv.id %>"
             class="status-btn px-2 py-0.5 text-xs rounded-full cursor-pointer transition-colors whitespace-nowrap
@@ -147,11 +150,8 @@
           </div>
         </div>
       </div>
-      <!-- Tags -->
-      <div class="flex flex-wrap items-center gap-1 mb-2">
-        <span class="tag-list contents" data-invoice-id="<%= inv.id %>"><%- tagChips(inv) %></span>
-        <button type="button" data-edit-tags="<%= inv.id %>" data-tag-ids="<%= JSON.stringify(inv.tag_ids || []) %>" class="px-1.5 py-0.5 text-xs rounded border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">+ <%= t('tag.title') %></button>
-      </div>
+      <!-- Tags (hidden while empty) -->
+      <div class="tag-list flex flex-wrap items-center gap-1 mb-2 empty:hidden" data-invoice-id="<%= inv.id %>"><%- tagChips(inv) %></div>
       <!-- Row 2: Amount + Actions -->
       <div class="flex justify-between items-center">
         <span class="text-sm font-medium text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></span>
@@ -199,18 +199,21 @@
         <% if (invoices.length > 0) { %>
         <% invoices.forEach(inv => { %>
         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 invoice-row" data-project="<%= (inv.project_name || '').toLowerCase() %>" data-client="<%= (inv.client_name || '').toLowerCase() %>">
-          <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= inv.invoice_number %></td>
+          <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell whitespace-nowrap"><%= inv.invoice_number %></td>
           <td class="px-4 py-4 text-sm">
-            <a href="/invoices/<%= inv.id %>" class="text-blue-600 dark:text-blue-400 hover:underline font-medium"><%= formatProjectName(inv.project_name) %></a>
-            <div class="group flex flex-wrap items-center gap-1 mt-1">
-              <span class="tag-list contents" data-invoice-id="<%= inv.id %>"><%- tagChips(inv) %></span>
-              <button type="button" data-edit-tags="<%= inv.id %>" data-tag-ids="<%= JSON.stringify(inv.tag_ids || []) %>" class="px-1.5 py-0.5 text-xs rounded border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 opacity-0 group-hover:opacity-100 focus:opacity-100">+ <%= t('tag.title') %></button>
+            <!-- Long titles wrap on their own; tags and the tag button stay on the right -->
+            <div class="flex items-center gap-1.5">
+              <a href="/invoices/<%= inv.id %>" class="min-w-0 text-blue-600 dark:text-blue-400 hover:underline font-medium"><%= formatProjectName(inv.project_name) %></a>
+              <span class="tag-list inline-flex shrink-0 gap-1 empty:hidden" data-invoice-id="<%= inv.id %>"><%- tagChips(inv) %></span>
+              <button type="button" data-edit-tags="<%= inv.id %>" data-tag-ids="<%= JSON.stringify(inv.tag_ids || []) %>" title="<%= t('tag.title') %>" class="shrink-0 p-0.5 rounded text-gray-300 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a2 2 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+              </button>
             </div>
           </td>
           <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= inv.client_name || '-' %></td>
-          <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden xl:table-cell"><%= inv.issue_date || '-' %></td>
-          <td class="px-4 py-4 text-sm text-right font-medium text-gray-900 dark:text-white"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></td>
-          <td class="px-4 py-4 text-center relative">
+          <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden xl:table-cell whitespace-nowrap"><%= inv.issue_date || '-' %></td>
+          <td class="px-4 py-4 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap"><%= formatInvoiceAmount(inv.total_amount, inv.currency) %></td>
+          <td class="px-4 py-4 text-center relative whitespace-nowrap">
             <div class="status-dropdown inline-block">
               <button type="button" data-status-btn="<%= inv.id %>"
                 class="status-btn px-2 py-1 text-xs rounded-full cursor-pointer transition-colors
@@ -225,7 +228,7 @@
               </div>
             </div>
           </td>
-          <td class="px-4 py-4 text-right">
+          <td class="px-4 py-4 text-right whitespace-nowrap">
             <div class="grid grid-cols-2 gap-x-4 gap-y-1 w-fit justify-end ml-auto">
               <a href="/invoices/<%= inv.id %>" class="text-green-600 dark:text-green-400 hover:underline text-sm"><%= t('invoice.print') %></a>
               <a href="/invoices/<%= inv.id %>/edit" class="edit-link text-sm <%= inv.status === 'confirmed' || inv.status === 'discarded' ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed pointer-events-none' : 'text-blue-600 dark:text-blue-400 hover:underline' %>"><%= t('common.edit') %></a>
