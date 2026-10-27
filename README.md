@@ -127,4 +127,4 @@ See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
 ---
 
-**Version**: 1.3.2 | Built with Node.js, Express, and Tailwind CSS
+**Version**: 1.4.0 | Built with Node.js, Express, and Tailwind CSS

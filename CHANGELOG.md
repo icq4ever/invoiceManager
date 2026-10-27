@@ -6,6 +6,19 @@
 
 ## English
 
+### v1.4.0 (2026-10-27)
+- Invoice list filters
+  - Status filter buttons (All / Draft / Confirmed / Discarded) with counts
+  - Custom tags: tag filter buttons next to the status filter; status and tag filters combine
+  - Filters are kept while searching and paging
+- Custom tags
+  - "Manage Tags" on the invoice list: add, rename, recolor (10 colors) and delete tags
+  - Add or remove tags per invoice with "+ Tag" on each row; an invoice can have several tags
+  - Duplicating an invoice copies its tags; deleting a tag keeps the invoices
+  - API/MCP invoice details include `tags`
+- Invoice form: negative unit prices allowed (e.g. discount lines)
+- Schema v1.4.0: added `tags` and `invoice_tags` tables (created automatically on startup)
+
 ### v1.3.2 (2026-10-24)
 - Email PDF now matches the web print view ([#11](https://github.com/icq4ever/invoiceManager/issues/11))
   - Removed `≡`-like glyphs at line ends (CRLF line breaks from textareas)
@@ -115,6 +128,19 @@
 ---
 
 ## Korean
+
+### v1.4.0 (2026-10-27)
+- 견적서 목록 필터
+  - 상태별 필터 버튼 (전체 / 작성중 / 확정 / 폐기) 및 개수 표시
+  - 커스텀 태그 필터: 상태 필터 옆에 태그 버튼, 상태와 태그 필터를 함께 적용
+  - 검색과 페이지 이동 시에도 필터 유지
+- 커스텀 태그
+  - 견적서 목록의 "태그 관리"에서 태그 추가, 이름/색상(10가지) 변경, 삭제
+  - 각 행의 "+ 태그"로 견적서마다 태그를 붙이거나 해제 (여러 개 가능)
+  - 견적서 복제 시 태그도 복사, 태그를 삭제해도 견적서는 유지
+  - API/MCP 견적서 상세에 `tags` 추가
+- 견적서 폼: 음수 단가 입력 가능 (할인 항목 등)
+- 스키마 v1.4.0: `tags`, `invoice_tags` 테이블 추가 (시작 시 자동 생성)
 
 ### v1.3.2 (2026-10-24)
 - 이메일 PDF를 웹 인쇄 화면과 일치하도록 수정 ([#11](https://github.com/icq4ever/invoiceManager/issues/11))

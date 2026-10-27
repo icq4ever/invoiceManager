@@ -1,6 +1,6 @@
 {
   "name": "invoice-manager",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "Korean-style invoice generator and management system",
   "main": "src/app.js",
   "scripts": {
