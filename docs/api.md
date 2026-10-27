@@ -199,6 +199,7 @@ Content-Type: application/json
   "tax_amount": 700000,
   "total_amount": 7700000,
   "notes": ["..."],
+  "tags": ["외주"],
   "items": [
     {
       "title": "UI/UX 디자인", "detail_mode": "text",
@@ -516,6 +517,7 @@ Response: the updated [Invoice object](#invoice-object) plus `client_created`.
   "tax_amount": 0,
   "total_amount": 7000,
   "notes": ["..."],
+  "tags": ["Outsourced"],
   "items": [
     {
       "title": "UI/UX Design", "detail_mode": "text",

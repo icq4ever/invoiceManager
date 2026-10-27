@@ -43,16 +43,54 @@ function parseFormItems(body) {
   });
 }
 
-// List invoices with hybrid search (client-side for small data, server-side for large)
+const STATUSES = ['draft', 'confirmed', 'discarded'];
+
+// Attach tag ids to each invoice (invoice.tag_ids)
+function attachTagIds(db, invoices) {
+  if (invoices.length === 0) return;
+  const byInvoice = new Map(invoices.map(inv => [inv.id, (inv.tag_ids = [])]));
+  const rows = db.prepare(`SELECT invoice_id, tag_id FROM invoice_tags WHERE invoice_id IN (${invoices.map(() => '?').join(',')})`).all(...byInvoice.keys());
+  for (const row of rows) byInvoice.get(row.invoice_id).push(row.tag_id);
+}
+
+// List invoices with hybrid search (client-side for small data, server-side for large).
+// Status (?status=) and tag (?tag=) filters are always applied server-side.
 router.get('/', (req, res) => {
   const db = getDatabase();
   const searchQuery = req.query.q || '';
+  const statusFilter = STATUSES.includes(req.query.status) ? req.query.status : '';
   const page = parseInt(req.query.page) || 1;
   const perPage = 50;
   const clientSideThreshold = 100; // Use client-side filtering under this count
 
+  const tags = db.prepare(`
+    SELECT t.*, (SELECT COUNT(*) FROM invoice_tags it WHERE it.tag_id = t.id) as invoice_count
+    FROM tags t ORDER BY t.sort_order ASC, t.name ASC
+  `).all();
+  const tagFilter = tags.some(tag => tag.id === parseInt(req.query.tag)) ? parseInt(req.query.tag) : null;
+
+  const baseWhere = [];
+  const baseParams = [];
+  if (tagFilter) {
+    baseWhere.push('i.id IN (SELECT invoice_id FROM invoice_tags WHERE tag_id = ?)');
+    baseParams.push(tagFilter);
+  }
+
+  // Per-status counts for the filter buttons (within the selected tag)
+  const statusCounts = { all: 0 };
+  const countWhere = baseWhere.length ? `WHERE ${baseWhere.join(' AND ')}` : '';
+  for (const row of db.prepare(`SELECT status, COUNT(*) as count FROM invoices i ${countWhere} GROUP BY status`).all(...baseParams)) {
+    statusCounts[row.status] = row.count;
+    statusCounts.all += row.count;
+  }
+
+  if (statusFilter) {
+    baseWhere.push('i.status = ?');
+    baseParams.push(statusFilter);
+  }
+
   // Get total count
-  const totalCount = db.prepare('SELECT COUNT(*) as total FROM invoices').get().total;
+  const totalCount = statusFilter ? (statusCounts[statusFilter] || 0) : statusCounts.all;
   const useClientSide = totalCount <= clientSideThreshold && !searchQuery;
 
   let invoices, totalPages;
@@ -64,18 +102,20 @@ router.get('/', (req, res) => {
       FROM invoices i
       LEFT JOIN clients c ON i.client_id = c.id
       LEFT JOIN companies co ON i.company_id = co.id
+      ${baseWhere.length ? `WHERE ${baseWhere.join(' AND ')}` : ''}
       ORDER BY i.created_at DESC
-    `).all();
+    `).all(...baseParams);
     totalPages = 1;
   } else {
     // Large dataset: server-side filtering with pagination
-    let whereClause = '';
-    let params = [];
+    const where = [...baseWhere];
+    const params = [...baseParams];
 
     if (searchQuery) {
-      whereClause = 'WHERE i.project_name LIKE ? OR c.name LIKE ?';
-      params = [`%${searchQuery}%`, `%${searchQuery}%`];
+      where.push('(i.project_name LIKE ? OR c.name LIKE ?)');
+      params.push(`%${searchQuery}%`, `%${searchQuery}%`);
     }
+    const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
     const countQuery = `
       SELECT COUNT(*) as total
@@ -97,9 +137,15 @@ router.get('/', (req, res) => {
     `).all(...params, perPage, (page - 1) * perPage);
   }
 
+  attachTagIds(db, invoices);
+
   res.render('invoices/list', {
     invoices,
+    tags,
     searchQuery,
+    statusFilter,
+    tagFilter,
+    statusCounts,
     currentPage: page,
     totalPages,
     useClientSide
@@ -324,6 +370,7 @@ router.post('/:id/delete', (req, res) => {
 
   try {
     db.prepare('DELETE FROM invoice_items WHERE invoice_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM invoice_tags WHERE invoice_id = ?').run(req.params.id);
     db.prepare('DELETE FROM invoices WHERE id = ?').run(req.params.id);
     res.redirect('/invoices');
   } catch (err) {
@@ -336,9 +383,8 @@ router.post('/:id/delete', (req, res) => {
 router.post('/:id/set-status', (req, res) => {
   const db = getDatabase();
   const { status } = req.body;
-  const validStatuses = ['draft', 'confirmed', 'discarded'];
 
-  if (!validStatuses.includes(status)) {
+  if (!STATUSES.includes(status)) {
     return res.status(400).json({ error: 'Invalid status' });
   }
 
@@ -354,6 +400,31 @@ router.post('/:id/set-status', (req, res) => {
   } catch (err) {
     console.error('Error setting invoice status:', err);
     res.status(500).json({ error: 'Failed to set status' });
+  }
+});
+
+// Replace the tags of an invoice
+router.post('/:id/tags', (req, res) => {
+  const db = getDatabase();
+  const tagIds = (Array.isArray(req.body.tag_ids) ? req.body.tag_ids : []).map(id => parseInt(id)).filter(Boolean);
+
+  try {
+    const invoice = db.prepare('SELECT id FROM invoices WHERE id = ?').get(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ error: 'Invoice not found' });
+    }
+
+    const insertTag = db.prepare('INSERT OR IGNORE INTO invoice_tags (invoice_id, tag_id) SELECT ?, id FROM tags WHERE id = ?');
+    db.transaction(() => {
+      db.prepare('DELETE FROM invoice_tags WHERE invoice_id = ?').run(req.params.id);
+      for (const tagId of tagIds) insertTag.run(req.params.id, tagId);
+    })();
+
+    const saved = db.prepare('SELECT tag_id FROM invoice_tags WHERE invoice_id = ?').all(req.params.id).map(row => row.tag_id);
+    res.json({ success: true, tag_ids: saved });
+  } catch (err) {
+    console.error('Error setting invoice tags:', err);
+    res.status(500).json({ error: 'Failed to set tags' });
   }
 });
 
@@ -452,6 +523,9 @@ router.post('/:id/duplicate', (req, res) => {
         }
       }
     }
+
+    // Copy tags
+    db.prepare('INSERT INTO invoice_tags (invoice_id, tag_id) SELECT ?, tag_id FROM invoice_tags WHERE invoice_id = ?').run(newInvoiceId, req.params.id);
 
     // Copy bank account selections
     const bankLinks = db.prepare('SELECT * FROM invoice_bank_accounts WHERE invoice_id = ?').all(req.params.id);

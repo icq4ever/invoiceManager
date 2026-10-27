@@ -25,7 +25,8 @@
     "confirm_delete": "복원이 불가능합니다. 정말 삭제하시겠습니까?",
     "loading": "로딩중...",
     "default": "기본",
-    "set_default": "기본 설정"
+    "set_default": "기본 설정",
+    "all": "전체"
   },
   "login": {
     "title": "로그인",
@@ -111,6 +112,26 @@
     "sub_title": "타이틀",
     "sub_description": "내역",
     "sub_total": "항목 합계"
+  },
+  "tag": {
+    "title": "태그",
+    "manage": "태그 관리",
+    "none": "태그가 없습니다. 태그 관리에서 추가하세요.",
+    "new_placeholder": "새 태그 이름",
+    "confirm_delete": "\"{{name}}\" 태그를 삭제할까요? 견적서는 삭제되지 않고 태그만 빠집니다.",
+    "error_name_required": "태그 이름을 입력하세요",
+    "error_duplicate": "같은 이름의 태그가 이미 있습니다",
+    "error_failed": "저장하지 못했습니다",
+    "color_gray": "회색",
+    "color_red": "빨강",
+    "color_orange": "주황",
+    "color_amber": "노랑",
+    "color_green": "초록",
+    "color_teal": "청록",
+    "color_blue": "파랑",
+    "color_indigo": "남색",
+    "color_purple": "보라",
+    "color_pink": "분홍"
   },
   "company": {
     "title": "회사 정보",

@@ -60,6 +60,10 @@ function serializeInvoice(db, id) {
     tax_amount: invoice.tax_amount,
     total_amount: invoice.total_amount,
     notes,
+    tags: db.prepare(`
+      SELECT t.name FROM tags t JOIN invoice_tags it ON it.tag_id = t.id
+      WHERE it.invoice_id = ? ORDER BY t.sort_order ASC, t.name ASC
+    `).all(id).map(tag => tag.name),
     items: items.map(item => {
       const out = {
         title: item.title,

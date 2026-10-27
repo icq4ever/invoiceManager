@@ -475,6 +475,8 @@ router.post('/reset', async (req, res) => {
     const db = getDatabase();
 
     // Delete all data in correct order (respecting foreign keys)
+    db.prepare('DELETE FROM invoice_tags').run();
+    db.prepare('DELETE FROM tags').run();
     db.prepare('DELETE FROM invoice_item_details').run();
     db.prepare('DELETE FROM invoice_items').run();
     db.prepare('DELETE FROM invoices').run();
@@ -482,7 +484,7 @@ router.post('/reset', async (req, res) => {
     db.prepare('DELETE FROM companies').run();
 
     // Reset autoincrement counters
-    db.prepare("DELETE FROM sqlite_sequence WHERE name IN ('companies', 'clients', 'invoices', 'invoice_items', 'invoice_item_details')").run();
+    db.prepare("DELETE FROM sqlite_sequence WHERE name IN ('companies', 'clients', 'invoices', 'invoice_items', 'invoice_item_details', 'tags', 'invoice_tags')").run();
 
     console.log('[Reset] All data deleted successfully');
     res.json({ success: true, message: t('reset.success') });

@@ -129,6 +129,28 @@ Bank accounts shown on each invoice. New invoices link all enabled accounts of t
 
 `(invoice_id, bank_account_id)` is unique.
 
+### invoice_tags
+Tags attached to each invoice. An invoice can have several tags.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER PK | Unique identifier |
+| invoice_id | INTEGER FK | Invoice (removed with the invoice) |
+| tag_id | INTEGER FK | Tag (removed with the tag) |
+
+`(invoice_id, tag_id)` is unique.
+
+### tags
+User-defined invoice tags, managed from the invoice list ("Manage Tags").
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER PK | Unique identifier |
+| name | TEXT UNIQUE | Tag name (max 30 characters) |
+| color | TEXT | Palette key: gray, red, orange, amber, green, teal, blue, indigo, purple, pink (default gray) |
+| sort_order | INTEGER | Display order |
+| created_at | DATETIME | Created at |
+
 ### invoice_items
 | Column | Type | Description |
 |--------|------|-------------|
@@ -330,6 +352,28 @@ Single row (`id = 1`) with the admin login. Set with `npm run set-credentials`.
 
 `(invoice_id, bank_account_id)` 조합은 중복될 수 없습니다.
 
+### invoice_tags (견적서별 태그)
+견적서에 붙인 태그입니다. 견적서 하나에 여러 태그를 붙일 수 있습니다.
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER PK | 고유 ID |
+| invoice_id | INTEGER FK | 견적서 (견적서 삭제 시 함께 삭제) |
+| tag_id | INTEGER FK | 태그 (태그 삭제 시 함께 삭제) |
+
+`(invoice_id, tag_id)` 조합은 중복될 수 없습니다.
+
+### tags (태그)
+견적서 목록의 "태그 관리"에서 만드는 사용자 정의 태그입니다.
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER PK | 고유 ID |
+| name | TEXT UNIQUE | 태그 이름 (최대 30자) |
+| color | TEXT | 색상 키: gray, red, orange, amber, green, teal, blue, indigo, purple, pink (기본 gray) |
+| sort_order | INTEGER | 표시 순서 |
+| created_at | DATETIME | 생성일 |
+
 ### invoice_items (견적 항목)
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
@@ -413,6 +457,7 @@ Single row (`id = 1`) with the admin login. Set with `npm run set-credentials`.
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 1.4.0 | 2026-10 | Invoice tags (`tags`, `invoice_tags`) |
 | 1.3.1 | 2026-10 | Schema cleanup: dropped unused columns (`companies.bank_info`, `bank_info_en`, `invoices.pdf_path`, `bank_accounts.branch`, `bank_address`, `bank_address_en`, `show_swift`, `show_paypal`). Migrations consolidated into one schema definition; a backup (`invoice.db.before-1.3.1-*.bak`) is created automatically before columns are dropped |
 | 1.3.0 | 2026-03 | Multiple bank accounts per company (`bank_accounts`, `invoice_bank_accounts`); legacy `bank_info` migrated |
 | 1.2.0 | 2026-03 | SMTP settings per company, email templates and email log |

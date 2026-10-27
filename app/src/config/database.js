@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const SCHEMA_VERSION = '1.3.1';
+const SCHEMA_VERSION = '1.4.0';
 
 let db = null;
 
@@ -206,6 +206,28 @@ const TABLES = {
       'FOREIGN KEY (bank_account_id) REFERENCES bank_accounts(id) ON DELETE CASCADE',
       'UNIQUE(invoice_id, bank_account_id)'
     ]
+  },
+  // User-defined invoice tags; color is a palette key (see views/invoices/list.ejs)
+  tags: {
+    columns: [
+      ['id', 'INTEGER PRIMARY KEY AUTOINCREMENT'],
+      ['name', 'TEXT NOT NULL UNIQUE'],
+      ['color', "TEXT DEFAULT 'gray'"],
+      ['sort_order', 'INTEGER DEFAULT 0'],
+      ['created_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP']
+    ]
+  },
+  invoice_tags: {
+    columns: [
+      ['id', 'INTEGER PRIMARY KEY AUTOINCREMENT'],
+      ['invoice_id', 'INTEGER NOT NULL'],
+      ['tag_id', 'INTEGER NOT NULL']
+    ],
+    constraints: [
+      'FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE',
+      'FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE',
+      'UNIQUE(invoice_id, tag_id)'
+    ]
   }
 };
 
@@ -214,7 +236,8 @@ const INDEXES = [
   'CREATE INDEX IF NOT EXISTS idx_invoices_created_at ON invoices(created_at DESC)',
   'CREATE INDEX IF NOT EXISTS idx_clients_name ON clients(name)',
   'CREATE INDEX IF NOT EXISTS idx_bank_accounts_company ON bank_accounts(company_id)',
-  'CREATE INDEX IF NOT EXISTS idx_invoice_bank_accounts_invoice ON invoice_bank_accounts(invoice_id)'
+  'CREATE INDEX IF NOT EXISTS idx_invoice_bank_accounts_invoice ON invoice_bank_accounts(invoice_id)',
+  'CREATE INDEX IF NOT EXISTS idx_invoice_tags_tag ON invoice_tags(tag_id)'
 ];
 
 // Columns no longer used by the app (v1.3.1). Dropped from existing databases.

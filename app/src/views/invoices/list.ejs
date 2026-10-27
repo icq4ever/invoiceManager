@@ -8,6 +8,36 @@
     }
     return symbol + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
   }
+  // Build a list URL keeping the current status / tag / search
+  function listUrl(overrides) {
+    const params = Object.assign({ status: statusFilter, tag: tagFilter, q: searchQuery }, overrides);
+    const qs = Object.keys(params).filter(k => params[k]).map(k => k + '=' + encodeURIComponent(params[k])).join('&');
+    return '/invoices' + (qs ? '?' + qs : '');
+  }
+  const isFiltered = !!(statusFilter || tagFilter);
+  // Tag palette (keys match TAG_COLORS in routes/tags.js): [chip classes, dot class]
+  const tagColors = {
+    gray: ['bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', 'bg-gray-500'],
+    red: ['bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200', 'bg-red-500'],
+    orange: ['bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200', 'bg-orange-500'],
+    amber: ['bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200', 'bg-amber-500'],
+    green: ['bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200', 'bg-green-500'],
+    teal: ['bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-200', 'bg-teal-500'],
+    blue: ['bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200', 'bg-blue-500'],
+    indigo: ['bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200', 'bg-indigo-500'],
+    purple: ['bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200', 'bg-purple-500'],
+    pink: ['bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-200', 'bg-pink-500']
+  };
+  const tagsById = Object.fromEntries(tags.map(tag => [tag.id, tag]));
+  function tagChips(inv) {
+    return (inv.tag_ids || []).filter(id => tagsById[id]).map(id => {
+      const tag = tagsById[id];
+      return `<span class="px-1.5 py-0.5 text-xs rounded ${(tagColors[tag.color] || tagColors.gray)[0]}">${escapeHtml(tag.name)}</span>`;
+    }).join('');
+  }
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
   function formatProjectName(name) {
     if (!name) return '-';
     return name.replace(/\\n/g, ' ').replace(/\n/g, ' ');
@@ -34,6 +64,8 @@
     <% } else { %>
     <!-- Server-side filtering (for large datasets) -->
     <form method="GET" action="/invoices" class="flex items-center gap-2 w-full sm:w-auto">
+      <% if (tagFilter) { %><input type="hidden" name="tag" value="<%= tagFilter %>"><% } %>
+      <% if (statusFilter) { %><input type="hidden" name="status" value="<%= statusFilter %>"><% } %>
       <div class="relative flex-1 sm:w-64">
         <input type="text" name="q" value="<%= searchQuery || '' %>"
           placeholder="<%= t('invoice.search_placeholder') %>"
@@ -42,7 +74,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         <% if (searchQuery) { %>
-        <a href="/invoices" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="<%= t('invoice.clear_search') %>">
+        <a href="<%= listUrl({ q: '' }) %>" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="<%= t('invoice.clear_search') %>">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -62,14 +94,37 @@
   </div>
 </div>
 
+<!-- Status + tag filter -->
+<div class="mb-4 flex flex-wrap items-center gap-2">
+  <% [['', t('common.all')], ['draft', t('invoice.status_draft')], ['confirmed', t('invoice.status_confirmed')], ['discarded', t('invoice.status_discarded')]].forEach(([key, label]) => {
+    const active = statusFilter === key; %>
+  <a href="<%= listUrl({ status: key, page: '' }) %>"
+    class="px-3 py-1 text-sm rounded-full border transition-colors <%= active ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' %>">
+    <%= label %> <span class="<%= active ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500' %>"><%= statusCounts[key || 'all'] || 0 %></span>
+  </a>
+  <% }) %>
+  <span class="hidden sm:inline-block w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1"></span>
+  <% tags.forEach(tag => {
+    const active = tagFilter === tag.id; %>
+  <a href="<%= listUrl({ tag: active ? '' : tag.id, page: '' }) %>"
+    class="inline-flex items-center gap-1.5 px-3 py-1 text-sm rounded-full border transition-colors <%= active ? 'bg-gray-800 dark:bg-gray-200 border-gray-800 dark:border-gray-200 text-white dark:text-gray-900' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' %>">
+    <span class="w-2 h-2 rounded-full <%= (tagColors[tag.color] || tagColors.gray)[1] %>"></span><%= tag.name %>
+    <span class="<%= active ? 'text-gray-300 dark:text-gray-600' : 'text-gray-400 dark:text-gray-500' %>"><%= tag.invoice_count %></span>
+  </a>
+  <% }) %>
+  <button type="button" id="openTagManager" class="inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a2 2 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+    <%= t('tag.manage') %>
+  </button>
+</div>
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
   <!-- Mobile: Card Layout -->
   <div class="sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
-    <div id="noInvoicesRowMobile" class="<%= invoices.length > 0 || (!useClientSide && searchQuery) ? 'hidden' : '' %> px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+    <div id="noInvoicesRowMobile" class="<%= invoices.length > 0 || (!useClientSide && searchQuery) || isFiltered ? 'hidden' : '' %> px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
       <%= t('invoice.no_invoices') %>
     </div>
-    <div id="noResultsRowMobile" class="<%= !useClientSide && searchQuery && invoices.length === 0 ? '' : 'hidden' %> px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+    <div id="noResultsRowMobile" class="<%= (searchQuery || isFiltered) && invoices.length === 0 ? '' : 'hidden' %> px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
       <%= t('invoice.no_search_results') %>
     </div>
     <% if (invoices.length > 0) { %>
@@ -91,6 +146,11 @@
             <button type="button" data-set-status="discarded" data-invoice-id="<%= inv.id %>" class="block w-full px-3 py-1.5 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400"><%= t('invoice.status_discarded') %></button>
           </div>
         </div>
+      </div>
+      <!-- Tags -->
+      <div class="flex flex-wrap items-center gap-1 mb-2">
+        <span class="tag-list contents" data-invoice-id="<%= inv.id %>"><%- tagChips(inv) %></span>
+        <button type="button" data-edit-tags="<%= inv.id %>" data-tag-ids="<%= JSON.stringify(inv.tag_ids || []) %>" class="px-1.5 py-0.5 text-xs rounded border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">+ <%= t('tag.title') %></button>
       </div>
       <!-- Row 2: Amount + Actions -->
       <div class="flex justify-between items-center">
@@ -126,12 +186,12 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-        <tr id="noInvoicesRow" class="<%= invoices.length > 0 || (!useClientSide && searchQuery) ? 'hidden' : '' %>">
+        <tr id="noInvoicesRow" class="<%= invoices.length > 0 || (!useClientSide && searchQuery) || isFiltered ? 'hidden' : '' %>">
           <td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
             <%= t('invoice.no_invoices') %>
           </td>
         </tr>
-        <tr id="noResultsRow" class="<%= !useClientSide && searchQuery && invoices.length === 0 ? '' : 'hidden' %>">
+        <tr id="noResultsRow" class="<%= (searchQuery || isFiltered) && invoices.length === 0 ? '' : 'hidden' %>">
           <td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
             <%= t('invoice.no_search_results') %>
           </td>
@@ -142,6 +202,10 @@
           <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell"><%= inv.invoice_number %></td>
           <td class="px-4 py-4 text-sm">
             <a href="/invoices/<%= inv.id %>" class="text-blue-600 dark:text-blue-400 hover:underline font-medium"><%= formatProjectName(inv.project_name) %></a>
+            <div class="group flex flex-wrap items-center gap-1 mt-1">
+              <span class="tag-list contents" data-invoice-id="<%= inv.id %>"><%- tagChips(inv) %></span>
+              <button type="button" data-edit-tags="<%= inv.id %>" data-tag-ids="<%= JSON.stringify(inv.tag_ids || []) %>" class="px-1.5 py-0.5 text-xs rounded border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 opacity-0 group-hover:opacity-100 focus:opacity-100">+ <%= t('tag.title') %></button>
+            </div>
           </td>
           <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden lg:table-cell"><%= inv.client_name || '-' %></td>
           <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300 hidden xl:table-cell"><%= inv.issue_date || '-' %></td>
@@ -186,7 +250,7 @@
     </span>
     <div class="flex gap-2">
       <% if (currentPage > 1) { %>
-      <a href="/invoices?page=<%= currentPage - 1 %><%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>"
+      <a href="<%= listUrl({ page: currentPage - 1 }) %>"
         class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
         <%= t('invoice.prev_page') %>
       </a>
@@ -196,7 +260,7 @@
       </span>
       <% } %>
       <% if (currentPage < totalPages) { %>
-      <a href="/invoices?page=<%= currentPage + 1 %><%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>"
+      <a href="<%= listUrl({ page: currentPage + 1 }) %>"
         class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
         <%= t('invoice.next_page') %>
       </a>
@@ -235,7 +299,7 @@
 
     noInvoicesRow.classList.add('hidden');
     noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
-    if (rows.length === 0 && !query) {
+    if (rows.length === 0 && !query && !<%- JSON.stringify(isFiltered) %>) {
       noInvoicesRow.classList.remove('hidden');
     }
   }
@@ -306,8 +370,14 @@
             btn.textContent = statusLabels[data.status];
             btn.className = statusClasses[data.status];
 
+            // Row no longer matches the active status filter
+            if (<%- JSON.stringify(statusFilter) %> && data.status !== <%- JSON.stringify(statusFilter) %>) {
+              location.reload();
+              return;
+            }
+
             // Update edit link visibility
-            var editLink = row.querySelector('.edit-link');
+            var editLink = row && row.querySelector('.edit-link');
             if (editLink) {
               if (data.status === 'confirmed' || data.status === 'discarded') {
                 editLink.className = 'edit-link text-sm text-gray-400 dark:text-gray-500 cursor-not-allowed pointer-events-none';
@@ -327,6 +397,240 @@
 
     // Close menus when clicking outside
     closeAllMenus();
+  });
+})();
+</script>
+
+<!-- Tag picker (shared popover for all rows) -->
+<div id="tagPicker" class="hidden fixed z-20 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1">
+  <div id="tagPickerList" class="max-h-64 overflow-y-auto"></div>
+  <p id="tagPickerEmpty" class="hidden px-3 py-2 text-xs text-gray-500 dark:text-gray-400"><%= t('tag.none') %></p>
+  <button type="button" data-open-tag-manager class="block w-full px-3 py-1.5 text-xs text-left text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-t border-gray-100 dark:border-gray-700"><%= t('tag.manage') %>…</button>
+</div>
+
+<!-- Tag manager -->
+<div id="tagManager" class="hidden fixed inset-0 z-30 bg-black/40 flex items-start sm:items-center justify-center p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-4">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white"><%= t('tag.manage') %></h2>
+      <button type="button" data-close-tag-manager class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="tagManagerList" class="space-y-2 mb-4"></div>
+    <form id="newTagForm" class="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+      <input type="text" name="name" maxlength="30" required placeholder="<%= t('tag.new_placeholder') %>"
+        class="flex-1 min-w-0 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <select name="color" class="tag-color-select px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></select>
+      <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"><%= t('common.add') %></button>
+    </form>
+    <p id="tagManagerError" class="hidden mt-2 text-sm text-red-600 dark:text-red-400"></p>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Escape "<" so a tag name cannot close this script block
+  var tags = <%- JSON.stringify(tags.map(tag => ({ id: tag.id, name: tag.name, color: tag.color, invoice_count: tag.invoice_count }))).replace(/</g, '\\u003c') %>;
+  var tagColors = <%- JSON.stringify(tagColors) %>;
+  var tagFilter = <%- JSON.stringify(tagFilter) %>;
+  var labels = {
+    colors: <%- JSON.stringify(Object.fromEntries(Object.keys(tagColors).map(c => [c, t('tag.color_' + c)]))) %>,
+    save: <%- JSON.stringify(t('common.save')) %>,
+    del: <%- JSON.stringify(t('common.delete')) %>,
+    confirmDelete: <%- JSON.stringify(t('tag.confirm_delete')) %>,
+    failed: <%- JSON.stringify(t('tag.error_failed')) %>
+  };
+  var tagsById = {};
+  tags.forEach(function(tag) { tagsById[tag.id] = tag; });
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function(c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function colorOf(tag) { return tagColors[tag.color] || tagColors.gray; }
+
+  function postJson(url, body) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    }).then(function(res) {
+      return res.json().then(function(data) {
+        if (!res.ok) throw new Error(data.error || labels.failed);
+        return data;
+      });
+    });
+  }
+
+  // ---- Per-invoice tag picker ----
+  var picker = document.getElementById('tagPicker');
+  var pickerList = document.getElementById('tagPickerList');
+  var pickerInvoiceId = null;
+
+  function renderInvoiceTags(invoiceId, tagIds) {
+    var html = tagIds.filter(function(id) { return tagsById[id]; }).map(function(id) {
+      var tag = tagsById[id];
+      return '<span class="px-1.5 py-0.5 text-xs rounded ' + colorOf(tag)[0] + '">' + escapeHtml(tag.name) + '</span>';
+    }).join('');
+    document.querySelectorAll('.tag-list[data-invoice-id="' + invoiceId + '"]').forEach(function(el) { el.innerHTML = html; });
+    document.querySelectorAll('[data-edit-tags="' + invoiceId + '"]').forEach(function(el) { el.dataset.tagIds = JSON.stringify(tagIds); });
+  }
+
+  function openPicker(btn) {
+    pickerInvoiceId = btn.dataset.editTags;
+    var selected = JSON.parse(btn.dataset.tagIds || '[]');
+    pickerList.innerHTML = tags.map(function(tag) {
+      return '<label class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">' +
+        '<input type="checkbox" value="' + tag.id + '"' + (selected.indexOf(tag.id) >= 0 ? ' checked' : '') + ' class="rounded">' +
+        '<span class="w-2 h-2 rounded-full ' + colorOf(tag)[1] + '"></span>' + escapeHtml(tag.name) + '</label>';
+    }).join('');
+    document.getElementById('tagPickerEmpty').classList.toggle('hidden', tags.length > 0);
+
+    var rect = btn.getBoundingClientRect();
+    picker.classList.remove('hidden');
+    picker.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - picker.offsetWidth - 8)) + 'px';
+    var top = rect.bottom + 4;
+    if (top + picker.offsetHeight > window.innerHeight - 8) top = Math.max(8, rect.top - picker.offsetHeight - 4);
+    picker.style.top = top + 'px';
+  }
+
+  function closePicker() {
+    picker.classList.add('hidden');
+    pickerInvoiceId = null;
+  }
+
+  pickerList.addEventListener('change', function() {
+    var invoiceId = pickerInvoiceId;
+    var tagIds = Array.prototype.map.call(pickerList.querySelectorAll('input:checked'), function(input) { return parseInt(input.value); });
+    postJson('/invoices/' + invoiceId + '/tags', { tag_ids: tagIds })
+      .then(function(data) {
+        // Row no longer matches the active tag filter
+        if (tagFilter && data.tag_ids.indexOf(tagFilter) < 0) {
+          location.reload();
+          return;
+        }
+        renderInvoiceTags(invoiceId, data.tag_ids);
+      })
+      .catch(function(err) { alert(err.message); });
+  });
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-edit-tags]');
+    if (btn) {
+      e.stopPropagation();
+      if (pickerInvoiceId === btn.dataset.editTags) closePicker();
+      else openPicker(btn);
+      return;
+    }
+    if (!e.target.closest('#tagPicker')) closePicker();
+  });
+  window.addEventListener('scroll', closePicker, true);
+
+  // ---- Tag manager ----
+  var manager = document.getElementById('tagManager');
+  var managerList = document.getElementById('tagManagerList');
+  var managerError = document.getElementById('tagManagerError');
+  var changed = false;
+
+  function colorOptions(selected) {
+    return Object.keys(tagColors).map(function(color) {
+      return '<option value="' + color + '"' + (color === selected ? ' selected' : '') + '>' + escapeHtml(labels.colors[color]) + '</option>';
+    }).join('');
+  }
+
+  function showError(message) {
+    managerError.textContent = message;
+    managerError.classList.toggle('hidden', !message);
+  }
+
+  function renderManager() {
+    managerList.innerHTML = tags.map(function(tag) {
+      return '<form class="tag-row flex items-center gap-2" data-tag-id="' + tag.id + '">' +
+        '<span class="tag-dot w-2.5 h-2.5 shrink-0 rounded-full ' + colorOf(tag)[1] + '"></span>' +
+        '<input type="text" name="name" maxlength="30" required value="' + escapeHtml(tag.name) + '" class="flex-1 min-w-0 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">' +
+        '<select name="color" class="tag-color-select px-1 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">' + colorOptions(tag.color) + '</select>' +
+        '<span class="w-6 text-right text-xs text-gray-400">' + tag.invoice_count + '</span>' +
+        '<button type="submit" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">' + escapeHtml(labels.save) + '</button>' +
+        '<button type="button" data-delete-tag class="text-sm text-red-600 dark:text-red-400 hover:underline">' + escapeHtml(labels.del) + '</button>' +
+        '</form>';
+    }).join('');
+  }
+
+  function openManager() {
+    closePicker();
+    renderManager();
+    document.querySelector('#newTagForm .tag-color-select').innerHTML = colorOptions('gray');
+    showError('');
+    manager.classList.remove('hidden');
+    document.querySelector('#newTagForm input[name="name"]').focus();
+  }
+
+  function closeManager() {
+    manager.classList.add('hidden');
+    if (changed) location.reload();
+  }
+
+  document.getElementById('openTagManager').addEventListener('click', openManager);
+  document.querySelector('[data-open-tag-manager]').addEventListener('click', openManager);
+  document.querySelector('[data-close-tag-manager]').addEventListener('click', closeManager);
+  manager.addEventListener('click', function(e) { if (e.target === manager) closeManager(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !manager.classList.contains('hidden')) closeManager();
+  });
+
+  document.getElementById('newTagForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = e.target;
+    postJson('/tags', { name: form.name.value, color: form.color.value })
+      .then(function(data) {
+        var tag = Object.assign({ invoice_count: 0 }, data.tag);
+        tags.push(tag);
+        tagsById[tag.id] = tag;
+        changed = true;
+        form.name.value = '';
+        showError('');
+        renderManager();
+      })
+      .catch(function(err) { showError(err.message); });
+  });
+
+  // Live color preview
+  managerList.addEventListener('change', function(e) {
+    if (!e.target.matches('.tag-color-select')) return;
+    var dot = e.target.closest('.tag-row').querySelector('.tag-dot');
+    dot.className = 'tag-dot w-2.5 h-2.5 shrink-0 rounded-full ' + (tagColors[e.target.value] || tagColors.gray)[1];
+  });
+
+  managerList.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = e.target;
+    var tag = tagsById[form.dataset.tagId];
+    postJson('/tags/' + tag.id, { name: form.name.value, color: form.color.value })
+      .then(function() {
+        tag.name = form.name.value.trim();
+        tag.color = form.color.value;
+        changed = true;
+        showError('');
+        renderManager();
+      })
+      .catch(function(err) { showError(err.message); });
+  });
+
+  managerList.addEventListener('click', function(e) {
+    if (!e.target.matches('[data-delete-tag]')) return;
+    var tag = tagsById[e.target.closest('.tag-row').dataset.tagId];
+    if (!confirm(labels.confirmDelete.replace('{{name}}', tag.name))) return;
+    postJson('/tags/' + tag.id + '/delete')
+      .then(function() {
+        tags = tags.filter(function(t) { return t.id !== tag.id; });
+        delete tagsById[tag.id];
+        changed = true;
+        showError('');
+        renderManager();
+      })
+      .catch(function(err) { showError(err.message); });
   });
 })();
 </script>

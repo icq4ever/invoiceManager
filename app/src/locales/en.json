@@ -25,7 +25,8 @@
     "confirm_delete": "This cannot be restored. Are you sure you want to delete?",
     "loading": "Loading...",
     "default": "Default",
-    "set_default": "Set Default"
+    "set_default": "Set Default",
+    "all": "All"
   },
   "login": {
     "title": "Login",
@@ -111,6 +112,26 @@
     "sub_title": "Title",
     "sub_description": "Description",
     "sub_total": "Item total"
+  },
+  "tag": {
+    "title": "Tag",
+    "manage": "Manage Tags",
+    "none": "No tags yet. Add one in Manage Tags.",
+    "new_placeholder": "New tag name",
+    "confirm_delete": "Delete the tag \"{{name}}\"? Invoices are kept; only the tag is removed from them.",
+    "error_name_required": "Enter a tag name",
+    "error_duplicate": "A tag with this name already exists",
+    "error_failed": "Could not save",
+    "color_gray": "Gray",
+    "color_red": "Red",
+    "color_orange": "Orange",
+    "color_amber": "Yellow",
+    "color_green": "Green",
+    "color_teal": "Teal",
+    "color_blue": "Blue",
+    "color_indigo": "Indigo",
+    "color_purple": "Purple",
+    "color_pink": "Pink"
   },
   "company": {
     "title": "Companies",
