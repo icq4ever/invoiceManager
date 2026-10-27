@@ -193,7 +193,7 @@
                   </div>
                   <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.unit_price') %></label>
-                    <input type="number" name="item_unit_prices" value="<%= item.unit_price %>" min="0" step="1"
+                    <input type="number" name="item_unit_prices" value="<%= item.unit_price %>" step="1"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 item-price">
                   </div>
                   <div>
@@ -236,7 +236,7 @@
                         <div class="flex w-full sm:contents gap-2">
                           <input type="number" name="sub_quantities_<%= index %>[]" value="<%= sub.quantity %>" min="0" step="0.01"
                             class="w-20 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-quantity">
-                          <input type="number" name="sub_prices_<%= index %>[]" value="<%= sub.unit_price %>" min="0" step="1"
+                          <input type="number" name="sub_prices_<%= index %>[]" value="<%= sub.unit_price %>" step="1"
                             class="flex-1 min-w-0 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-price">
                         </div>
                         <div class="flex w-full sm:contents justify-end gap-2 items-center">
@@ -433,7 +433,7 @@
             </div>
             <div>
               <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1"><%= t('invoice.unit_price') %></label>
-              <input type="number" name="item_unit_prices" value="0" min="0" step="1"
+              <input type="number" name="item_unit_prices" value="0" step="1"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 item-price">
             </div>
             <div>
@@ -489,7 +489,7 @@
           <div class="flex w-full sm:contents gap-2">
             <input type="number" name="sub_quantities_${itemIndex}[]" value="1" min="0" step="0.01"
               class="w-20 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-quantity">
-            <input type="number" name="sub_prices_${itemIndex}[]" value="0" min="0" step="1"
+            <input type="number" name="sub_prices_${itemIndex}[]" value="0" step="1"
               class="flex-1 min-w-0 sm:w-full sm:col-span-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-right bg-white dark:bg-gray-700 text-gray-900 dark:text-white sub-price">
           </div>
           <div class="flex w-full sm:contents justify-end gap-2 items-center">
