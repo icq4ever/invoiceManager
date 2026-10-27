@@ -6,6 +6,11 @@
 
 ## English
 
+### v1.4.1 (2026-10-27)
+- Invoice list: tags and the tag button sit next to the project title instead of on a separate line, so rows keep their height and titles stay aligned
+- Tag button is always visible (tag icon) instead of appearing only on hover; on mobile it sits next to the status
+- Long project titles wrap on their own while tags stay on the right; number, date, amount, status and action columns no longer break mid-word
+
 ### v1.4.0 (2026-10-27)
 - Invoice list filters
   - Status filter buttons (All / Draft / Confirmed / Discarded) with counts
@@ -128,6 +133,11 @@
 ---
 
 ## Korean
+
+### v1.4.1 (2026-10-27)
+- 견적서 목록: 태그와 태그 버튼을 별도 줄이 아닌 프로젝트 제목 옆에 표시 (행 높이 유지, 제목 정렬)
+- 태그 버튼을 마우스를 올릴 때만이 아니라 항상 표시 (태그 아이콘), 모바일은 상태 옆에 배치
+- 긴 프로젝트 제목은 제목 안에서만 줄바꿈되고 태그는 오른쪽에 유지, 번호/견적일/금액/상태/액션 칸이 글자 단위로 끊기지 않음
 
 ### v1.4.0 (2026-10-27)
 - 견적서 목록 필터
